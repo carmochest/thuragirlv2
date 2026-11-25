@@ -2418,7 +2418,7 @@ function checkout(u, p){
 
 /* ── Thai words for every screen. Exact English → Thai; patterns with numbers live in app85. ── */
 var TH = {
-  "Send them by": "ส่งทาง", "Registered already, or one I register for you": "จดทะเบียนแล้ว หรือให้หนูจดให้",
+  "Send them by": "ส่งทาง", "Set capital first": "ตั้งทุนก่อน", "Registered already, or one I register for you": "จดทะเบียนแล้ว หรือให้หนูจดให้",
 
   ". You have": " คุณมี", "Add the name and address exactly as registered.": "ใส่ชื่อและที่อยู่ให้ตรงกับที่จดทะเบียน", "Card, cash and QR sales": "ยอดขายบัตร เงินสด และ QR", "Done for now": "พอแค่นี้ก่อน", "Everything else": "อื่น ๆ ทั้งหมด",
   "For sending it": "สำหรับส่ง", "Send to": "ส่งถึง", "vs last month": "เทียบเดือนก่อน", "Tick the box and I lock the month.": "ติ๊กช่องแล้วหนูจะปิดเดือนให้",
@@ -2695,7 +2695,7 @@ function openCoMenu(){
   prefs.appendChild(prefRow(L("Language", "ภาษา"), langSeg()));
   prefs.appendChild(prefRow(L("Theme", "ธีม"), themeSeg()));
   b.appendChild(prefs);
-  var ft = el("div", "shB-f one"); ft.appendChild(btn("btn", L("All settings", "ตั้งค่าทั้งหมด"), function(){ closeGS(); go("settings"); }, "i-set")); b.appendChild(ft);
+  var ft = el("div", "shB-f one"); ft.appendChild(btn("pill soft", L("All settings", "ตั้งค่าทั้งหมด"), function(){ closeGS(); go("settings"); }, "i-set")); b.appendChild(ft);
 }
 function prefRow(label, ctl){ var r = el("div", "frow"); r.appendChild(el("b", "", label)); r.appendChild(ctl); return r; }
 function themeSeg(){

@@ -53,7 +53,7 @@ function openCoMenu(){
   prefs.appendChild(prefRow(L("Language", "ภาษา"), langSeg()));
   prefs.appendChild(prefRow(L("Theme", "ธีม"), themeSeg()));
   b.appendChild(prefs);
-  var ft = el("div", "shB-f one"); ft.appendChild(btn("btn", L("All settings", "ตั้งค่าทั้งหมด"), function(){ closeGS(); go("settings"); }, "i-set")); b.appendChild(ft);
+  var ft = el("div", "shB-f one"); ft.appendChild(btn("pill soft", L("All settings", "ตั้งค่าทั้งหมด"), function(){ closeGS(); go("settings"); }, "i-set")); b.appendChild(ft);
 }
 function prefRow(label, ctl){ var r = el("div", "frow"); r.appendChild(el("b", "", label)); r.appendChild(ctl); return r; }
 function themeSeg(){

@@ -1038,5 +1038,32 @@
   .su-top .su-lang{margin-left:auto}
   .su-top .su-lang button{padding:6px 12px;font-size:12px}
   .su-cancel{display:block;margin:18px auto 0}
+  /* ── phone fixes ── */
+  body[data-page]{background:#F4F5F5}
+  html.night body[data-page]{background:#0B0E0E}
+  .mock{min-height:100vh;min-height:100dvh}
+  .stabs{display:flex;gap:6px}
+  .stabs button{flex:none}
+  .st-list li{display:block;position:relative;padding-left:14px}
+  .st-list li::before{position:absolute;left:0;top:0}
+  .chips button{background:var(--m-soft)}
+  .chips button[aria-pressed="true"]{background:var(--m-ink);color:var(--m-bg)}
+  .ob-yn{max-width:100%;overflow-x:auto;scrollbar-width:none}
+  .ob-yn::-webkit-scrollbar{display:none}
+  .ob-yn button{flex:none}
+  .dockB{bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+  .shB-card{padding-bottom:max(22px,calc(14px + env(safe-area-inset-bottom,0px)))}
+  .toast{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+  @media (max-width:600px){
+    input,select,textarea{font-size:16px!important}
+    .ob-row{flex-wrap:wrap}
+    .ob-row .tx{min-width:min(100%,170px)}
+    .ob-row > button,.ob-row > .pill{margin-left:auto}
+    .frow{flex-wrap:wrap}
+    .co-prefs .frow{flex-wrap:nowrap}
+  }
+  html{background:#F4F5F5}
+  html.night{background:#0B0E0E}
+  .person .chips button:not([aria-pressed="true"]){background:var(--m-surface)}
 
   .dockB[hidden],.toast[hidden],.alt[hidden]{display:none}
