@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ThuraGirl · The AI bookkeeper for Thai small business</title>
+<meta name="description" content="ThuraGirl reads your bank statements, keeps your books, prepares VAT, withholding tax and social security, and tells you each morning what needs you.">
+<meta property="og:title" content="ThuraGirl · Your books, done. You just say yes.">
+<meta property="og:description" content="The AI bookkeeper for Thai small business. Cash at a glance, a morning brief, and month-end on one page.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="img/home-desk-day.webp">
+<meta name="theme-color" content="#F4F5F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B0E0E" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700&family=Instrument+Serif:ital@0;1&family=Manrope:wght@500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
+<script>
+  /* set the theme before paint so there is no flash */
+  (function(){ try { var t = localStorage.getItem("tg.web.theme"); if (t === "day" || t === "night") document.documentElement.setAttribute("data-theme", t); } catch (e) {} })();
+</script>
+<style>
+  :root{
+    --bg:#F4F5F5;--surface:#FFFFFF;--soft:#EFF1F1;--ink:#0F1514;--mute:#6A7472;--faint:#9AA3A1;
+    --accent:#0FBFB6;--accent-ink:#04201D;--hint:#067A73;--tint:#E3F6F4;--pink:#EC4899;--line:#E4E7E6;
+    --frame:#0F1514;--shadow:0 1px 2px rgba(15,21,20,.05),0 24px 60px -24px rgba(15,21,20,.22);
+    --font:"Manrope","Noto Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --num:"DM Sans","Noto Sans Thai",system-ui,sans-serif;
+    --serif:"Instrument Serif","Noto Sans Thai",Georgia,serif;
+    --wrap:1160px;--r:28px;
+    color-scheme:light;
+  }
+  :root[data-theme="night"]{
+    --bg:#0B0E0E;--surface:#151919;--soft:#1F2424;--ink:#F1F4F3;--mute:#94A09D;--faint:#66716F;
+    --accent:#2DD4C8;--accent-ink:#04201D;--hint:#2DD4C8;--tint:#11302C;--pink:#F472B6;--line:#272D2C;
+    --frame:#2A3130;--shadow:0 1px 2px rgba(0,0,0,.3),0 30px 70px -28px rgba(0,0,0,.75);color-scheme:dark;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="day"]){
+      --bg:#0B0E0E;--surface:#151919;--soft:#1F2424;--ink:#F1F4F3;--mute:#94A09D;--faint:#66716F;
+      --accent:#2DD4C8;--accent-ink:#04201D;--hint:#2DD4C8;--tint:#11302C;--pink:#F472B6;--line:#272D2C;
+      --frame:#2A3130;--shadow:0 1px 2px rgba(0,0,0,.3),0 30px 70px -28px rgba(0,0,0,.75);color-scheme:dark;
+    }
+  }
+  /* day / night screenshots */
+  .sn{display:none}
+  :root[data-theme="night"] .sd{display:none} :root[data-theme="night"] .sn{display:block}
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="day"]) .sd{display:none} :root:not([data-theme="day"]) .sn{display:block} }
+  .moon{display:none}
+  :root[data-theme="night"] .sun{display:none} :root[data-theme="night"] .moon{display:block}
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="day"]) .sun{display:none} :root:not([data-theme="day"]) .moon{display:block} }
+
+  *,*::before,*::after{box-sizing:border-box}
+  *{margin:0}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden;transition:background-color .3s}
+  img{display:block;max-width:100%;height:auto}
+  a{color:inherit}
+  button{font:inherit;color:inherit;cursor:pointer}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:10px}
+  .i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+  .wrap{width:min(100% - 32px,var(--wrap));margin-inline:auto}
+  .num{font-family:var(--num);font-variant-numeric:tabular-nums}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .skip{position:absolute;left:16px;top:-60px;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;z-index:100;text-decoration:none;font-weight:700}
+  .skip:focus{top:12px}
+
+  /* ── buttons ── */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 26px;border-radius:999px;border:0;font-weight:700;font-size:16px;letter-spacing:-.01em;text-decoration:none;white-space:nowrap;transition:transform .15s,background-color .2s,box-shadow .2s}
+  .btn:active{transform:scale(.98)}
+  .btn-acc{background:var(--accent);color:var(--accent-ink)}
+  .btn-acc:hover{box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 22%,transparent)}
+  .btn-ink{background:var(--ink);color:var(--bg)}
+  .btn-ink:hover{box-shadow:0 0 0 5px color-mix(in srgb,var(--ink) 14%,transparent)}
+  .btn-soft{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+  .btn-soft:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
+  .btn .i{width:18px;height:18px;transition:transform .2s}
+  .btn:hover .i{transform:translateX(3px)}
+  .btn-sm{height:40px;padding:0 18px;font-size:14.5px}
+
+  /* ── nav ── */
+  .nav{position:sticky;top:0;z-index:50;transition:background-color .25s,box-shadow .25s,backdrop-filter .25s}
+  .nav.scrolled{background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:saturate(1.4) blur(16px);-webkit-backdrop-filter:saturate(1.4) blur(16px);box-shadow:0 1px 0 var(--line)}
+  .nav-in{display:flex;align-items:center;gap:20px;height:72px}
+  .logo{display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-weight:800;font-size:21px;letter-spacing:-.04em;flex:none}
+  .logo i{font-style:normal;color:var(--pink)}
+  .links{display:flex;gap:4px;margin-left:18px}
+  .links a{text-decoration:none;font-weight:600;font-size:15px;color:var(--mute);padding:8px 12px;border-radius:999px;transition:color .15s,background-color .15s}
+  .links a:hover{color:var(--ink);background:var(--soft)}
+  .nav-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .seg{display:flex;background:var(--soft);border-radius:999px;padding:3px}
+  .seg button{border:0;background:none;height:32px;min-width:40px;padding:0 10px;border-radius:999px;font-weight:700;font-size:13px;color:var(--mute)}
+  .seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .icbtn{width:40px;height:40px;border-radius:999px;border:0;background:var(--soft);display:grid;place-items:center;color:var(--ink)}
+  .icbtn:hover{background:var(--line)}
+  .signin{text-decoration:none;font-weight:700;font-size:14.5px;padding:0 10px}
+  .menu-btn{display:none}
+  .drawer{display:none}
+  @media (max-width:960px){
+    .links,.signin{display:none}
+    .menu-btn{display:grid}
+    .drawer{position:fixed;inset:72px 0 auto;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 16px 20px;display:grid;gap:2px;transform:translateY(-8px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:49}
+    .drawer.open{opacity:1;transform:none;pointer-events:auto}
+    .drawer a{text-decoration:none;font-weight:700;font-size:18px;padding:14px 4px;border-bottom:1px solid var(--line)}
+    .drawer a:last-child{border:0}
+  }
+  @media (max-width:560px){ .nav-r .btn-sm{display:none} .nav-in{gap:10px} }
+
+  /* ── hero ── */
+  .hero{padding:56px 0 0;text-align:center;position:relative}
+  .hero::before{content:"";position:absolute;inset:-120px 0 auto;height:720px;background:radial-gradient(60% 55% at 50% 30%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%);pointer-events:none;z-index:-1}
+  .kicker{display:inline-flex;align-items:center;gap:8px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);padding:6px 14px 6px 8px;border-radius:999px;font-weight:700;font-size:13.5px;color:var(--mute)}
+  .kicker b{display:inline-grid;place-items:center;height:22px;padding:0 9px;border-radius:999px;background:var(--tint);color:var(--hint);font-size:12px;letter-spacing:.02em}
+  h1{font-size:clamp(44px,8.4vw,104px);font-weight:800;letter-spacing:-.055em;line-height:.98;margin:26px auto 0;max-width:12ch}
+  h1 em,h2 em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--hint);letter-spacing:-.02em}
+  h1 em{display:block;font-size:1.06em;line-height:1}
+  .lede{font-size:clamp(17px,2vw,20px);color:var(--mute);max-width:600px;margin:24px auto 0;line-height:1.55}
+  .ctas{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:34px}
+  .fine{margin-top:16px;font-size:14px;color:var(--faint);font-weight:600}
+  .fine span+span::before{content:"·";margin:0 8px}
+
+  .stage{position:relative;margin:64px auto 0;max-width:1060px;padding-bottom:40px}
+  .browser{border-radius:22px;background:var(--surface);box-shadow:var(--shadow),0 0 0 1px var(--line);overflow:hidden}
+  .bar{height:40px;display:flex;align-items:center;gap:7px;padding:0 16px;border-bottom:1px solid var(--line);background:var(--surface)}
+  .bar i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+  .bar span{margin:0 auto;transform:translateX(-24px);height:24px;display:inline-flex;align-items:center;gap:6px;padding:0 14px;border-radius:8px;background:var(--soft);font:600 12px var(--num);color:var(--mute)}
+  .bar span .i{width:12px;height:12px}
+  .phone{position:relative;border-radius:46px;padding:9px;background:var(--frame);box-shadow:var(--shadow),inset 0 0 0 1.5px color-mix(in srgb,#fff 10%,transparent)}
+  .phone img{border-radius:37px;width:100%;aspect-ratio:390/844;object-fit:cover;object-position:top}
+  .stage .phone{position:absolute;width:min(27%,270px);right:-3%;bottom:0}
+  .chip{position:absolute;display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:20px;padding:12px 18px 12px 12px;box-shadow:var(--shadow),0 0 0 1px var(--line);text-align:left;animation:float 7s ease-in-out infinite}
+  .chip .ic{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:var(--tint);color:var(--hint);flex:none}
+  .chip b{display:block;font-size:14.5px;letter-spacing:-.01em;line-height:1.25}
+  .chip small{display:block;font-size:12.5px;color:var(--mute);font-weight:600}
+  .chip.c1{left:-4%;top:30%}
+  .chip.c2{left:6%;bottom:6%;animation-delay:-3.5s}
+  @keyframes float{50%{transform:translateY(-8px)}}
+  @media (prefers-reduced-motion:reduce){.chip{animation:none}}
+  @media (max-width:760px){
+    .stage{margin-top:44px;padding-bottom:0}
+    .stage .browser{display:none}
+    .stage .phone{position:relative;width:min(78%,320px);right:auto;margin:0 auto}
+    .chip{transform:scale(.92)}
+    .chip.c1{left:-2px;top:3%} .chip.c2{left:auto;right:-2px;bottom:-4%}
+  }
+
+  /* ── industries ── */
+  .trades{padding:72px 0 24px;text-align:center}
+  .trades p{font-weight:700;color:var(--mute);font-size:15px}
+  .tr-row{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:22px}
+  .tr-row>span{display:inline-flex;align-items:center;gap:9px;height:44px;padding:0 18px 0 14px;border-radius:999px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);font-weight:700;font-size:14.5px}
+  .tr-row .i{color:var(--hint)}
+
+  /* ── sections ── */
+  section{scroll-margin-top:80px}
+  .sec{padding:110px 0}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font:700 12.5px var(--num);letter-spacing:.14em;text-transform:uppercase;color:var(--hint)}
+  .eyebrow .i{width:17px;height:17px}
+  h2{font-size:clamp(34px,5vw,60px);font-weight:800;letter-spacing:-.05em;line-height:1.02;margin-top:14px}
+  h2 em{font-size:1.08em}
+  .sub{font-size:clamp(16.5px,1.6vw,19px);color:var(--mute);margin-top:18px;max-width:540px}
+  .head-c{text-align:center} .head-c .sub{margin-inline:auto}
+
+  .feat{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+  .feat+.feat{margin-top:130px}
+  .feat.flip .feat-tx{order:2}
+  .feat-vis{position:relative;display:grid;place-items:center;padding:56px 24px;border-radius:40px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+  .feat-vis::before{content:"";position:absolute;inset:auto -20% -40%;height:70%;background:radial-gradient(50% 50% at 50% 50%,color-mix(in srgb,var(--accent) 18%,transparent),transparent 70%)}
+  .feat-vis .phone{width:min(76%,300px)}
+  .pts{list-style:none;padding:0;margin-top:28px;display:grid;gap:14px}
+  .pts li{display:flex;gap:12px;align-items:flex-start;font-weight:600}
+  .pts .i{width:22px;height:22px;padding:3px;border-radius:50%;background:var(--tint);color:var(--hint);stroke-width:2;margin-top:1px}
+  @media (max-width:860px){
+    .sec{padding:80px 0}
+    .feat{grid-template-columns:1fr;gap:36px}
+    .feat.flip .feat-tx{order:0}
+    .feat+.feat{margin-top:90px}
+    .feat-vis{padding:40px 16px;border-radius:32px}
+  }
+
+  /* ── bento ── */
+  .bento{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-top:56px}
+  .card{position:relative;background:var(--surface);border-radius:var(--r);box-shadow:inset 0 0 0 1px var(--line);padding:30px;overflow:hidden;display:flex;flex-direction:column}
+  .card h3{font-size:22px;font-weight:800;letter-spacing:-.035em;line-height:1.15}
+  .card p{color:var(--mute);margin-top:8px;font-size:15.5px}
+  .card .ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--tint);color:var(--hint);margin-bottom:18px}
+  .card .ic .i{width:22px;height:22px}
+  .s3{grid-column:span 3} .s2{grid-column:span 2} .s4{grid-column:span 4}
+  .card .shot{margin:28px auto -30px;width:min(82%,300px);border-radius:30px 30px 0 0;overflow:hidden;box-shadow:0 0 0 8px var(--frame),var(--shadow)}
+  .card .shot img{aspect-ratio:390/600;object-fit:cover;object-position:top;width:100%}
+  .card .shot.mid img{object-position:50% 100%}
+  .tall{min-height:100%}
+  .art{margin-top:auto}
+  .card>p{margin-bottom:26px}
+  @media (max-width:960px){ .bento{grid-template-columns:1fr 1fr} .s3,.s2,.s4{grid-column:span 1} .wide-m{grid-column:span 2} }
+  @media (max-width:640px){ .bento{grid-template-columns:1fr} .wide-m{grid-column:span 1} .card{padding:26px} }
+
+  /* little illustrations, drawn in markup */
+  .inv{background:var(--soft);border-radius:20px;padding:18px;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}
+  .inv .l b{display:block;font-size:13px;color:var(--mute);font-weight:700}
+  .inv .l strong{display:block;font:700 26px var(--num);letter-spacing:-.02em;margin-top:2px}
+  .inv .l span{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:12.5px;font-weight:700;color:var(--hint);background:var(--tint);padding:4px 10px;border-radius:999px}
+  .inv .l span .i{width:14px;height:14px;stroke-width:2}
+  .qr{width:92px;height:92px;padding:8px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px var(--line)}
+  .qr svg{width:100%;height:100%;display:block}
+  .tax{display:grid;gap:8px}
+  .tax div{display:flex;align-items:center;gap:12px;background:var(--soft);border-radius:16px;padding:12px 14px}
+  .tax b{font-size:14.5px;font-weight:700;letter-spacing:-.01em}
+  .tax small{display:block;font-size:12.5px;color:var(--mute);font-weight:600}
+  .tax em{margin-left:auto;font-style:normal;font-size:12px;font-weight:800;padding:5px 10px;border-radius:999px;background:var(--surface);color:var(--mute);white-space:nowrap}
+  .tax em.ok{background:var(--tint);color:var(--hint)}
+  .tax .d{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:var(--surface);color:var(--hint);flex:none}
+  .tax .d .i{width:18px;height:18px}
+  .steps{display:grid;gap:0;position:relative}
+  .steps div{display:flex;align-items:center;gap:12px;padding:9px 0;font-weight:700;font-size:14.5px}
+  .steps i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--soft);color:var(--mute);font:700 12px var(--num);font-style:normal;position:relative;z-index:1}
+  .steps i.on{background:var(--accent);color:var(--accent-ink)}
+  .steps i .i{width:15px;height:15px;stroke-width:2.2}
+  .steps::before{content:"";position:absolute;left:12.5px;top:20px;bottom:20px;width:1.5px;background:var(--line)}
+  .steps span.muted{color:var(--mute)}
+  .aud{display:flex;align-items:center;gap:14px;background:var(--soft);border-radius:20px;padding:16px}
+  .aud .av{width:48px;height:48px;border-radius:50%;background:var(--surface);display:grid;place-items:center;color:var(--hint);flex:none}
+  .aud b{display:block;font-size:15px;font-weight:800;letter-spacing:-.01em}
+  .aud small{display:block;color:var(--mute);font-size:13px;font-weight:600}
+  .aud em{margin-left:auto;font-style:normal;font-size:12px;font-weight:800;padding:5px 10px;border-radius:999px;background:var(--tint);color:var(--hint)}
+
+  /* ── day / night compare ── */
+  .dn{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+  .cmp{position:relative;width:min(100%,340px);margin:0 auto;border-radius:46px;padding:9px;background:var(--frame);box-shadow:var(--shadow);user-select:none;-webkit-user-select:none;touch-action:pan-y}
+  .cmp .vp{position:relative;border-radius:37px;overflow:hidden;aspect-ratio:390/844}
+  .cmp .vp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
+  .cmp .vp img.top{clip-path:inset(0 calc(100% - var(--x,50%)) 0 0)}
+  .cmp .line{position:absolute;top:0;bottom:0;left:var(--x,50%);width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.15);pointer-events:none}
+  .cmp .knob{position:absolute;top:50%;left:var(--x,50%);width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:#fff;color:#0F1514;display:grid;place-items:center;box-shadow:0 6px 20px rgba(0,0,0,.25);pointer-events:none}
+  .cmp .knob .i{width:22px;height:22px}
+  .cmp input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0}
+  .cmp input:focus-visible+.knob{outline:3px solid var(--accent);outline-offset:3px}
+  .cmp .tag{position:absolute;top:58px;font:700 11px var(--num);letter-spacing:.12em;text-transform:uppercase;padding:5px 10px;border-radius:999px;pointer-events:none}
+  .cmp .tag.l{left:22px;background:rgba(255,255,255,.9);color:#0F1514}
+  .cmp .tag.r{right:22px;background:rgba(15,21,20,.85);color:#F1F4F3}
+  @media (max-width:860px){ .dn{grid-template-columns:1fr;gap:40px} }
+
+  /* ── how it works ── */
+  .how{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:56px;counter-reset:s}
+  .how li{list-style:none;background:var(--surface);border-radius:var(--r);box-shadow:inset 0 0 0 1px var(--line);padding:30px}
+  .how .n{font:400 64px/1 var(--serif);color:var(--hint);display:block}
+  .how h3{font-size:21px;font-weight:800;letter-spacing:-.03em;margin-top:22px}
+  .how p{color:var(--mute);margin-top:8px;font-size:15.5px}
+  .how ol{padding:0}
+  @media (max-width:860px){ .how{grid-template-columns:1fr} }
+
+  /* ── trust strip ── */
+  .trust{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:64px;padding-top:40px;border-top:1px solid var(--line)}
+  .trust div{display:flex;gap:14px}
+  .trust .i{width:24px;height:24px;color:var(--hint);margin-top:2px}
+  .trust b{display:block;font-weight:800;letter-spacing:-.02em}
+  .trust p{color:var(--mute);font-size:15px;margin-top:4px}
+  @media (max-width:860px){ .trust{grid-template-columns:1fr;gap:24px} }
+
+  /* ── pricing ── */
+  .plans{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:900px;margin:56px auto 0}
+  .plan{background:var(--surface);border-radius:32px;box-shadow:inset 0 0 0 1px var(--line);padding:34px;display:flex;flex-direction:column}
+  .plan.pro{box-shadow:inset 0 0 0 2px var(--ink)}
+  .plan-h{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .plan h3{font-size:24px;font-weight:800;letter-spacing:-.035em}
+  .plan .for{color:var(--mute);font-size:15px;margin-top:4px}
+  .badge{font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px;background:var(--tint);color:var(--hint);white-space:nowrap}
+  .price{display:flex;align-items:baseline;gap:6px;margin-top:26px}
+  .price strong{font:700 52px/1 var(--num);letter-spacing:-.04em}
+  .price span{color:var(--mute);font-weight:600}
+  .tbd{display:inline-block;margin-top:8px;font-size:13px;font-weight:700;color:var(--mute);background:var(--soft);padding:4px 10px;border-radius:999px}
+  .plan ul{list-style:none;padding:0;margin:26px 0 30px;display:grid;gap:12px}
+  .plan li{display:flex;gap:11px;font-weight:600;font-size:15.5px}
+  .plan li .i{width:20px;height:20px;color:var(--hint);stroke-width:2;margin-top:2px}
+  .plan .btn{margin-top:auto;width:100%}
+  .pnote{text-align:center;color:var(--mute);font-size:14px;margin-top:24px;font-weight:600}
+  .pnote b{color:var(--ink)}
+  @media (max-width:760px){ .plans{grid-template-columns:1fr} .plan{padding:28px} }
+
+  /* ── faq ── */
+  .faq{max-width:820px;margin:48px auto 0;display:grid;gap:10px}
+  .faq details{background:var(--surface);border-radius:22px;box-shadow:inset 0 0 0 1px var(--line);transition:box-shadow .2s}
+  .faq details[open]{box-shadow:inset 0 0 0 1.5px var(--ink)}
+  .faq summary{list-style:none;display:flex;align-items:center;gap:16px;justify-content:space-between;padding:22px 24px;font-weight:800;font-size:17px;letter-spacing:-.02em;cursor:pointer}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary .i{transition:transform .25s;color:var(--mute)}
+  .faq details[open] summary .i{transform:rotate(45deg)}
+  .faq details p{padding:0 24px 22px;color:var(--mute);max-width:680px}
+
+  /* ── final cta ── */
+  .final{padding:40px 0 110px}
+  .final-in{position:relative;border-radius:44px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);padding:84px 24px;text-align:center;overflow:hidden}
+  .final-in::before{content:"";position:absolute;inset:auto 0 -60%;height:100%;background:radial-gradient(45% 55% at 50% 50%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 70%)}
+  .final-in>*{position:relative}
+  .final .tg{margin:0 auto 22px;display:block;animation:bob 5s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(-6px) rotate(-3deg)}}
+  @media (prefers-reduced-motion:reduce){.final .tg{animation:none}}
+  .final h2{max-width:14ch;margin-inline:auto}
+
+  /* ── footer ── */
+  footer{border-top:1px solid var(--line);padding:56px 0 40px}
+  .ft{display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px}
+  .ft p{color:var(--mute);font-size:14.5px;margin-top:14px;max-width:380px}
+  .ft h4{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+  .ft ul{list-style:none;padding:0;margin-top:14px;display:grid;gap:10px}
+  .ft ul a{text-decoration:none;font-weight:600;font-size:15px}
+  .ft ul a:hover{color:var(--hint)}
+  .fb{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:48px;padding-top:24px;border-top:1px solid var(--line);color:var(--faint);font-size:13.5px;font-weight:600}
+  @media (max-width:760px){ .ft{grid-template-columns:1fr 1fr} .ft>div:first-child{grid-column:span 2} }
+
+  /* ── reveal on scroll ── */
+  .rv{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+  .rv.in{opacity:1;transform:none}
+  .no-js .rv{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+  /* Thai needs a little more room */
+  html[lang="th"] h1{line-height:1.12;letter-spacing:-.03em;max-width:13ch}
+  html[lang="th"] h2{line-height:1.18;letter-spacing:-.025em}
+  html[lang="th"] h1 em,html[lang="th"] h2 em{font-style:normal;font-weight:600;font-size:1em}
+  html[lang="th"] .card h3,html[lang="th"] .how h3,html[lang="th"] .plan h3{letter-spacing:-.01em;line-height:1.3}
+  html[lang="th"] body{line-height:1.7}
+  html[lang="th"] .eyebrow{letter-spacing:.02em;font-size:14px}
+</style>
+</head>
+<body class="no-js">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+    <linearGradient id="g-hair" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBB6CE"/><stop offset="100%" stop-color="#EC4899"/></linearGradient>
+    <linearGradient id="g-band" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0FBFB6"/><stop offset="100%" stop-color="#0AA39B"/></linearGradient>
+    <radialGradient id="g-eye" cx="0.4" cy="0.3"><stop offset="0%" stop-color="#A7F3D0"/><stop offset="55%" stop-color="#0FBFB6"/><stop offset="100%" stop-color="#0D9488"/></radialGradient>
+  </defs>
+<symbol id="tg" viewBox="6 3 52 54">
+    <path d="M9 36 C 9 17, 19 6, 32 6 C 45 6, 55 17, 55 36 C 55 44, 54 50, 51.5 53 C 50 54.8, 47 54.5, 47 51.5 L 47 41.5 L 17 41.5 L 17 51.5 C 17 54.5, 14 54.8, 12.5 53 C 10 50, 9 44, 9 36 Z" fill="url(#g-hair)" stroke="#0A0A0A" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M11 27.5 C 14 18, 22.5 13.5, 32 13.5 C 41.5 13.5, 50 18, 53 27.5 C 53.35 28.75, 52.6 30, 51 30 L 13 30 C 11.4 30, 10.65 28.75, 11 27.5 Z" fill="url(#g-band)" stroke="#0A0A0A" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M17 35 C 17 31.2, 19.2 29.8, 22.6 29.8 L 41.4 29.8 C 44.8 29.8, 47 31.2, 47 35 L 47 43 C 47 49.8, 40.8 54, 32 54 C 23.2 54, 17 49.8, 17 43 Z" fill="#FFE4CC" stroke="#0A0A0A" stroke-width="2" stroke-linejoin="round"/>
+    <g class="tg-eye"><ellipse cx="26" cy="40" rx="3.4" ry="4.2" fill="#0A0A0A"/><ellipse cx="26" cy="40" rx="2.6" ry="3.4" fill="url(#g-eye)"/><circle cx="27.2" cy="38.6" r="1.3" fill="#fff"/></g>
+    <g class="tg-eye"><ellipse cx="38" cy="40" rx="3.4" ry="4.2" fill="#0A0A0A"/><ellipse cx="38" cy="40" rx="2.6" ry="3.4" fill="url(#g-eye)"/><circle cx="39.2" cy="38.6" r="1.3" fill="#fff"/></g>
+    <circle cx="22.5" cy="46" r="1.6" fill="#FBB6CE"/><circle cx="41.5" cy="46" r="1.6" fill="#FBB6CE"/>
+    <path d="M29 48 Q 32 51 35 48" stroke="#0A0A0A" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <circle cx="47" cy="37.5" r="2.2" fill="#0FBFB6" stroke="#0A0A0A" stroke-width="1.6"/>
+  </symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M12 15V4.5m-4 4 4-4 4 4"/><path d="M4.5 14.5v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3"/></symbol>
+<symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3.5H8a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-11z"/><path d="M14 3.5v4h4M9.5 12.5h5m-5 3.5h3"/></symbol>
+<symbol id="i-pay" viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 14.5h3"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-11.2 6.5L4.5 19.5l1.4-4A7.5 7.5 0 1 1 20 11.5z"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="10.5" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="m5.5 12.5 4.2 4.2L18.5 8"/></symbol>
+<symbol id="i-news" viewBox="0 0 24 24"><path d="M7.5 4.5h12v13a2 2 0 0 1-2 2h-12"/><path d="M7.5 4.5v13a2 2 0 0 1-4 0v-8h4"/><path d="M10.5 8.5h6V12h-6zM10.5 15.5h6"/></symbol>
+<symbol id="i-t-rest" viewBox="0 0 24 24"><path d="M5 3.5v5a2.5 2.5 0 0 0 5 0v-5M7.5 3.5v17M16.5 20.5v-17c-2.2 1.2-3.2 3.8-3.2 7.5h3.2"/></symbol>
+<symbol id="i-t-shop" viewBox="0 0 24 24"><path d="M4 9.5 5.5 4.5h13L20 9.5M5 12v7.5h14V12M10 19.5v-4.5h4v4.5"/><path d="M4 9.5a2.67 2.67 0 0 0 5.33 0 2.67 2.67 0 0 0 5.34 0 2.67 2.67 0 0 0 5.33 0"/></symbol>
+<symbol id="i-t-online" viewBox="0 0 24 24"><path d="M3.5 4.5h2.3L8 15h9.6l1.9-7.5H6.5"/><circle cx="9.5" cy="19" r="1.1"/><circle cx="16.5" cy="19" r="1.1"/></symbol>
+<symbol id="i-t-cafe" viewBox="0 0 24 24"><path d="M5 9.5h11v5a4.5 4.5 0 0 1-4.5 4.5h-2A4.5 4.5 0 0 1 5 14.5zM16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8.5 3.5V6m3.5-2.5V6"/></symbol>
+<symbol id="i-t-beauty" viewBox="0 0 24 24"><circle cx="6.5" cy="7" r="2.5"/><circle cx="6.5" cy="17" r="2.5"/><path d="M8.6 8.5 20 17.5M8.6 15.5 20 6.5"/></symbol>
+<symbol id="i-t-serv" viewBox="0 0 24 24"><rect x="3.5" y="7.5" width="17" height="12" rx="2.5"/><path d="M9 7.5v-2A1.5 1.5 0 0 1 10.500 4h3A1.5 1.5 0 0 1 15 5.5v2M3.5 13h17"/></symbol>
+<symbol id="i-t-mfg" viewBox="0 0 24 24"><path d="M3.5 19.500V11L9 14v-3l5.500 3V5.500H19v14z"/><path d="M7 16.500h2m3 0h2"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2.5"/><path d="M8.5 10.500v-3a3.500 3.500 0 0 1 7 0v3"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M5 19.5v-7m7 7v-15m7 15v-10"/></symbol>
+<symbol id="i-receipt" viewBox="0 0 24 24"><path d="M6.5 3.5h11v17l-2.75-1.6L12 20.5l-2.75-1.6L6.5 20.5z"/><path d="M9.5 8.5h5m-5 3.5h5"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2m0 15v2M4.6 4.6l1.4 1.4m12 12 1.4 1.4M2.5 12h2m15 0h2M4.6 19.4 6 18m12-12 1.4-1.4"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4.5 8h15M4.5 16h15"/></symbol>
+<symbol id="i-building" viewBox="0 0 24 24"><path d="M4.5 20.5h15M6.5 20.5V5.5a1.5 1.5 0 0 1 1.5-1.5h8a1.5 1.5 0 0 1 1.5 1.5v15"/><path d="M10 8h1m3 0h-1m-3 3.5h1m3 0h-1m-3 3.5h1m3 0h-1M10.5 20.5v-2.5h3v2.5"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3.5 5 6v5.5c0 4.300 3 7.600 7 9 4-1.400 7-4.700 7-9V6z"/><path d="m9 12 2.200 2.200L15.500 10"/></symbol>
+<symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-3.600 3.600-5.500 7-5.500s6.200 1.900 7 5.500"/></symbol>
+<symbol id="i-drag" viewBox="0 0 24 24"><path d="m9 7-5 5 5 5m6-10 5 5-5 5"/></symbol>
+<symbol id="i-flag" viewBox="0 0 24 24"><path d="M5.5 20.5v-16m0 0h11l-2 4 2 4h-11"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.300 2.400 3.500 5.200 3.500 8.500s-1.200 6.100-3.500 8.500c-2.300-2.400-3.500-5.200-3.500-8.500S9.700 5.900 12 3.500z"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.500"/><path d="M10.5 18.500h3"/></symbol>
+</svg>
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+
+<header class="nav" id="nav">
+  <div class="wrap nav-in">
+    <a class="logo" href="#top" aria-label="ThuraGirl home"><svg class="tg" width="32" height="33" aria-hidden="true"><use href="#tg"/></svg><span>thuragirl<i>.</i></span></a>
+    <nav class="links" aria-label="Main">
+      <a href="#features" data-i18n="n.f">Features</a>
+      <a href="#how" data-i18n="n.h">How it works</a>
+      <a href="#pricing" data-i18n="n.p">Pricing</a>
+      <a href="#faq" data-i18n="n.q">FAQ</a>
+    </nav>
+    <div class="nav-r">
+      <div class="seg" role="group" aria-label="Language">
+        <button type="button" id="l-en" aria-pressed="true">EN</button>
+        <button type="button" id="l-th" aria-pressed="false" lang="th">ไทย</button>
+      </div>
+      <button type="button" class="icbtn" id="theme" aria-label="Switch day or night mode" title="Day or night">
+        <svg class="i sun" aria-hidden="true"><use href="#i-sun"/></svg><svg class="i moon" aria-hidden="true"><use href="#i-moon"/></svg>
+      </button>
+      <a class="signin" href="../signup/#/login" data-i18n="n.in">Sign in</a>
+      <a class="btn btn-ink btn-sm" href="../signup/" data-i18n="n.cta">Get started</a>
+      <button type="button" class="icbtn menu-btn" id="menu" aria-label="Menu" aria-expanded="false" aria-controls="drawer"><svg class="i" aria-hidden="true"><use href="#i-menu"/></svg></button>
+    </div>
+  </div>
+  <div class="drawer" id="drawer">
+    <a href="#features" data-i18n="n.f">Features</a>
+    <a href="#how" data-i18n="n.h">How it works</a>
+    <a href="#pricing" data-i18n="n.p">Pricing</a>
+    <a href="#faq" data-i18n="n.q">FAQ</a>
+    <a href="../signup/#/login" data-i18n="n.in">Sign in</a>
+    <a href="../signup/" data-i18n="n.cta">Get started</a>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" id="top">
+    <div class="wrap">
+      <span class="kicker rv"><b data-i18n="h.new">NEW</b><span data-i18n="h.kicker">The AI bookkeeper for Thai small business</span></span>
+      <h1 class="rv" data-i18n="h.t">Your books, done. <em>You just say yes.</em></h1>
+      <p class="lede rv" data-i18n="h.sub">ThuraGirl reads your bank statements, keeps your books and gets your taxes ready. Each morning she tells you what needs you, and nothing else.</p>
+      <div class="ctas rv">
+        <a class="btn btn-acc" href="../signup/"><span data-i18n="h.cta1">Get started</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn-soft" href="#how" data-i18n="h.cta2">See how it works</a>
+      </div>
+      <p class="fine rv"><span data-i18n="h.f1">Sign up in under a minute</span><span data-i18n="h.f2">Phone or computer</span></p>
+
+      <div class="stage rv">
+        <div class="browser">
+          <div class="bar" aria-hidden="true"><i></i><i></i><i></i><span><svg class="i"><use href="#i-lock"/></svg>thuragirl</span></div>
+          <img class="sd" src="img/home-desk-day.webp" width="1600" height="1000" alt="The ThuraGirl home screen on a computer: cash on hand, a 30-day cash line, and this month's revenue, expenses and profit." fetchpriority="high">
+          <img class="sn" src="img/home-desk-night.webp" width="1600" height="1000" alt="The ThuraGirl home screen on a computer, in night mode." loading="lazy">
+        </div>
+        <div class="phone">
+          <img class="sd" src="img/money-phone-day.webp" width="780" height="1688" alt="Money on a phone: profit this month and money in and out by week.">
+          <img class="sn" src="img/money-phone-night.webp" width="780" height="1688" alt="Money on a phone, in night mode." loading="lazy">
+        </div>
+        <div class="chip c1" aria-hidden="true"><span class="ic"><svg class="i"><use href="#i-check"/></svg></span><div><b data-i18n="c1.b">607 bank lines sorted</b><small data-i18n="c1.s">Done for you overnight</small></div></div>
+        <div class="chip c2" aria-hidden="true"><span class="ic"><svg class="i"><use href="#i-receipt"/></svg></span><div><b data-i18n="c2.b">VAT return ready</b><small data-i18n="c2.s">Waiting for your yes</small></div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="trades wrap rv">
+    <p data-i18n="t.h">Made for the businesses that keep Thailand running</p>
+    <div class="tr-row">
+      <span><svg class="i" aria-hidden="true"><use href="#i-t-rest"/></svg><span data-i18n="t.1">Restaurants</span></span>
+      <span><svg class="i" aria-hidden="true"><use href="#i-t-cafe"/></svg><span data-i18n="t.2">Cafés and bakeries</span></span>
+      <span><svg class="i" aria-hidden="true"><use href="#i-t-shop"/></svg><span data-i18n="t.3">Shops</span></span>
+      <span><svg class="i" aria-hidden="true"><use href="#i-t-online"/></svg><span data-i18n="t.4">Online sellers</span></span>
+      <span><svg class="i" aria-hidden="true"><use href="#i-t-beauty"/></svg><span data-i18n="t.5">Salons</span></span>
+      <span><svg class="i" aria-hidden="true"><use href="#i-t-serv"/></svg><span data-i18n="t.6">Agencies and services</span></span>
+      <span><svg class="i" aria-hidden="true"><use href="#i-t-mfg"/></svg><span data-i18n="t.7">Makers</span></span>
+    </div>
+  </div>
+
+  <section class="sec" id="features">
+    <div class="wrap">
+      <div class="feat">
+        <div class="feat-tx rv">
+          <span class="eyebrow"><svg class="i" aria-hidden="true"><use href="#i-chart"/></svg><span data-i18n="f1.k">Home</span></span>
+          <h2 data-i18n="f1.h">Every baht, <em>at a glance.</em></h2>
+          <p class="sub" data-i18n="f1.p">Cash on hand, the last 30 days as one clean line, and this month's revenue, expenses and profit. Upload a bank statement and it all fills itself in.</p>
+          <ul class="pts">
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f1.1">Statements from any Thai bank, as CSV or Excel</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f1.2">Upload, invoice and pay from the same screen</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f1.3">A short list of what needs you, and nothing else</span></li>
+          </ul>
+        </div>
+        <div class="feat-vis rv">
+          <div class="phone">
+            <img class="sd" src="img/home-phone-day.webp" width="780" height="1688" alt="Home on a phone: cash on hand of 2,591,140 baht, up 19 percent this month." loading="lazy">
+            <img class="sn" src="img/home-phone-night.webp" width="780" height="1688" alt="Home on a phone, in night mode." loading="lazy">
+          </div>
+        </div>
+      </div>
+
+      <div class="feat flip">
+        <div class="feat-tx rv">
+          <span class="eyebrow"><svg class="i" aria-hidden="true"><use href="#i-news"/></svg><span data-i18n="f2.k">Morning Brief</span></span>
+          <h2 data-i18n="f2.h">A morning paper about <em>your</em> business.</h2>
+          <p class="sub" data-i18n="f2.p">Each morning ThuraGirl writes you a one-minute front page: how your cash moved, what needs your yes, and what she already took care of.</p>
+          <ul class="pts">
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f2.1">Tasks written as short stories, with one clear button each</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f2.2">Late invoices come with a polite reminder ready to send</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f2.3">What can wait stays out of your way</span></li>
+          </ul>
+        </div>
+        <div class="feat-vis rv">
+          <div class="phone">
+            <img class="sd" src="img/brief-phone-day.webp" width="780" height="1688" alt="The Morning Brief headline: Cash is up 19 percent. Three things need your yes." loading="lazy">
+            <img class="sn" src="img/brief-phone-night.webp" width="780" height="1688" alt="The Morning Brief, in night mode." loading="lazy">
+          </div>
+        </div>
+      </div>
+
+      <div class="feat">
+        <div class="feat-tx rv">
+          <span class="eyebrow"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f3.k">Month-end</span></span>
+          <h2 data-i18n="f3.h">Close the month <em>in one tick.</em></h2>
+          <p class="sub" data-i18n="f3.p">When a month ends, it lands on one page: money in, money out, profit, tax to set aside and anything still missing. Look it over, tick the box, approve.</p>
+          <ul class="pts">
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f3.1">No sub-tabs, no jargon, no spreadsheets</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f3.2">Not sure about a number? Ask ThuraGirl right there</span></li>
+          </ul>
+        </div>
+        <div class="feat-vis rv">
+          <div class="phone">
+            <img class="sd" src="img/review-phone-day.webp" width="780" height="1688" alt="The monthly Review Pack: October on one page, with money in, money out, profit and an Approve button." loading="lazy">
+            <img class="sn" src="img/review-phone-night.webp" width="780" height="1688" alt="The monthly Review Pack, in night mode." loading="lazy">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" style="padding-top:0" aria-labelledby="more-h">
+    <div class="wrap">
+      <div class="head-c rv">
+        <span class="eyebrow" data-i18n="b.k">Everything else</span>
+        <h2 id="more-h" data-i18n="b.h">The whole back office, <em>handled.</em></h2>
+        <p class="sub" data-i18n="b.sub">Everything you used to chase an accounting firm for, in one calm app.</p>
+      </div>
+      <div class="bento">
+        <article class="card s3 wide-m rv">
+          <span class="ic"><svg class="i" aria-hidden="true"><use href="#i-mic"/></svg></span>
+          <h3 data-i18n="b1.h">Ask like you'd ask a colleague.</h3>
+          <p data-i18n="b1.p">“What's overdue?” “Where did the money go?” Type it or say it, and get a straight answer from your own books.</p>
+          <div class="shot mid"><img class="sd" src="img/chat-phone-day.webp" width="780" height="1688" alt="ThuraGirl answering “What's overdue?” with three late items and amounts." loading="lazy"><img class="sn" src="img/chat-phone-night.webp" width="780" height="1688" alt="ThuraGirl chat answer, in night mode." loading="lazy"></div>
+        </article>
+        <article class="card s3 wide-m rv">
+          <span class="ic"><svg class="i" aria-hidden="true"><use href="#i-chart"/></svg></span>
+          <h3 data-i18n="b2.h">See where it comes from, and where it goes.</h3>
+          <p data-i18n="b2.p">Money in and out by month, quarter or year. Who owes you, and who you owe.</p>
+          <div class="shot"><img class="sd" src="img/money-phone-day.webp" width="780" height="1688" alt="Money: profit this month and a bar chart of money in and out by week." loading="lazy"><img class="sn" src="img/money-phone-night.webp" width="780" height="1688" alt="Money, in night mode." loading="lazy"></div>
+        </article>
+        <article class="card s2 rv">
+          <span class="ic"><svg class="i" aria-hidden="true"><use href="#i-doc"/></svg></span>
+          <h3 data-i18n="b3.h">Invoices out. Bills paid.</h3>
+          <p data-i18n="b3.p">Send an invoice in seconds. Pay suppliers with a PromptPay QR.</p>
+          <div class="art" aria-hidden="true">
+            <div class="inv">
+              <div class="l"><b data-i18n="b3.a">Invoice INV-041</b><strong class="num">฿48,500</strong><span><svg class="i"><use href="#i-check"/></svg><span data-i18n="b3.b">Paid</span></span></div>
+              <div class="qr"><svg viewBox="0 0 21 21" shape-rendering="crispEdges"><path fill="#0F1514" d="M0 0h7v7H0zM14 0h7v7h-7zM0 14h7v7H0z"/><path fill="#fff" d="M1 1h5v5H1zM15 1h5v5h-5zM1 15h5v5H1z"/><path fill="#0F1514" d="M2 2h3v3H2zM16 2h3v3h-3zM2 16h3v3H2zM8 0h1v2H8zM10 1h2v1h-2zM9 3h2v2H9zM12 4h1v3h-1zM8 6h2v2H8zM0 8h2v1H0zM3 8h3v1H3zM2 10h2v2H2zM5 10h2v1H5zM8 9h1v3H8zM10 8h3v1h-3zM11 10h2v2h-2zM14 8h2v2h-2zM17 8h4v1h-4zM15 11h3v1h-3zM19 10h2v3h-2zM9 13h2v1H9zM8 15h3v1H8zM12 13h1v4h-1zM14 14h2v2h-2zM17 13h1v2h-1zM8 18h2v3H8zM11 19h3v1h-3zM15 17h2v2h-2zM18 16h3v1h-3zM19 18h2v3h-2zM16 20h2v1h-2z"/></svg></div>
+            </div>
+          </div>
+        </article>
+        <article class="card s2 rv">
+          <span class="ic"><svg class="i" aria-hidden="true"><use href="#i-receipt"/></svg></span>
+          <h3 data-i18n="b4.h">Tax deadlines, never missed.</h3>
+          <p data-i18n="b4.p">VAT, withholding tax and social security prepared every month. Nothing is filed until you approve.</p>
+          <div class="art tax" aria-hidden="true">
+            <div><span class="d"><svg class="i"><use href="#i-doc"/></svg></span><span><b>ภ.พ.30</b><small data-i18n="b4.a">VAT return</small></span><em class="ok" data-i18n="b4.ok">Ready</em></div>
+            <div><span class="d"><svg class="i"><use href="#i-doc"/></svg></span><span><b>ภ.ง.ด.53</b><small data-i18n="b4.b">Withholding tax</small></span><em class="ok" data-i18n="b4.ok2">Ready</em></div>
+            <div><span class="d"><svg class="i"><use href="#i-doc"/></svg></span><span><b>สปส.1-10</b><small data-i18n="b4.c">Social security</small></span><em data-i18n="b4.wait">Next week</em></div>
+          </div>
+        </article>
+        <article class="card s2 wide-m rv">
+          <span class="ic"><svg class="i" aria-hidden="true"><use href="#i-building"/></svg></span>
+          <h3 data-i18n="b5.h">No company yet? Start one here.</h3>
+          <p data-i18n="b5.p">Reserve a name, prepare the papers and file with DBD. Your books open the day you're registered.</p>
+          <div class="art steps" aria-hidden="true">
+            <div><i class="on"><svg class="i"><use href="#i-check"/></svg></i><span data-i18n="b5.1">Company name reserved</span></div>
+            <div><i class="on"><svg class="i"><use href="#i-check"/></svg></i><span data-i18n="b5.2">Memorandum drafted</span></div>
+            <div><i>3</i><span class="muted" data-i18n="b5.3">Filed with DBD</span></div>
+          </div>
+        </article>
+        <article class="card s4 wide-m rv">
+          <span class="ic"><svg class="i" aria-hidden="true"><use href="#i-shield"/></svg></span>
+          <h3 data-i18n="b6.h">A licensed auditor, arranged for you.</h3>
+          <p data-i18n="b6.p">For the yearly close, ThuraGirl assigns a licensed auditor to your company. Nothing to find, nothing to chase.</p>
+          <div class="art aud" aria-hidden="true">
+            <span class="av"><svg class="i"><use href="#i-person"/></svg></span>
+            <span><b data-i18n="b6.a">Your auditor is assigned</b><small data-i18n="b6.b">Year-end close · FY2026</small></span>
+            <em data-i18n="b6.c">Handled</em>
+          </div>
+        </article>
+        <article class="card s2 wide-m rv">
+          <span class="ic"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg></span>
+          <h3 data-i18n="b7.h">You stay in charge.</h3>
+          <p data-i18n="b7.p">ThuraGirl prepares, you decide. Every filing and every month-end waits for your yes.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" style="padding-top:20px" aria-labelledby="dn-h">
+    <div class="wrap dn">
+      <div class="rv">
+        <span class="eyebrow"><svg class="i" aria-hidden="true"><use href="#i-moon"/></svg><span data-i18n="d.k">Day and night</span></span>
+        <h2 id="dn-h" data-i18n="d.h">Easy on the eyes, <em>day or night.</em></h2>
+        <p class="sub" data-i18n="d.p">Quiet greys, one teal accent and clear numbers. ThuraGirl follows your phone's light or dark setting, so late-night checks don't glare.</p>
+        <p class="sub" style="font-weight:700;color:var(--ink);font-size:15px" data-i18n="d.try">Drag the handle to compare.</p>
+      </div>
+      <div class="rv">
+        <div class="cmp" id="cmp">
+          <div class="vp">
+            <img src="img/home-phone-night.webp" width="780" height="1688" alt="Home in night mode." loading="lazy">
+            <img class="top" src="img/home-phone-day.webp" width="780" height="1688" alt="Home in day mode." loading="lazy">
+            <span class="tag l" data-i18n="d.day">Day</span><span class="tag r" data-i18n="d.night">Night</span>
+            <span class="line"></span>
+          </div>
+          <input type="range" min="0" max="100" value="50" aria-label="Compare day and night mode" id="cmp-r">
+          <span class="knob"><svg class="i" aria-hidden="true"><use href="#i-drag"/></svg></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="how" style="padding-top:40px">
+    <div class="wrap">
+      <div class="head-c rv">
+        <span class="eyebrow" data-i18n="w.k">How it works</span>
+        <h2 data-i18n="w.h">Up and running <em>before your coffee cools.</em></h2>
+        <p class="sub" data-i18n="w.sub">No migration project, no training, no meetings.</p>
+      </div>
+      <ol class="how">
+        <li class="rv"><span class="n">1</span><h3 data-i18n="w1.h">Create your account</h3><p data-i18n="w1.p">Your name, email and a password. That's it.</p></li>
+        <li class="rv"><span class="n">2</span><h3 data-i18n="w2.h">Add your company</h3><p data-i18n="w2.p">Enter your 13-digit tax ID and ThuraGirl pulls your records from DBD for you to confirm. No company yet? Register one in the app.</p></li>
+        <li class="rv"><span class="n">3</span><h3 data-i18n="w3.h">Upload a statement</h3><p data-i18n="w3.p">Drop in a bank statement and your dashboard builds itself. From then on, ThuraGirl keeps the books.</p></li>
+      </ol>
+      <div class="trust rv">
+        <div><svg class="i" aria-hidden="true"><use href="#i-flag"/></svg><div><b data-i18n="tr1.h">Built for Thai rules</b><p data-i18n="tr1.p">VAT, withholding tax, social security and DBD filings, in the forms Thai offices expect.</p></div></div>
+        <div><svg class="i" aria-hidden="true"><use href="#i-globe"/></svg><div><b data-i18n="tr2.h">Thai and English</b><p data-i18n="tr2.p">Read this page in either language. Thai is coming to the app next.</p></div></div>
+        <div><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg><div><b data-i18n="tr3.h">Phone or computer</b><p data-i18n="tr3.p">Nothing to install. Open it in your browser and pick up where you left off.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="pricing" style="padding-top:40px">
+    <div class="wrap">
+      <div class="head-c rv">
+        <span class="eyebrow" data-i18n="p.k">Pricing</span>
+        <h2 data-i18n="p.h">Two plans. <em>No surprises.</em></h2>
+        <p class="sub" data-i18n="p.sub">One monthly price, less than an accounting firm, and no three-day wait for answers.</p>
+      </div>
+      <div class="plans">
+        <div class="plan rv">
+          <div class="plan-h"><h3 data-i18n="p1.h">Standard</h3></div>
+          <p class="for" data-i18n="p1.for">For owner-run businesses</p>
+          <div class="price"><strong class="num">฿ —</strong><span data-i18n="p.mo">/ month</span></div>
+          <span class="tbd" data-i18n="p.tbd">Price announced at launch</span>
+          <ul>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="p1.1">Books kept from your bank statements</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="p1.2">Home, Money and the Morning Brief</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="p1.3">Invoices, and bills paid by PromptPay QR</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="p1.4">VAT, withholding tax and social security prepared monthly</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="p1.5">Unlimited questions in chat</span></li>
+          </ul>
+          <a class="btn btn-soft" href="../signup/" data-i18n="p1.cta">Start with Standard</a>
+        </div>
+        <div class="plan pro rv">
+          <div class="plan-h"><h3 data-i18n="p2.h">Pro</h3><span class="badge" data-i18n="p2.tag">Most complete</span></div>
+          <p class="for" data-i18n="p2.for">For growing teams and several companies</p>
+          <div class="price"><strong class="num">฿ —</strong><span data-i18n="p.mo2">/ month</span></div>
+          <span class="tbd" data-i18n="p.tbd2">Price announced at launch</span>
+          <ul>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="p2.1">Everything in Standard</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="p2.2">Monthly filings submitted for you</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="p2.3">Year-end close with a licensed auditor</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="p2.4">Several companies under one sign-in</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="p2.5">Payroll</span></li>
+          </ul>
+          <a class="btn btn-ink" href="../signup/" data-i18n="p2.cta">Go Pro</a>
+        </div>
+      </div>
+      <p class="pnote rv" data-i18n="p.note">New company registration with DBD is available on both plans. Prices and plan details are placeholders until launch. Payments are handled securely by <b>Beam</b>.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="faq" style="padding-top:40px">
+    <div class="wrap">
+      <div class="head-c rv">
+        <span class="eyebrow" data-i18n="q.k">FAQ</span>
+        <h2 data-i18n="q.h">Questions, <em>answered.</em></h2>
+      </div>
+      <div class="faq">
+        <details class="rv"><summary><span data-i18n="q1.q">How is this different from an accounting firm?</span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><p data-i18n="q1.a">The same monthly work, but you see your numbers every day instead of weeks later, and answers take seconds instead of days. Work the law says needs a licensed auditor is done by one, arranged by ThuraGirl.</p></details>
+        <details class="rv"><summary><span data-i18n="q2.q">I already have a company. Can I use it?</span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><p data-i18n="q2.a">Yes. Enter your 13-digit tax ID when you sign up. ThuraGirl pulls your company's records from DBD and you confirm them.</p></details>
+        <details class="rv"><summary><span data-i18n="q3.q">What do I need to register a new company?</span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><p data-i18n="q3.a">Three name choices, details of the founders and shareholders, a registered address and your capital. You fill it in inside the app, and ThuraGirl prepares the documents.</p></details>
+        <details class="rv"><summary><span data-i18n="q4.q">Which banks work?</span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><p data-i18n="q4.a">Any Thai bank that lets you download a statement as a CSV or Excel file. Download it from your bank's app or website and upload it to ThuraGirl.</p></details>
+        <details class="rv"><summary><span data-i18n="q5.q">Does anything get filed without me?</span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><p data-i18n="q5.a">No. ThuraGirl prepares each filing and each month-end, and waits for you to approve it.</p></details>
+        <details class="rv"><summary><span data-i18n="q6.q">Is there a mobile app?</span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><p data-i18n="q6.a">ThuraGirl works in the browser on any phone or computer, in day or night mode. Native iPhone and Android apps are planned.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <div class="final-in rv">
+        <svg class="tg" width="76" height="79" aria-hidden="true"><use href="#tg"/></svg>
+        <h2 data-i18n="c.h">Hand the books <em>to ThuraGirl.</em></h2>
+        <p class="sub" style="margin-inline:auto" data-i18n="c.p">Sign up in under a minute and see your money the same day.</p>
+        <div class="ctas">
+          <a class="btn btn-acc" href="../signup/"><span data-i18n="c.cta">Get started</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          <a class="btn btn-soft" href="../signup/#/login" data-i18n="c.in">Sign in</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="ft">
+      <div>
+        <a class="logo" href="#top"><svg class="tg" width="30" height="31" aria-hidden="true"><use href="#tg"/></svg><span>thuragirl<i>.</i></span></a>
+        <p data-i18n="ft.about">The AI bookkeeper for small businesses in Thailand. Bookkeeping, VAT, withholding tax, social security and company registration with DBD, in one place.</p>
+      </div>
+      <div>
+        <h4 data-i18n="ft.p">Product</h4>
+        <ul><li><a href="#features" data-i18n="n.f">Features</a></li><li><a href="#how" data-i18n="n.h">How it works</a></li><li><a href="#pricing" data-i18n="n.p">Pricing</a></li><li><a href="#faq" data-i18n="n.q">FAQ</a></li></ul>
+      </div>
+      <div>
+        <h4 data-i18n="ft.a">Account</h4>
+        <ul><li><a href="../signup/" data-i18n="ft.su">Sign up</a></li><li><a href="../signup/#/login" data-i18n="n.in">Sign in</a></li><li><a href="../dashboard/" data-i18n="ft.app">Open the app</a></li></ul>
+      </div>
+    </div>
+    <div class="fb"><span>© 2026 ThuraGirl</span><span data-i18n="ft.note">Product screens show sample data.</span><span data-i18n="ft.made">Made in Bangkok</span></div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  document.body.classList.remove("no-js");
+  var $ = function(s){ return document.querySelector(s); }, $$ = function(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); };
+  function store(k, v){ try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+
+  /* theme */
+  var root = document.documentElement, mq = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
+  function isNight(){ var t = root.getAttribute("data-theme"); return t ? t === "night" : !!(mq && mq.matches); }
+  $("#theme").addEventListener("click", function(){ var t = isNight() ? "day" : "night"; root.setAttribute("data-theme", t); store("tg.web.theme", t); });
+
+  /* nav shadow + mobile menu */
+  var nav = $("#nav"), onScroll = function(){ nav.classList.toggle("scrolled", window.scrollY > 8); };
+  window.addEventListener("scroll", onScroll, { passive: true }); onScroll();
+  var menu = $("#menu"), drawer = $("#drawer");
+  function setMenu(o){ drawer.classList.toggle("open", o); menu.setAttribute("aria-expanded", String(o)); }
+  menu.addEventListener("click", function(){ setMenu(!drawer.classList.contains("open")); });
+  $$("#drawer a").forEach(function(a){ a.addEventListener("click", function(){ setMenu(false); }); });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape") setMenu(false); });
+
+  /* reveal on scroll */
+  if ("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } }); }, { rootMargin: "0px 0px -8% 0px", threshold: .08 });
+    $$(".rv").forEach(function(el){ io.observe(el); });
+  } else $$(".rv").forEach(function(el){ el.classList.add("in"); });
+
+  /* day / night compare */
+  var cmp = $("#cmp"), rng = $("#cmp-r");
+  function setX(){ cmp.style.setProperty("--x", rng.value + "%"); }
+  rng.addEventListener("input", setX); setX();
+
+  /* language */
+  var TH = {
+    "skip":"ข้ามไปยังเนื้อหา",
+    "n.f":"ฟีเจอร์","n.h":"วิธีใช้งาน","n.p":"ราคา","n.q":"คำถาม","n.in":"เข้าสู่ระบบ","n.cta":"เริ่มใช้เลย",
+    "h.new":"ใหม่","h.kicker":"นักบัญชี AI สำหรับธุรกิจไทย",
+    "h.t":"บัญชีเสร็จเรียบร้อย <em>คุณแค่กดยืนยัน</em>",
+    "h.sub":"ThuraGirl อ่านรายการเดินบัญชีธนาคาร ทำบัญชี และเตรียมภาษีให้ ทุกเช้าหนูจะบอกว่ามีอะไรรอคุณอยู่ แค่นั้นจริง ๆ",
+    "h.cta1":"เริ่มใช้เลย","h.cta2":"ดูวิธีใช้งาน","h.f1":"สมัครได้ในไม่ถึงนาที","h.f2":"ใช้ได้ทั้งมือถือและคอมพิวเตอร์",
+    "c1.b":"จัดหมวด 607 รายการแล้ว","c1.s":"ทำให้เสร็จตั้งแต่เมื่อคืน","c2.b":"แบบ VAT พร้อมยื่น","c2.s":"รอคุณกดอนุมัติ",
+    "t.h":"สร้างมาเพื่อธุรกิจที่ขับเคลื่อนเมืองไทย",
+    "t.1":"ร้านอาหาร","t.2":"คาเฟ่และเบเกอรี่","t.3":"ร้านค้า","t.4":"ร้านค้าออนไลน์","t.5":"ซาลอน","t.6":"เอเจนซี่และงานบริการ","t.7":"ผู้ผลิต",
+    "f1.k":"หน้าหลัก","f1.h":"ทุกบาท <em>เห็นในแวบเดียว</em>",
+    "f1.p":"เงินสดคงเหลือ เส้นกราฟ 30 วันล่าสุด และรายรับ รายจ่าย กำไรของเดือนนี้ แค่อัปโหลดรายการเดินบัญชี ทุกอย่างก็ขึ้นมาเอง",
+    "f1.1":"รองรับรายการเดินบัญชีจากทุกธนาคารไทย แบบ CSV หรือ Excel","f1.2":"อัปโหลด ออกใบแจ้งหนี้ และจ่ายบิล ได้จากหน้าเดียว","f1.3":"รายการสั้น ๆ ของเรื่องที่รอคุณ ไม่มีอะไรเกิน",
+    "f2.k":"สรุปยามเช้า","f2.h":"หนังสือพิมพ์ยามเช้า <em>ที่เขียนถึงธุรกิจของคุณ</em>",
+    "f2.p":"ทุกเช้า ThuraGirl เขียนหน้าหนึ่งให้อ่านจบในนาทีเดียว เงินสดเปลี่ยนไปอย่างไร เรื่องไหนรอคุณอนุมัติ และงานไหนหนูจัดการให้แล้ว",
+    "f2.1":"งานที่ต้องทำเขียนเป็นเรื่องสั้น พร้อมปุ่มเดียวที่ชัดเจน","f2.2":"ใบแจ้งหนี้ที่เลยกำหนด มีข้อความทวงอย่างสุภาพเตรียมไว้ให้","f2.3":"เรื่องที่รอได้ จะไม่มากวนใจคุณ",
+    "f3.k":"ปิดเดือน","f3.h":"ปิดเดือน <em>ในคลิกเดียว</em>",
+    "f3.p":"พอจบเดือน ทุกอย่างอยู่ในหน้าเดียว เงินเข้า เงินออก กำไร ภาษีที่ควรกันไว้ และเอกสารที่ยังขาด ตรวจดู ติ๊กช่อง แล้วกดอนุมัติ",
+    "f3.1":"ไม่มีแท็บย่อย ไม่มีศัพท์ยาก ไม่มีสเปรดชีต","f3.2":"สงสัยตัวเลขไหน ถาม ThuraGirl ได้ตรงนั้นเลย",
+    "b.k":"และอีกมากมาย","b.h":"งานหลังบ้านทั้งหมด <em>มีคนดูแลให้แล้ว</em>","b.sub":"ทุกอย่างที่เคยต้องตามสำนักงานบัญชี อยู่ในแอปเดียวที่ใช้ง่าย",
+    "b1.h":"ถามได้เหมือนถามเพื่อนร่วมงาน","b1.p":"“มีอะไรเลยกำหนดบ้าง” “เงินไปไหนหมด” จะพิมพ์หรือพูดก็ได้ ได้คำตอบตรง ๆ จากบัญชีของคุณเอง",
+    "b2.h":"รู้ว่าเงินมาจากไหน และไปไหน","b2.p":"เงินเข้าออกรายเดือน รายไตรมาส หรือรายปี ใครค้างจ่ายคุณ และคุณค้างจ่ายใคร",
+    "b3.h":"ออกใบแจ้งหนี้ จ่ายบิล","b3.p":"ส่งใบแจ้งหนี้ได้ในไม่กี่วินาที จ่ายซัพพลายเออร์ด้วย QR พร้อมเพย์","b3.a":"ใบแจ้งหนี้ INV-041","b3.b":"ชำระแล้ว",
+    "b4.h":"ไม่พลาดกำหนดยื่นภาษี","b4.p":"เตรียม VAT ภาษีหัก ณ ที่จ่าย และประกันสังคมให้ทุกเดือน ไม่มีอะไรถูกยื่นก่อนคุณอนุมัติ","b4.a":"ภาษีมูลค่าเพิ่ม","b4.b":"ภาษีหัก ณ ที่จ่าย","b4.c":"ประกันสังคม","b4.ok":"พร้อม","b4.ok2":"พร้อม","b4.wait":"สัปดาห์หน้า",
+    "b5.h":"ยังไม่มีบริษัท? เริ่มที่นี่ได้เลย","b5.p":"จองชื่อ เตรียมเอกสาร และยื่นจดทะเบียนกับ DBD บัญชีของคุณเปิดใช้ได้ทันทีในวันที่จดเสร็จ","b5.1":"จองชื่อบริษัทแล้ว","b5.2":"ร่างหนังสือบริคณห์สนธิแล้ว","b5.3":"ยื่นจดทะเบียนกับ DBD",
+    "b6.h":"มีผู้สอบบัญชีรับอนุญาตจัดไว้ให้","b6.p":"ตอนปิดงบประจำปี ThuraGirl จัดผู้สอบบัญชีรับอนุญาตให้บริษัทของคุณ ไม่ต้องหาเอง ไม่ต้องตามเอง","b6.a":"จัดผู้สอบบัญชีให้แล้ว","b6.b":"ปิดงบประจำปี · FY2026","b6.c":"เรียบร้อย",
+    "b7.h":"คุณเป็นคนตัดสินใจเสมอ","b7.p":"ThuraGirl เตรียมให้ คุณเป็นคนตัดสินใจ ทุกการยื่นภาษีและการปิดเดือนรอคุณกดอนุมัติก่อน",
+    "d.k":"กลางวันและกลางคืน","d.h":"สบายตา <em>ทั้งกลางวันและกลางคืน</em>","d.p":"โทนเทาเรียบ ๆ สีเขียวอมฟ้าเพียงสีเดียว และตัวเลขที่อ่านง่าย ThuraGirl ปรับตามโหมดสว่างหรือมืดของเครื่องคุณ เช็กตอนดึกก็ไม่แสบตา","d.try":"ลากปุ่มเพื่อเปรียบเทียบ","d.day":"กลางวัน","d.night":"กลางคืน",
+    "w.k":"วิธีใช้งาน","w.h":"เริ่มใช้ได้ <em>ก่อนกาแฟจะเย็น</em>","w.sub":"ไม่ต้องย้ายระบบ ไม่ต้องอบรม ไม่ต้องประชุม",
+    "w1.h":"สร้างบัญชี","w1.p":"ชื่อ อีเมล และรหัสผ่าน แค่นั้นเอง",
+    "w2.h":"เพิ่มบริษัทของคุณ","w2.p":"ใส่เลขประจำตัวผู้เสียภาษี 13 หลัก ThuraGirl จะดึงข้อมูลจาก DBD มาให้คุณตรวจยืนยัน ยังไม่มีบริษัท? จดทะเบียนในแอปได้เลย",
+    "w3.h":"อัปโหลดรายการเดินบัญชี","w3.p":"ใส่ไฟล์รายการเดินบัญชีธนาคาร แดชบอร์ดของคุณจะสร้างขึ้นเอง จากนั้น ThuraGirl ดูแลบัญชีต่อให้",
+    "tr1.h":"ทำมาเพื่อกฎหมายไทย","tr1.p":"VAT ภาษีหัก ณ ที่จ่าย ประกันสังคม และงานยื่น DBD ในแบบที่หน่วยงานไทยใช้",
+    "tr2.h":"ไทยและอังกฤษ","tr2.p":"อ่านหน้านี้ได้ทั้งสองภาษา และภาษาไทยในแอปกำลังจะตามมา",
+    "tr3.h":"มือถือหรือคอมพิวเตอร์","tr3.p":"ไม่ต้องติดตั้งอะไร เปิดในเบราว์เซอร์แล้วใช้งานต่อจากที่ค้างไว้ได้เลย",
+    "p.k":"ราคา","p.h":"สองแพ็กเกจ <em>ไม่มีเซอร์ไพรส์</em>","p.sub":"ราคาเดียวต่อเดือน ถูกกว่าจ้างสำนักงานบัญชี และไม่ต้องรอสามวันกว่าจะได้คำตอบ",
+    "p.mo":"/ เดือน","p.mo2":"/ เดือน","p.tbd":"ประกาศราคาเมื่อเปิดตัว","p.tbd2":"ประกาศราคาเมื่อเปิดตัว",
+    "p1.h":"สแตนดาร์ด","p1.for":"สำหรับธุรกิจที่เจ้าของดูแลเอง",
+    "p1.1":"ทำบัญชีจากรายการเดินบัญชีธนาคาร","p1.2":"หน้าหลัก การเงิน และสรุปยามเช้า","p1.3":"ใบแจ้งหนี้ และจ่ายบิลด้วย QR พร้อมเพย์","p1.4":"เตรียม VAT ภาษีหัก ณ ที่จ่าย และประกันสังคมทุกเดือน","p1.5":"ถามในแชทได้ไม่จำกัด","p1.cta":"เริ่มแพ็กสแตนดาร์ด",
+    "p2.h":"โปร","p2.tag":"ครบที่สุด","p2.for":"สำหรับทีมที่กำลังโต และผู้ที่มีหลายบริษัท",
+    "p2.1":"ทุกอย่างในสแตนดาร์ด","p2.2":"ยื่นแบบรายเดือนให้ถึงหน่วยงาน","p2.3":"ปิดงบประจำปีพร้อมผู้สอบบัญชีรับอนุญาต","p2.4":"หลายบริษัทในบัญชีเดียว","p2.5":"ระบบเงินเดือน","p2.cta":"เริ่มใช้โปร",
+    "p.note":"ทั้งสองแพ็กเกจจดทะเบียนบริษัทใหม่กับ DBD ได้ ราคาและรายละเอียดแพ็กเกจเป็นข้อมูลตัวอย่างจนกว่าจะเปิดตัว การชำระเงินดำเนินการอย่างปลอดภัยผ่าน <b>Beam</b>",
+    "q.k":"คำถามที่พบบ่อย","q.h":"มีคำถาม? <em>เรามีคำตอบ</em>",
+    "q1.q":"ต่างจากจ้างสำนักงานบัญชีอย่างไร?","q1.a":"งานรายเดือนแบบเดียวกัน แต่คุณเห็นตัวเลขทุกวันแทนที่จะรอหลายสัปดาห์ และได้คำตอบในไม่กี่วินาทีแทนที่จะรอหลายวัน งานที่กฎหมายกำหนดให้ใช้ผู้สอบบัญชีรับอนุญาต จะมีผู้สอบบัญชีที่ ThuraGirl จัดไว้ให้เป็นผู้ทำ",
+    "q2.q":"มีบริษัทอยู่แล้ว ใช้ได้ไหม?","q2.a":"ได้เลย ใส่เลขประจำตัวผู้เสียภาษี 13 หลักตอนสมัคร ThuraGirl จะดึงข้อมูลบริษัทจาก DBD มาให้คุณตรวจยืนยัน",
+    "q3.q":"จดบริษัทใหม่ต้องเตรียมอะไรบ้าง?","q3.a":"ชื่อบริษัท 3 ชื่อ ข้อมูลผู้ก่อตั้งและผู้ถือหุ้น ที่อยู่จดทะเบียน และทุนจดทะเบียน กรอกในแอปได้เลย แล้ว ThuraGirl จะเตรียมเอกสารให้",
+    "q4.q":"ใช้กับธนาคารไหนได้บ้าง?","q4.a":"ทุกธนาคารไทยที่ดาวน์โหลดรายการเดินบัญชีเป็นไฟล์ CSV หรือ Excel ได้ ดาวน์โหลดจากแอปหรือเว็บไซต์ของธนาคาร แล้วอัปโหลดเข้า ThuraGirl",
+    "q5.q":"มีอะไรถูกยื่นโดยที่ฉันไม่รู้ไหม?","q5.a":"ไม่มี ThuraGirl เตรียมการยื่นแบบและการปิดเดือนทุกครั้ง แล้วรอให้คุณอนุมัติก่อน",
+    "q6.q":"มีแอปมือถือไหม?","q6.a":"ThuraGirl ใช้งานผ่านเบราว์เซอร์ได้บนทุกมือถือและคอมพิวเตอร์ ทั้งโหมดกลางวันและกลางคืน แอป iPhone และ Android อยู่ในแผน",
+    "c.h":"ยกงานบัญชี <em>ให้ ThuraGirl ดูแล</em>","c.p":"สมัครไม่ถึงนาที แล้วเห็นภาพการเงินของคุณได้ในวันเดียวกัน","c.cta":"เริ่มใช้เลย","c.in":"เข้าสู่ระบบ",
+    "ft.about":"นักบัญชี AI สำหรับธุรกิจขนาดเล็กในประเทศไทย ทำบัญชี VAT ภาษีหัก ณ ที่จ่าย ประกันสังคม และจดทะเบียนบริษัทกับ DBD ครบในที่เดียว",
+    "ft.p":"ผลิตภัณฑ์","ft.a":"บัญชีผู้ใช้","ft.su":"สมัครใช้งาน","ft.app":"เปิดแอป","ft.note":"หน้าจอในหน้านี้ใช้ข้อมูลตัวอย่าง","ft.made":"ทำที่กรุงเทพฯ"
+  };
+  var EN = {};
+  $$("[data-i18n]").forEach(function(el){ EN[el.getAttribute("data-i18n")] = el.innerHTML; });
+  function setLang(l){
+    $$("[data-i18n]").forEach(function(el){ var k = el.getAttribute("data-i18n"), v = l === "th" ? TH[k] : EN[k]; if (v !== undefined) el.innerHTML = v; });
+    root.lang = l; $("#l-en").setAttribute("aria-pressed", String(l === "en")); $("#l-th").setAttribute("aria-pressed", String(l === "th"));
+    document.title = l === "th" ? "ThuraGirl · นักบัญชี AI สำหรับธุรกิจไทย" : "ThuraGirl · The AI bookkeeper for Thai small business";
+    store("tg.web.lang", l);
+  }
+  $("#l-en").addEventListener("click", function(){ setLang("en"); });
+  $("#l-th").addEventListener("click", function(){ setLang("th"); });
+  var saved = store("tg.web.lang") || (/^th\b/i.test(navigator.language || "") ? "th" : "en");
+  if (saved === "th") setLang("th");
+})();
+</script>
+</body>
+</html>
