@@ -67,8 +67,10 @@ HEAD = '''<!doctype html>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="%s">
 '''
+import hashlib
+VER = hashlib.sha1("".join(read(n) for n in sorted(os.listdir(HERE)) if re.match(r"app(\d+\.js|\.css)$", n)).encode()).hexdigest()[:8]
 def page(name, title):
-    return (HEAD % (title, "../", fonts)) + '''<link rel="stylesheet" href="../assets/app.css">
+    return ((HEAD % (title, "../", fonts)) + '''<link rel="stylesheet" href="../assets/app.css?v=__VER__">
 </head>
 <body data-page="%s">
 %s
@@ -81,10 +83,10 @@ def page(name, title):
 %s
 %s  </div>
 </div>
-<script src="../assets/app.js"></script>
+<script src="../assets/app.js?v=__VER__"></script>
 </body>
 </html>
-''' % (name, sprite, app, review, setup, kyc, upload)
+''' % (name, sprite, app, review, setup, kyc, upload)).replace("__VER__", VER)
 write("assets/app.css", css + "\n" + read("app.css") + "\n  .dockB[hidden],.toast[hidden],.alt[hidden]{display:none}\n")
 write("assets/app.js", "".join(read(n) for n in sorted(os.listdir(HERE)) if re.match(r"app\d+\.js$", n)))
 os.makedirs(os.path.join(ROOT, "assets", "vendor"), exist_ok=True)
