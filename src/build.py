@@ -26,15 +26,15 @@ app = rep(app, '<div class="co"><b>BB</b><span>Bangkok Bites</span><svg class="i
 i = app.index('            <div class="bkwrap">'); j = app.index('            <div class="circ">', i)
 app = app[:i] + '            <div class="bkwrap"><button type="button" class="bkbar" id="b-bkbar" aria-expanded="false" aria-controls="b-bkpanel"></button><div class="bkpanel" id="b-bkpanel" hidden></div></div>\n' + app[j:]
 app = rep(app, '<button type="button" class="pri"><i>', '<button type="button" class="pri js-upload"><i>')
-app = rep(app, '<button type="button"><i><svg class="i"><use href="#i-doc"/></svg></i>Invoice</button>', '<button type="button" class="js-soon"><i><svg class="i"><use href="#i-doc"/></svg></i>Invoice</button>')
-app = rep(app, '<button type="button"><i><svg class="i"><use href="#i-pay"/></svg></i>Pay</button>', '<button type="button" class="js-soon"><i><svg class="i"><use href="#i-pay"/></svg></i>Pay</button>')
+app = rep(app, '<button type="button"><i><svg class="i"><use href="#i-doc"/></svg></i>Invoice</button>', '<button type="button" class="js-invoice"><i><svg class="i"><use href="#i-doc"/></svg></i>Invoice</button>')
+app = rep(app, '<button type="button"><i><svg class="i"><use href="#i-pay"/></svg></i>Pay</button>', '<button type="button" class="js-pay"><i><svg class="i"><use href="#i-pay"/></svg></i>Pay</button>')
 app = rep(app, '<div class="revB tk" id="b-rev">', '<div class="revB tk" id="b-rev" data-k="rev">')
 for n in range(4):
     app = rep1(app, '<div class="row tk"><span class="ic">', '<div class="row tk" data-k="t%d"><span class="ic">' % n)
 app = rep(app, "<b>You're all caught up</b><span>Nothing else needs you today.</span><button type=\"button\" id=\"b-reset\">Reset the preview</button>",
           '<b id="b-clear-t"></b><span id="b-clear-m"></span><button type="button" id="b-reset">Show the sample tasks again</button>')
 EMPTY = '<svg class="tg" width="64" height="67"><use href="#tg"/></svg>'
-UPBTN = '<div class="acts"><button type="button" class="pill acc js-upload"><svg class="i"><use href="#i-up"/></svg>Upload a statement</button></div>'
+UPBTN = '<div class="acts"><button type="button" class="pill acc js-upload"><svg class="i"><use href="#i-up"/></svg>Upload a statement</button><button type="button" class="pill soft js-sample">Try it with sample data</button></div>'
 app = rep(app, '          <div class="dB-hero">\n            <div class="lab">Cash on hand</div>',
           '          <div class="emptyB">' + EMPTY + "<h1>Let's see your money.</h1><p>Upload a bank statement and I build your dashboard from it: your cash, money in and out, and what needs you.</p>" + UPBTN + '</div>\n          <div class="dB-hero">\n            <div class="lab">Cash on hand</div>')
 app = rep(app, '<div class="pg brf" id="b-brief" hidden>\n', '<div class="pg brf" id="b-brief" hidden>\n            <div class="emptyP">' + EMPTY + "<h1>No brief yet.</h1><p>Your morning brief starts the day after I have a bank statement to read.</p>" + UPBTN + '</div>\n')
@@ -86,7 +86,9 @@ def page(name, title):
 </html>
 ''' % (name, sprite, app, review, setup, kyc, upload)
 write("assets/app.css", css + "\n" + read("app.css") + "\n  .dockB[hidden],.toast[hidden],.alt[hidden]{display:none}\n")
-write("assets/app.js", read("app1.js") + read("app2.js") + read("app3.js"))
+write("assets/app.js", "".join(read(n) for n in sorted(os.listdir(HERE)) if re.match(r"app\d+\.js$", n)))
+os.makedirs(os.path.join(ROOT, "assets", "vendor"), exist_ok=True)
+for n in os.listdir(os.path.join(HERE, "vendor")): shutil.copy(os.path.join(HERE, "vendor", n), os.path.join(ROOT, "assets", "vendor", n))
 shutil.copy(os.path.join(HERE, "favicon.svg"), os.path.join(ROOT, "assets", "favicon.svg"))
 shutil.copy(os.path.join(HERE, "sample-kbank-statement.csv"), os.path.join(ROOT, "assets", "sample-kbank-statement.csv"))
 write("signup/index.html", page("signup", "Sign up · ThuraGirl"))

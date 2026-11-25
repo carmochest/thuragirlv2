@@ -15,12 +15,11 @@ function showTab(){
   if (tab === "brief" && u.hasData && !u.briefSeen){ u.briefSeen = true; save(); }
   $("#b-brief-dot").hidden = !!u.briefSeen || !u.hasData;
   paintHome();
-  if (tab === "money") renderMoney();
-  if (tab === "brief") syncBrief();
+  if (tab === "money"){ renderMoney(); paintLists(u); }
+  if (tab === "brief") renderBrief();
   if (tab === "settings") renderSettings();
   if (tab === "register") renderRegister();
-  var chips = tab === "money" ? ["Who owes me money?", "Where did the money go?", "Show the full P&L"] : ["What's overdue?", "How was April?", "How's my cash?"];
-  $$("#b-sug button").forEach(function(b, i){ b.textContent = chips[i]; });
+  var cs = chips(); $$("#b-sug button").forEach(function(b, i){ b.textContent = cs[i]; });
   var key = db.session + ":" + tab + ":" + (u.hasData ? 1 : 0);
   if (key !== lastKey){ closeAll(); play(); window.scrollTo(0, 0); }
   lastKey = key;
@@ -28,13 +27,13 @@ function showTab(){
 function play(){
   var u = me(), pg = $("#b-" + tab);
   if (!calm){ pg.classList.remove("in"); void pg.offsetWidth; pg.classList.add("in"); }
-  if (!u.hasData) return;
-  if (tab === "money") countUp($("#m-val"), FIN[per].rev - FIN[per].exp, 700);
+  var B = books(u); if (!B) return;
+  if (tab === "money") countUp($("#m-val"), Math.abs(B.fin[per].rev - B.fin[per].exp), 700);
   if (tab === "home"){ restDay(); countUp($("#b-val"), TOTAL, 900); }
 }
 
 /* ── home: cash line ── */
-var CASH = [1731500,1738200,1744900,1741300,1752600,1761000,1757400,1722800,1729500,1741100,1750700,1763900,1771200,1768000,1779400,
+var CDAYS = [], CASH = [1731500,1738200,1744900,1741300,1752600,1761000,1757400,1722800,1729500,1741100,1750700,1763900,1771200,1768000,1779400,
             1790600,1786100,1797300,1808800,1802500,1774900,1783600,1795000,1806700,1815300,1811800,1824400,1833000,1836900,1842300];
 var N = CASH.length, TOTAL = CASH[N - 1], raf = 0, lo = Math.min.apply(null, CASH), hi = Math.max.apply(null, CASH);
 function pt(i){ return [i / (N - 1) * 600, 88 - (CASH[i] - lo) / (hi - lo) * 76]; }
@@ -51,10 +50,10 @@ function mark(i){ var p = pt(i), dot = $("#b-dot"), x = $("#b-x"); dot.style.lef
 function showDay(i){
   cancelAnimationFrame(raf); var ago = N - 1 - i;
   $("#b-val").textContent = money(CASH[i]);
-  $("#b-dtxt").textContent = ago === 0 ? "Today" : ago === 1 ? "Yesterday" : ago + " days ago";
+  $("#b-dtxt").textContent = CDAYS[i] ? nice(CDAYS[i]) : ago === 0 ? "Today" : ago === 1 ? "Yesterday" : ago + " days ago";
   $("#b-delta").classList.add("scrub"); $("#b-spark").classList.add("on"); mark(i);
 }
-function restDay(){ $("#b-val").textContent = money(TOTAL); $("#b-dtxt").textContent = "6.4% this month"; $("#b-delta").classList.remove("scrub"); $("#b-spark").classList.remove("on"); mark(N - 1); }
+function restDay(){ var B = books(me()), d = B && B.cashD; $("#b-val").textContent = money(TOTAL); $("#b-dtxt").textContent = d == null ? (B ? "As of " + nice(B.asOf) : "") : (d >= 0 ? "Up " : "Down ") + pctTxt(d) + " this month"; $("#b-delta").classList.toggle("down", d != null && d < 0); $("#b-delta").classList.remove("scrub"); $("#b-spark").classList.remove("on"); mark(N - 1); }
 function countUp(val, to, ms){
   cancelAnimationFrame(raf); if (calm){ val.textContent = money(to); return; }
   var t0 = 0, from = to * 0.94;
@@ -83,7 +82,7 @@ function paintBanks(){
       eye.addEventListener("click", function(){ var show = eye.getAttribute("aria-pressed") !== "true"; eye.setAttribute("aria-pressed", String(show)); acc.textContent = show ? fullAcct(b.acct) : "···· " + b.acct.slice(-4); $("use", eye).setAttribute("href", show ? "#i-eyeoff" : "#i-eye"); });
       meta.appendChild(eye);
     }
-    meta.appendChild(el("span", "syn" + (isStale(b.at) ? " stale" : ""), "Synced " + ago(b.at, true))); row.appendChild(meta);
+    meta.appendChild(el("span", "syn" + (isStale(b.at) ? " stale" : ""), (b.to ? "Up to " + nice(b.to) + " · " : "") + "uploaded " + ago(b.at, true))); row.appendChild(meta);
     var up = el("button", "pill up " + (isStale(b.at) ? "acc" : "soft"), "Upload"); up.type = "button"; up.addEventListener("click", function(){ openUpload(b); });
     row.appendChild(up); panel.appendChild(row);
   });
@@ -98,7 +97,7 @@ function setCount(){
   $("#b-cnt").textContent = n; $("#b-clear").hidden = n !== 0;
   $("#b-clear-t").textContent = u.hasData ? "You're all caught up" : "Nothing needs you yet";
   $("#b-clear-m").textContent = u.hasData ? "Nothing else needs you today." : "Upload a bank statement and I will find what does.";
-  $("#b-reset").hidden = !u.hasData;
+  $("#b-reset").hidden = true;
 }
 function paintSetup(){
   var u = me(), isNew = u.path === "new", n = isNew ? regLeft(u) : setupLeft(u), things = n === 1 ? "1 quick thing" : n + " quick things";
@@ -114,67 +113,58 @@ function paintSetup(){
 }
 function paintHome(){
   var u = me();
-  $$(".needB .tk[data-k]").forEach(function(n){
-    n.classList.remove("gone", "going"); n.style.height = ""; n.hidden = !!u.done[n.getAttribute("data-k")];
-    var b = $(".act", n); if (b){ b.classList.remove("ok"); b.textContent = b.getAttribute("data-label"); }
-  });
-  paintSetup(); paintBanks(); setCount();
+  if (u.hasData && !(u.tx && u.tx.length)){ u.hasData = false; save(); $("#app").classList.add("nodata"); }
+  paintSetup(); paintBanks(); paintHero(u); paintNeeds(u); setCount();
 }
 function openSetupTask(){ var u = me(); if (u.path === "new") go("register"); else openSetup(); }
 
-/* ── review pack ── */
-function openSheet(){ var s = $("#b-sheet"); $("#b-agree").checked = false; $("#b-approve").disabled = true; s.hidden = false; try { $("#b-shx").focus({ preventScroll: true }); $(".shB-card", s).scrollIntoView({ block: "nearest" }); } catch (e) {} }
-function closeSheet(){ $("#b-sheet").hidden = true; }
-
 /* ── upload a bank statement ── */
 var BANKS = ["K-Bank", "SCB", "Bangkok Bank", "Krungsri", "Krungthai", "ttb", "Other"], up = { file: null, bank: "", acct: "", err: "" };
-function readCsv(text){
-  var rows = text.split(/\r?\n/).filter(function(l){ return l.trim(); }), out = { rows: Math.max(0, rows.length - 1), bal: NaN };
-  if (rows.length > 1){ var h = rows[0].toLowerCase().split(","), bi = h.indexOf("balance"), di = h.indexOf("date"), best = "";
-    if (bi >= 0) rows.slice(1).forEach(function(r){ var c = r.split(","), d = di >= 0 ? c[di] : ""; if (d >= best){ best = d; out.bal = num(c[bi]); } }); }
-  return out;
-}
 function takeFile(f){
-  up.err = "";
+  up.err = ""; up.parsed = null; up.close = "";
   var ext = (f.name.split(".").pop() || "").toLowerCase();
-  if (["csv", "xlsx", "xls", "pdf"].indexOf(ext) < 0) up.err = "That file type doesn't work here. Use CSV, Excel or PDF.";
+  if (ext === "pdf") up.err = "I can't read PDF statements in this test build yet. Download a CSV or Excel file from your bank's app or website instead.";
+  else if (["csv", "xlsx", "xls", "txt"].indexOf(ext) < 0) up.err = "That file type doesn't work here. Use CSV or Excel.";
   else if (f.size > MAX) up.err = "That file is " + size(f.size) + ". The limit is 10 MB.";
   if (up.err){ up.file = null; renderUpload(); return; }
-  up.file = { name: f.name, size: f.size, rows: 0, bal: NaN }; renderUpload();
-  if (ext === "csv" && window.FileReader){ var fr = new FileReader(); fr.onload = function(){ var r = readCsv(String(fr.result)); if (up.file){ up.file.rows = r.rows; up.file.bal = r.bal; renderUpload(); } }; fr.readAsText(f); }
+  up.file = { name: f.name, size: f.size, reading: true }; renderUpload();
+  var done = function(p){ if (!up.file || up.file.name !== f.name) return; up.file.reading = false; if (p.err){ up.err = p.err; up.file = null; } else { up.parsed = p; if (p.acct && !up.acct) up.acct = p.acct; } renderUpload(); };
+  var fail = function(){ done({ err: "I couldn't open that file. Check that it is a CSV or Excel statement." }); };
+  var fr = new FileReader();
+  if (ext === "csv" || ext === "txt"){ fr.onload = function(){ try { done(readTable(splitCsv(String(fr.result)))); } catch (e) { fail(); } }; fr.onerror = fail; fr.readAsText(f); }
+  else { fr.onload = function(){ readSheet(new Uint8Array(fr.result)).then(done, fail); }; fr.onerror = fail; fr.readAsArrayBuffer(f); }
 }
 function renderUpload(){
   var body = $("#up-body"); body.textContent = "";
   var drop = el("button", "drop" + (up.file ? " has" : "")); drop.type = "button";
   if (up.file){
-    var extra = up.file.rows ? up.file.rows + " transactions" + (isFinite(up.file.bal) ? ", latest balance " + baht(up.file.bal) : "") : size(up.file.size);
+    var P = up.parsed, extra = up.file.reading ? "Reading…" : P ? P.tx.length + " transactions, " + niceY(P.tx[0].d) + " to " + niceY(P.tx[P.tx.length - 1].d) + (P.hasBal ? ", closing balance " + baht(P.tx[P.tx.length - 1].b) : "") : size(up.file.size);
     drop.innerHTML = '<svg class="i"><use href="#i-doc"/></svg>'; drop.appendChild(el("span", "", up.file.name)); drop.appendChild(el("small", "", extra + " · tap to change"));
-  } else { drop.innerHTML = '<svg class="i"><use href="#i-up"/></svg><span>Choose a file or drop it here</span><small>CSV, Excel or PDF, up to 10 MB</small>'; }
+  } else { drop.innerHTML = '<svg class="i"><use href="#i-up"/></svg><span>Choose a file or drop it here</span><small>CSV or Excel from your bank, up to 10 MB</small>'; }
   drop.addEventListener("click", function(){ $("#up-file").click(); });
   drop.addEventListener("dragover", function(ev){ ev.preventDefault(); drop.classList.add("over"); });
   drop.addEventListener("dragleave", function(){ drop.classList.remove("over"); });
   drop.addEventListener("drop", function(ev){ ev.preventDefault(); var f = ev.dataTransfer && ev.dataTransfer.files[0]; if (f) takeFile(f); });
   body.appendChild(drop);
-  var g = el("div", "fgrid"), okBtn;
-  var sync = function(){ if (okBtn) okBtn.disabled = !(up.file && up.bank && /^\d{4,15}$/.test(up.acct)); };
+  var g = el("div", "fgrid"), okBtn, needClose = up.parsed && !up.parsed.hasBal;
+  var sync = function(){ if (okBtn) okBtn.disabled = !(up.parsed && up.bank && /^\d{4,15}$/.test(up.acct) && (!needClose || isFinite(num(up.close)))); };
   g.appendChild(fld("Bank", up.bank, { options: [["", "Choose a bank"]].concat(BANKS.map(function(b){ return [b, b]; })), on: function(v){ up.bank = v; sync(); } }));
   g.appendChild(fld("Account number", up.acct, { mode: "numeric", max: 15, ph: "Digits only", on: function(v, inp){ inp.value = v.replace(/\D/g, ""); up.acct = inp.value; sync(); return up.acct && up.acct.length < 4 ? "At least the last 4 digits" : ""; } }));
+  if (needClose) g.appendChild(fld("Balance at the end of this statement", up.close, { wide: 1, prefix: "฿", mode: "decimal", ph: "The file has no balance column", on: function(v, inp){ inp.value = v.replace(/[^\d.\-]/g, ""); up.close = inp.value; sync(); } }));
   body.appendChild(g);
   var er = el("div", "ferrB", up.err); body.appendChild(er);
   var f = el("div", "shB-f"), samp = el("button", "pill soft", "Use the sample"); samp.type = "button";
-  samp.addEventListener("click", function(){
-    up = { file: { name: "sample-kbank-statement.csv", size: 612, rows: 8, bal: 1842300 }, bank: "K-Bank", acct: "0483511234", err: "" }; renderUpload();
-    try { fetch("../assets/sample-kbank-statement.csv").then(function(r){ return r.ok ? r.text() : ""; }).then(function(t){ if (t && up.file && up.file.name === "sample-kbank-statement.csv"){ var r = readCsv(t); up.file.rows = r.rows; up.file.bal = r.bal; up.file.size = t.length; renderUpload(); } }).catch(function(){}); } catch (e) {}
-  });
+  samp.addEventListener("click", function(){ var p = readTable(splitCsv(sampleCsv())); up = { file: { name: "sample-kbank-statement.csv", size: 0 }, parsed: p, bank: "K-Bank", acct: p.acct || "0483511234", err: "", sample: true, close: "" }; renderUpload(); });
   okBtn = el("button", "pill acc", "Upload"); okBtn.type = "button";
   okBtn.addEventListener("click", function(){
-    var u = me(), ex = u.banks.filter(function(b){ return b.bank === up.bank && b.acct === up.acct; })[0];
-    if (ex) ex.at = Date.now(); else u.banks.push({ bank: up.bank, acct: up.acct, at: Date.now() });
-    u.stmt = { name: up.file.name, rows: up.file.rows }; u.hasData = true; save();
-    var msg = "Statement added" + (up.file.rows ? ". " + up.file.rows + " transactions read." : ".");
+    var u = me(), r = addStatement(u, up.bank, up.acct, up.parsed, needClose ? num(up.close) : null);
+    if (up.sample){ sampleBooks(u); u.sample = true; }
+    save(); BK_CACHE.key = "";
+    var msg = r.added + " transactions read" + (r.matched ? ", " + r.matched + " payments matched" : "") + ".";
     $("#up-sheet").hidden = true; up = { file: null, bank: "", acct: "", err: "" }; lastKey = ""; if (tab !== "home") go(""); else showTab(); toast(msg);
   });
   f.appendChild(samp); f.appendChild(okBtn); body.appendChild(f); sync();
+  body.appendChild(el("p", "tnote", "Your bank's app or website can export statements as CSV or Excel. The file is read here, in your browser, and is not sent anywhere."));
 }
 function openUpload(b){
   up = { file: null, bank: b ? b.bank : "", acct: b ? b.acct : "", err: "" }; renderUpload();
@@ -182,14 +172,7 @@ function openUpload(b){
 }
 
 /* ── money ── */
-var FIN = {
-  mtd: { lab: "Profit this month", vs: "vs last month", d: 38.4, rev: 854200, exp: 612400, flow: [["Wk 1",192000,148000],["Wk 2",216000,162000],["Wk 3",224000,158000],["Wk 4",222200,144400]],
-    revMix: [["Dine-in",524000],["Delivery",198000],["Catering",132200]], expMix: [["Ingredients",248000],["Wages",212000],["Rent",72000],["Utilities",38400],["Marketing",22000],["Other",20000]], tax: [24850,2550,48360] },
-  qtd: { lab: "Profit this quarter", vs: "vs last quarter", d: 22.4, rev: 2412800, exp: 1818200, flow: [["Mar",742000,568000],["Apr",816600,637800],["May",854200,612400]],
-    revMix: [["Dine-in",1488000],["Delivery",562000],["Catering",362800]], expMix: [["Ingredients",720000],["Wages",612000],["Rent",216000],["Utilities",112000],["Marketing",68000],["Other",90200]], tax: [68420,7240,118920] },
-  ytd: { lab: "Profit this year", vs: "vs last year", d: 42.6, rev: 4128400, exp: 3094200, flow: [["Jan",612000,478000],["Feb",691800,522400],["Mar",742000,568000],["Apr",816600,637800],["May",854200,612400]],
-    revMix: [["Dine-in",2548000],["Delivery",962000],["Catering",618400]], expMix: [["Ingredients",1224000],["Wages",1042000],["Rent",360000],["Utilities",188000],["Marketing",112000],["Other",168200]], tax: [112400,14820,206840] }
-}, per = "mtd";
+var per = "mtd";
 function tickL(n){ return n === 0 ? "0" : n >= 1e6 ? (n / 1e6) + "M" : (n / 1e3) + "K"; }
 function niceStep(max){ var pow = Math.pow(10, Math.floor(Math.log(max) / Math.LN10)), c = [1, 2, 5, 10]; for (var i = 0; i < c.length; i++) if (max / (c[i] * pow) <= 4) return c[i] * pow; return 10 * pow; }
 function mix(root, rows, cls){
@@ -197,10 +180,13 @@ function mix(root, rows, cls){
   rows.forEach(function(r){ var d = el("div", "mx"); d.appendChild(el("span", "mx-n", r[0])); d.appendChild(el("span", "mx-v num", baht(r[1]))); d.appendChild(el("span", "mx-p num", Math.round(r[1] / total * 100) + "%")); var bar = el("i", "mx-b" + cls); bar.style.width = (r[1] / top * 100) + "%"; d.appendChild(bar); root.appendChild(d); });
 }
 function renderMoney(){
-  var F = FIN[per], profit = F.rev - F.exp;
-  $("#m-lab").textContent = F.lab; $("#m-val").textContent = money(profit); $("#m-dtxt").textContent = F.d + "% " + F.vs; $("#m-mg").textContent = (profit / F.rev * 100).toFixed(1) + "% margin";
+  var B = books(me()); if (!B) return;
+  var F = B.fin[per], profit = F.rev - F.exp;
+  $("#m-lab").textContent = F.lab; $("#m-val").textContent = money(Math.abs(profit)); $("#m-val").previousElementSibling.textContent = profit < 0 ? "−฿" : "฿";
+  $("#m-dtxt").textContent = F.d == null ? "From " + nice(F.from) + " to " + nice(F.to) : (F.d >= 0 ? "Up " : "Down ") + pctTxt(F.d) + " " + F.vs; $("#m-dtxt").parentNode.classList.toggle("down", F.d != null && F.d < 0);
+  $("#m-mg").textContent = F.rev ? (profit / F.rev * 100).toFixed(1) + "% margin" : "";
   $("#m-in").textContent = baht(F.rev); $("#m-out").textContent = baht(F.exp);
-  var top = Math.max.apply(null, F.flow.map(function(r){ return Math.max(r[1], r[2]); })), step = niceStep(top), max = Math.ceil(top / step) * step;
+  var top = Math.max(1, Math.max.apply(null, F.flow.map(function(r){ return Math.max(r[1], r[2]); }))), step = niceStep(top), max = Math.ceil(top / step) * step;
   var grid = $("#m-grid"), cols = $("#m-cols"), xs = $("#m-x"), tip = $("#m-tip"), tbl = $("#m-tbl");
   grid.textContent = ""; cols.textContent = ""; xs.textContent = ""; tip.hidden = true;
   for (var v = 0; v <= max; v += step){ var g = el("span"); g.style.bottom = (v / max * 100) + "%"; g.appendChild(el("em", "", tickL(v))); grid.appendChild(g); }
@@ -219,28 +205,8 @@ function renderMoney(){
     var tr = el("tr"); [r[0], baht(r[1]), baht(r[2]), baht(r[1] - r[2])].forEach(function(c){ tr.appendChild(el("td", "", c)); }); tbl.appendChild(tr);
   });
   mix($("#m-rev"), F.revMix, ""); mix($("#m-exp"), F.expMix, " out");
+  $("#m-vat").previousElementSibling.lastChild.textContent = me().setup.vat === "No" ? "Not VAT registered" : "Monthly VAT, net payable (estimate)";
   $("#m-vat").textContent = baht(F.tax[0]); $("#m-wht").textContent = baht(F.tax[1]); $("#m-corp").textContent = baht(F.tax[2]); $("#m-tax").textContent = baht(F.tax[0] + F.tax[1] + F.tax[2]);
-}
-
-/* ── morning brief ── */
-var BK = { rev: "rev", "0": "t0", "1": "t1", "2": "t2", "3": "t3" };
-function syncBrief(){
-  var u = me(), open = 0;
-  $$("#b-brief [data-act]").forEach(function(b){
-    var d = !!u.done[BK[b.getAttribute("data-act")]], item = b.parentNode;
-    item.classList.toggle("done", d); b.classList.toggle("ok", d); b.innerHTML = d ? CHECK + b.getAttribute("data-ok") : b.getAttribute("data-label");
-    if (!d && item.classList.contains("story")) open += 1;
-  });
-  var word = ["", "One thing needs", "Two things need", "Three things need"][open], h = $("#br-h1");
-  h.textContent = ""; h.appendChild(el("span", "l1", "Cash is up 6.4%."));
-  if (open){ var parts = word.split(" "), verb = parts.pop(); h.appendChild(el("em", "", parts.join(" "))); h.appendChild(document.createTextNode(" " + verb + " your yes.")); }
-  else h.appendChild(el("em", "", "Nothing needs you today."));
-  $("#br-name").textContent = first(u);
-  var names = u.banks.map(function(b){ return b.bank; });
-  $("#br-banks").textContent = names.length ? "across " + (names.length > 1 ? names.slice(0, -1).join(", ") + " and " + names[names.length - 1] : names[0]) : "in the bank";
-  var old = u.banks.filter(function(b){ return isStale(b.at); })[0];
-  $("#br-bank-t").textContent = old ? old.bank + " statement is getting old" : "Bank statements are up to date";
-  $("#br-bank-m").textContent = u.banks.map(function(b){ return b.bank + " synced " + ago(b.at, true); }).join(" · ");
 }
 
 /* ── setup that follows signup (registered company) ── */

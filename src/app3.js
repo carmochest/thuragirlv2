@@ -35,6 +35,8 @@ function renderSettings(){
   var ub = el("button", "pill soft act", u.banks.length ? "Add another bank" : "Upload a statement"); ub.type = "button"; ub.style.justifySelf = "start"; ub.addEventListener("click", function(){ openUpload(); }); bk.appendChild(ub);
   root.appendChild(bk);
 
+  dataCard(u, root);
+
   var ap = card("Appearance"), row = el("div", "frow"); row.appendChild(el("b", "", "Theme"));
   var labels = { auto: "Auto", day: "Day", night: "Night" }, sg = seg(["Auto", "Day", "Night"], labels[u.theme || "auto"], function(v){ u.theme = v.toLowerCase(); save(); applyTheme(); });
   sg.classList.add("on-soft"); row.appendChild(sg); ap.appendChild(row); root.appendChild(ap);
@@ -107,7 +109,6 @@ function regCheck(u){
   if (!r.seal) o.office.push("Whether there is a company seal");
   if (!r.meeting) o.office.push("First meeting date"); else if (r.meeting > today()) o.office.push("A first meeting date that is not in the future");
   if (!P.some(function(p){ return p.id === r.chair; })) o.office.push("Who chaired the meeting");
-  if (!r.auditor.name.trim() || !r.auditor.lic.trim() || !(num(r.auditor.fee) > 0)) o.office.push("Auditor name, licence number and fee");
   docList(u).forEach(function(d){ if (!r.files[d.k]) o.docs.push(d.label + (d.sub && d.k.indexOf(":") > 0 ? " for " + d.sub.split(" · ")[0] : "")); });
   return o;
 }
@@ -209,11 +210,7 @@ function renderRegister(){
           b.appendChild(dc);
         }
         var sl = el("div", "frow"); sl.appendChild(el("b", "", "Company seal")); sl.appendChild(seg(["Yes", "No"], r.seal, function(v){ r.seal = v; keep(); })); b.appendChild(sl);
-        var ag = el("div", "fgrid");
-        ag.appendChild(fld("Auditor name", r.auditor.name, { on: function(v){ r.auditor.name = v; keep(); } }));
-        ag.appendChild(fld("Auditor licence number", r.auditor.lic, { on: function(v){ r.auditor.lic = v; keep(); } }));
-        ag.appendChild(fld("Auditor fee", r.auditor.fee, { prefix: "฿", mode: "numeric", on: function(v, inp){ inp.value = v.replace(/[^\d.]/g, ""); r.auditor.fee = inp.value; keep(); } }));
-        b.appendChild(ag);
+        b.appendChild(el("p", "st-p", "Auditor: ThuraGirl appoints a licensed auditor for you. Nothing to fill in here."));
       } else {
         b.appendChild(el("p", "st-p", "One PDF or image each, up to 10 MB. The list follows the people and capital you entered."));
         var dl = el("div", "");
@@ -250,16 +247,9 @@ $("#b-brief-btn").addEventListener("click", function(){ go(tab === "brief" ? "" 
 $("#b-co").addEventListener("click", function(){ go(tab === "settings" ? "" : "settings"); });
 $$('#app [data-go="money"]').forEach(function(b){ b.addEventListener("click", function(){ go("money"); }); });
 $$("#app .js-upload").forEach(function(b){ b.addEventListener("click", function(){ openUpload(); }); });
-$$("#app .js-soon").forEach(function(b){ b.addEventListener("click", function(){ toast("Invoices and payments are not part of this test build."); }); });
-$$(".needB .act").forEach(function(b){
-  b.setAttribute("data-label", b.textContent);
-  b.addEventListener("click", function(){
-    var row = b.parentNode, u = me(); if (b.classList.contains("ok")) return;
-    b.classList.add("ok"); b.innerHTML = CHECK + "Done"; u.done[row.getAttribute("data-k")] = true; save(); row.classList.add("going"); setCount();
-    setTimeout(function(){ collapse(row); }, calm ? 0 : 650);
-  });
-});
-$("#b-reset").addEventListener("click", function(){ me().done = {}; save(); paintHome(); });
+$$("#app .js-invoice").forEach(function(b){ b.addEventListener("click", function(){ newInvoice(); }); });
+$$("#app .js-pay").forEach(function(b){ b.addEventListener("click", function(){ newBill(); }); });
+$$("#app .js-sample").forEach(function(b){ b.addEventListener("click", function(){ useSample(); }); });
 $("#b-setup-btn").addEventListener("click", openSetupTask);
 $("#b-wel-go").addEventListener("click", openSetupTask);
 $("#b-wel-x").addEventListener("click", function(){ me().welcome = false; save(); paintSetup(); });
@@ -270,59 +260,36 @@ $("#up-file").addEventListener("change", function(){ var f = this.files && this.
 $("#kyc-x").addEventListener("click", closeKyc);
 $("#kyc-cam").addEventListener("change", function(){ kycTake(this); });
 $("#kyc-file").addEventListener("change", function(){ kycTake(this); });
+gsInit();
 ["#b-sheet", "#b-setup", "#up-sheet", "#kyc"].forEach(function(s){ var n = $(s); n.addEventListener("click", function(ev){ if (ev.target === n){ if (s === "#kyc") closeKyc(); else n.hidden = true; } }); });
 document.addEventListener("keydown", function(ev){
   if (ev.key !== "Escape") return;
   if (!$("#kyc").hidden) return closeKyc();
+  if ($("#gs") && !$("#gs").hidden) return closeGS();
   ["#up-sheet", "#b-setup", "#b-sheet"].forEach(function(s){ $(s).hidden = true; });
 });
 // review pack
 $("#b-review").addEventListener("click", openSheet);
 $("#b-shx").addEventListener("click", closeSheet);
 $("#b-agree").addEventListener("change", function(){ $("#b-approve").disabled = !this.checked; });
-$("#b-approve").addEventListener("click", function(){ var u = me(), row = $("#b-rev"); closeSheet(); u.done.rev = true; save(); row.classList.add("going"); setCount(); collapse(row); syncBrief(); });
-$("#b-shask").addEventListener("click", function(){ closeSheet(); var i = $("#b-in"); i.value = "About the April pack: "; $("#b-send").disabled = false; try { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } catch (e) {} });
+$("#b-approve").addEventListener("click", approvePack);
+$("#b-shask").addEventListener("click", function(){ var B = books(me()); closeSheet(); var i = $("#b-in"); i.value = "How was " + (B && B.pack ? B.pack.name : "last month") + "?"; $("#b-send").disabled = false; try { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } catch (e) {} });
 // money
-$$("#m-per button").forEach(function(b){ b.addEventListener("click", function(){ per = b.getAttribute("data-per"); $$("#m-per button").forEach(function(x){ var a = x === b; x.classList.toggle("on", a); x.setAttribute("aria-pressed", String(a)); }); renderMoney(); countUp($("#m-val"), FIN[per].rev - FIN[per].exp, 500); }); });
-$$("#b-money .act").forEach(function(b){ b.addEventListener("click", function(){ if (b.classList.contains("ok")) return; b.classList.add("ok"); b.innerHTML = CHECK + b.getAttribute("data-ok"); }); });
-// brief
-$$("#b-brief [data-act]").forEach(function(b){
-  b.addEventListener("click", function(){
-    var k = b.getAttribute("data-act"), u = me(); if (u.done[BK[k]]) return;
-    if (k === "rev") return openSheet();
-    u.done[BK[k]] = true; save(); syncBrief();
-  });
-});
-$("#br-bank").addEventListener("click", function(){ go(""); setTimeout(function(){ if ($("#b-bkbar").getAttribute("aria-expanded") !== "true") $("#b-bkbar").click(); }, 60); });
+$$("#m-per button").forEach(function(b){ b.addEventListener("click", function(){ per = b.getAttribute("data-per"); $$("#m-per button").forEach(function(x){ var a = x === b; x.classList.toggle("on", a); x.setAttribute("aria-pressed", String(a)); }); renderMoney(); var B = books(me()); if (B) countUp($("#m-val"), Math.abs(B.fin[per].rev - B.fin[per].exp), 500); }); });
 // chat
 (function(){
-  var inp = $("#b-in"), send = $("#b-send"), sug = $("#b-sug"), pop = $("#b-pop"), timer = 0;
-  function answer(t){
-    t = t.toLowerCase();
-    if (!me().hasData) return "I don't have any numbers yet. Upload a bank statement and I can answer that.";
-    if (/p&l|profit and loss|statement/.test(t)) return "This month so far: ฿854,200 came in. Ingredients ฿248,000, wages ฿212,000, rent ฿72,000 and ฿80,400 of other costs leave ฿241,800, a 28.3% margin. In the full app the statement opens here.";
-    if (/who owes|owes me|owed|receiv/.test(t)) return "Four invoices are open, ฿322,700 in total. Two are late: Bangkok Hotel Group (฿88,500, 45 days) and Lotus Wholesale (฿64,200, 9 days). Tap Remind and I will chase them.";
-    if (/where|spend|spent|expens|cost/.test(t)) return "Ingredients are the biggest cost this month at ฿248,000 (40%), then wages at ฿212,000 (35%) and rent at ฿72,000 (12%). Utilities, marketing and other add ฿80,400.";
-    if (/overdue|late|unpaid|owe/.test(t)) return "Two things are overdue: invoice #INV-2026-038 (฿88,500, 45 days late) and the April tax package (฿14,200, 1 day). Approve them in the list and I will send the reminder and file the package.";
-    if (/april|month|profit|pack|review/.test(t)) return "April closed with ฿816,600 in and ฿637,800 out. You kept ฿178,800, a 21.9% margin. The Review Pack has it all on one page.";
-    if (/cash|bank|balance|money/.test(t)) return "Cash is ฿1,842,300, up 6.4% this month. Open the bank line under the balance to see when each account last synced.";
-    return "This is a test build, so I can only answer the sample questions here. In the full app you can ask me anything about your books.";
-  }
-  function ask(t){
-    t = (t || "").trim(); if (!t) return;
-    inp.value = ""; send.disabled = true; sug.hidden = true; pop.hidden = false; $("#b-me").textContent = t;
-    var r = $("#b-reply"); r.innerHTML = '<span class="dotsT" aria-label="ThuraGirl is typing"><i></i><i></i><i></i></span>';
-    clearTimeout(timer); timer = setTimeout(function(){ r.textContent = answer(t); }, calm ? 0 : 800);
-  }
+  var inp = $("#b-in"), send = $("#b-send"), sug = $("#b-sug"), pop = $("#b-pop");
   inp.addEventListener("focus", function(){ if (!inp.value && pop.hidden) sug.hidden = false; });
   inp.addEventListener("blur", function(){ setTimeout(function(){ sug.hidden = true; }, 150); });
   inp.addEventListener("input", function(){ send.disabled = !inp.value.trim(); sug.hidden = !!inp.value || !pop.hidden; });
   $$("button", sug).forEach(function(b){ b.addEventListener("mousedown", function(ev){ ev.preventDefault(); }); b.addEventListener("click", function(){ ask(b.textContent); }); });
-  $("#b-chat").addEventListener("submit", function(ev){ ev.preventDefault(); ask(inp.value); });
-  $("#b-popx").addEventListener("click", function(){ clearTimeout(timer); pop.hidden = true; });
+  $("#b-chat").addEventListener("submit", function(ev){ ev.preventDefault(); if (chat.on && chat.rec) chat.rec.abort(); ask(inp.value); });
+  $("#b-popx").addEventListener("click", function(){ clearTimeout(chat.timer); pop.hidden = true; });
   $("#m-pl").addEventListener("click", function(){ ask("Show the full P&L"); });
+  var mic = $('#b-chat [aria-label="Speak"]'); mic.id = "b-mic"; mic.setAttribute("aria-pressed", "false"); mic.addEventListener("click", micToggle);
+  var plus = $('#b-chat [aria-label="Upload a file"]'), fi = el("input"); fi.type = "file"; fi.hidden = true; fi.accept = ".csv,.xlsx,.xls,.pdf,image/*"; fi.id = "b-chatfile";
+  plus.setAttribute("aria-label", "Add a statement or receipt"); plus.title = "Add a statement or receipt";
+  $("#b-chat").appendChild(fi); plus.addEventListener("click", function(){ fi.click(); });
+  fi.addEventListener("change", function(){ var f = fi.files && fi.files[0]; fi.value = ""; if (f) chatFile(f); });
 })();
 
-buildSpark();
-route();
-})();

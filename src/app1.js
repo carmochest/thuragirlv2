@@ -181,6 +181,7 @@ function renderAuth(){
     var ok = el("label", "shB-ok ob-ok"), cb = el("input"); cb.type = "checkbox"; cb.checked = draft.agree;
     var okt = el("span"); okt.innerHTML = "I accept the <u>Terms</u> and the <u>PDPA privacy notice</u>.";
     ok.appendChild(cb); ok.appendChild(okt); form.appendChild(ok); form.appendChild(err);
+    $$("u", okt).forEach(function(n){ n.setAttribute("role", "link"); n.tabIndex = 0; n.addEventListener("click", function(ev){ ev.preventDefault(); ev.stopPropagation(); openTerms(); }); n.addEventListener("keydown", function(ev){ if (ev.key === "Enter"){ ev.preventDefault(); openTerms(); } }); });
     var syncA = function(){
       draft.name = nm.value; draft.email = em.value; draft.pw = pw.value; draft.agree = cb.checked; err.textContent = "";
       var long = draft.pw.length >= 8; rule.textContent = long ? "✓ 8 or more characters" : "At least 8 characters"; rule.classList.toggle("off", !long);
