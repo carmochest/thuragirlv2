@@ -732,7 +732,7 @@ function renderRegister(){
         og.appendChild(fld("Subdistrict", of.sub, { on: function(v){ of.sub = v; keep(); } }));
         og.appendChild(fld("District", of.dist, { on: function(v){ of.dist = v; keep(); } }));
         og.appendChild(fld("Province", of.prov, { on: function(v){ of.prov = v; keep(); } }));
-        og.appendChild(fld("Postcode", of.zip, { mode: "numeric", max: 5, on: function(v, inp){ inp.value = v.replace(/\D/g, ""); of.zip = inp.value; keep(); if (inp.value.length === 5 && !of.prov && ZIPPROV[inp.value.slice(0, 2)]){ of.prov = ZIPPROV[inp.value.slice(0, 2)]; var pv = $$("#b-register .fld input").filter(function(x){ return x.parentNode.parentNode.firstChild.textContent === "Province"; })[0]; if (pv) pv.value = of.prov; } } }));
+        og.appendChild(fld("Postcode", of.zip, { mode: "numeric", max: 5, on: function(v, inp){ inp.value = v.replace(/\D/g, ""); of.zip = inp.value; keep(); if (inp.value.length === 5 && !of.prov && ZIPPROV[inp.value.slice(0, 2)]){ of.prov = ZIPPROV[inp.value.slice(0, 2)]; var pv = $$("#b-register .fld input").filter(function(x){ return /^(Province|จังหวัด)$/.test(x.parentNode.parentNode.firstChild.textContent); })[0]; if (pv) pv.value = of.prov; } } }));
         og.appendChild(fld("Who owns the place", r.owner, { wide: 1, ph: "Landlord's name, or yours if you own it", on: function(v){ r.owner = v; keep(); } }));
         og.appendChild(fld("Applicant (must be a founder and a director)", r.applicant, { options: who, on: function(v){ r.applicant = v; keep(); } }));
         og.appendChild(fld("Chair of the first meeting", r.chair, { options: who, on: function(v){ r.chair = v; keep(); } }));
@@ -2232,13 +2232,13 @@ function profileCard(u, root){
   g.appendChild(fld("Role", u.path === "new" && !(u.reg && u.reg.submitted) ? "Founder" : "Owner", { ro: 1 }));
   g.appendChild(fld("Time zone", "Bangkok (GMT+7)", { ro: 1 }));
   c.appendChild(g);
-  var lr = el("div", "frow"); lr.appendChild(el("b", "", "Language")); lr.appendChild(seg(["English", "ไทย"], u.lang === "th" ? "ไทย" : "English", function(v){ u.lang = v === "ไทย" ? "th" : "en"; save(); renderSettings(); })); c.appendChild(lr);
-  if (u.lang === "th") c.appendChild(el("p", "tnote", "Saved. In this test build the screens are still in English; ThuraGirl replies in Thai when you write to her in Thai, and the mic listens in Thai."));
+  var lr = el("div", "frow"); lr.appendChild(el("b", "", "Language")); lr.appendChild(langSeg()); c.appendChild(lr);
+  c.appendChild(el("p", "tnote", "Screens switch straight away. ThuraGirl answers in the language you write in."));
   root.appendChild(c);
 }
 function appearanceCard(u, root){
   var ap = card("Appearance"), row = el("div", "frow"); row.appendChild(el("b", "", "Theme"));
-  var labels = { auto: "Auto", day: "Day", night: "Night" }, sg = seg(["Auto", "Day", "Night"], labels[u.theme || "auto"], function(v){ u.theme = v.toLowerCase(); save(); applyTheme(); });
+  var labels = { auto: "Auto", day: "Day", night: "Night" }, sg = seg(["Auto", "Day", "Night"], labels[u.theme || "auto"], function(v){ u.theme = v.toLowerCase(); db.theme = u.theme; save(); applyTheme(); });
   sg.classList.add("on-soft"); row.appendChild(sg); ap.appendChild(row); root.appendChild(ap);
 }
 function accountCard(u, root){
@@ -2415,6 +2415,507 @@ function checkout(u, p){
   b.appendChild(el("p", "tnote", "Test build: Beam checkout is not connected yet, so this only records your choice."));
   b.appendChild(foot(btn("pill soft", "Not now", closeGS), btn("pill acc", "Continue to payment", function(){ u.plan = p[0]; u.planPending = true; save(); closeGS(); renderSettings(); toast(p[1] + " chosen. Payment opens when billing goes live."); })));
 }
+
+/* ── Thai words for every screen. Exact English → Thai; patterns with numbers live in app85. ── */
+var TH = {
+  "Send them by": "ส่งทาง", "Registered already, or one I register for you": "จดทะเบียนแล้ว หรือให้หนูจดให้",
+
+  ". You have": " คุณมี", "Add the name and address exactly as registered.": "ใส่ชื่อและที่อยู่ให้ตรงกับที่จดทะเบียน", "Card, cash and QR sales": "ยอดขายบัตร เงินสด และ QR", "Done for now": "พอแค่นี้ก่อน", "Everything else": "อื่น ๆ ทั้งหมด",
+  "For sending it": "สำหรับส่ง", "Send to": "ส่งถึง", "vs last month": "เทียบเดือนก่อน", "Tick the box and I lock the month.": "ติ๊กช่องแล้วหนูจะปิดเดือนให้",
+  "Operate restaurants and sell food and drinks": "ประกอบกิจการร้านอาหารและจำหน่ายอาหารและเครื่องดื่ม", "Provide catering and event food services": "ให้บริการจัดเลี้ยงและอาหารสำหรับงานอีเวนต์",
+
+  "Screens switch straight away. ThuraGirl answers in the language you write in.": "หน้าจอเปลี่ยนทันที ThuraGirl ตอบเป็นภาษาที่คุณพิมพ์มา",
+  "Everything saves as you go.": "บันทึกให้อัตโนมัติ", "Not registered yet.": "ยังไม่ได้จดทะเบียน", "Shareholders": "ผู้ถือหุ้น", "Invoices": "ใบแจ้งหนี้", "Bills": "บิล", "Receipts": "ใบเสร็จ", "Statements": "รายการเดินบัญชี",
+  "A clear phone photo is fine; PDF or image, up to 10 MB each.": "ถ่ายด้วยมือถือให้ชัดก็พอ PDF หรือรูปภาพ ไม่เกินไฟล์ละ 10 MB", "The list follows the people and capital you entered.": "รายการนี้ปรับตามบุคคลและทุนที่คุณกรอก",
+  "Pick a plan whenever you're ready; nothing is charged until the trial ends.": "เลือกแพ็กเกจเมื่อพร้อม ไม่มีการเรียกเก็บเงินจนกว่าช่วงทดลองจะจบ", "uploaded just now": "อัปโหลดเมื่อสักครู่",
+  "Due today": "ครบกำหนดวันนี้", "Due today.": "ครบกำหนดวันนี้", "Your month on one page.": "เดือนของคุณในหน้าเดียว", "Monthly Review Pack": "สรุปประจำเดือน", "Ready to send": "พร้อมส่ง", "Credit account": "เครดิต",
+  "These are estimates from your statements, not a filing.": "เป็นตัวเลขประมาณจากรายการเดินบัญชี ยังไม่ใช่การยื่นแบบ", "Open one in Money and tap Remind.": "เปิดในหน้าการเงินแล้วกดทวง",
+  "Sample statement loaded.": "โหลดรายการเดินบัญชีตัวอย่างแล้ว", "Cash is up": "เงินสดเพิ่มขึ้น", "Your companies": "บริษัทของคุณ",
+  "Have a look around.": "ลองดูรอบ ๆ ได้เลย", "Registering the company is five short parts, whenever you are ready.": "การจดทะเบียนบริษัทมีห้าส่วนสั้น ๆ พร้อมเมื่อไหร่ก็เริ่มได้",
+  "Please add your name": "กรุณาใส่ชื่อ", "At least 2 characters": "อย่างน้อย 2 ตัวอักษร", "At least 5 characters": "อย่างน้อย 5 ตัวอักษร", "Exactly 13 digits": "ต้องมี 13 หลักพอดี", "This company is already on ThuraGirl": "บริษัทนี้อยู่ใน ThuraGirl แล้ว",
+  "Type the customer's name, please.": "พิมพ์ชื่อลูกค้าด้วยนะ", "A short description, please.": "ขอคำอธิบายสั้น ๆ หน่อย", "I need an amount, like 25,000 or 25k.": "ขอจำนวนเงิน เช่น 25,000 หรือ 25k", "Yes or no?": "ใช่หรือไม่",
+  "Tell me a number of days, like 15.": "บอกจำนวนวัน เช่น 15", "Creating it.": "กำลังสร้าง", "Tap Create invoice, or Use the full form to add more lines.": "กดสร้างใบแจ้งหนี้ หรือใช้แบบฟอร์มเต็มเพื่อเพิ่มรายการ",
+  "Which customer is this invoice for?": "ใบแจ้งหนี้นี้ออกให้ลูกค้าคนไหน", "Got the bill. Who is it from?": "ได้บิลแล้ว บิลจากใคร", "Type who you're paying, please.": "พิมพ์ชื่อคนที่จะจ่ายด้วยนะ", "How much?": "เท่าไหร่",
+  "I need an amount, like 12,500.": "ขอจำนวนเงิน เช่น 12,500", "When is it due?": "ครบกำหนดเมื่อไหร่", "Tell me when, like today or in 7 days.": "บอกวันครบกำหนด เช่น วันนี้ หรือภายใน 7 วัน",
+  "Do you have their PromptPay ID? A phone number or a 13-digit ID. I turn it into a QR code you can scan.": "มีพร้อมเพย์ของเขาไหม เบอร์โทรหรือเลข 13 หลัก หนูจะทำเป็น QR ให้สแกนจ่าย", "Skip": "ข้าม",
+  "A 10-digit phone number or a 13-digit ID, or tap Skip.": "เบอร์โทร 10 หลัก หรือเลข 13 หลัก หรือกดข้าม", "Saving it.": "กำลังบันทึก", "Tap Save bill, or Use the full form.": "กดบันทึกบิล หรือใช้แบบฟอร์มเต็ม",
+  "Invoices open once the company is registered. Finish the registration first and I'll be ready.": "ใบแจ้งหนี้จะเปิดใช้ได้เมื่อจดทะเบียนบริษัทแล้ว กรอกการจดทะเบียนให้เสร็จก่อนนะ", "Bank statements open once the company is registered.": "รายการเดินบัญชีจะเปิดใช้ได้เมื่อจดทะเบียนบริษัทแล้ว",
+  "Thanks. What is it?": "ขอบคุณ ไฟล์นี้คืออะไร", "A receipt": "ใบเสร็จ", "I can read photos, PDFs, and CSV or Excel statements. That file type doesn't work here.": "หนูอ่านได้ทั้งรูปภาพ PDF และรายการเดินบัญชี CSV หรือ Excel ไฟล์ประเภทนี้ใช้ไม่ได้",
+  "Leave out บริษัท and จำกัด. I add them for you.": "ไม่ต้องใส่ บริษัท และ จำกัด หนูเติมให้เอง", "DBD needs the name in Thai letters. Write how it sounds in Thai, like แบงค็อก ไบท์ส. The English name goes below.": "DBD ต้องการชื่อเป็นตัวอักษรไทย เขียนตามเสียงอ่าน เช่น แบงค็อก ไบท์ส ส่วนชื่ออังกฤษใส่ด้านล่าง",
+  // shell and navigation
+  "Home": "หน้าหลัก", "Money": "การเงิน", "Morning brief": "สรุปยามเช้า", "The Morning Brief": "สรุปยามเช้า", "Settings": "ตั้งค่า", "Back": "กลับ", "Back to Home": "กลับหน้าหลัก",
+  "Ask ThuraGirl": "ถาม ThuraGirl", "Speak": "พูด", "Send": "ส่ง", "Upload": "อัปโหลด", "Invoice": "ใบแจ้งหนี้", "Pay": "จ่าย", "Close": "ปิด", "Close reply": "ปิดคำตอบ",
+  "Dismiss": "ปิด", "Cancel": "ยกเลิก", "Continue": "ต่อไป", "Done": "เสร็จแล้ว", "Edit": "แก้ไข", "Remove": "ลบ", "Add": "เพิ่ม", "Open": "เปิด", "View": "ดู", "Review": "ตรวจดู",
+  "Approve": "อนุมัติ", "Yes": "ใช่", "No": "ไม่", "Both": "ทั้งสองแบบ", "On": "เปิด", "Off": "ปิด", "Not now": "ไว้ทีหลัง", "Got it": "เข้าใจแล้ว", "Optional": "ไม่บังคับ",
+  "Update": "อัปเดต", "Connect": "เชื่อมต่อ", "Invite": "เชิญ", "Remind": "ทวง", "Register": "จดทะเบียน", "Set up": "ตั้งค่า", "Set it up": "ตั้งค่าเลย", "Turn on": "เปิดใช้", "Verify now": "ยืนยันตอนนี้",
+  "Today": "วันนี้", "just now": "เมื่อสักครู่", "Saved": "บันทึกแล้ว", "Copied": "คัดลอกแล้ว", "Cleared": "ล้างแล้ว", "Not set": "ยังไม่ได้ตั้ง", "Not yet": "ยังไม่", "Not yet.": "ยังไม่มี",
+  "Month": "เดือน", "Quarter": "ไตรมาส", "Year": "ปี", "This month": "เดือนนี้", "Period": "ช่วงเวลา", "Status": "สถานะ", "Total": "รวม", "Subtotal": "รวมก่อน VAT", "Amount": "จำนวนเงิน", "Due": "ครบกำหนด",
+  "In": "เข้า", "Out": "ออก", "Kept": "เหลือ", "Profit": "กำไร", "Revenue": "รายได้", "Expenses": "ค่าใช้จ่าย", "Wages": "ค่าจ้าง", "Rent": "ค่าเช่า", "Utilities": "ค่าน้ำค่าไฟ", "Marketing": "การตลาด",
+  "Stock and supplies": "สินค้าและวัตถุดิบ", "Other costs": "ค่าใช้จ่ายอื่น", "Tax and social security": "ภาษีและประกันสังคม", "Card sales": "ยอดขายบัตร", "QR payments": "รับชำระผ่าน QR", "Transfers from customers": "เงินโอนจากลูกค้า",
+  "Delivery and marketplaces": "เดลิเวอรีและมาร์เก็ตเพลส", "Supplier payments": "จ่ายซัพพลายเออร์", "Payouts and fees": "เงินโอนเข้าและค่าธรรมเนียม", "Payroll": "เงินเดือน",
+  "Mon": "จ.", "Tue": "อ.", "Wed": "พ.", "Thu": "พฤ.", "Fri": "ศ.", "Sat": "ส.", "Sun": "อา.",
+  "Jan": "ม.ค.", "Feb": "ก.พ.", "Mar": "มี.ค.", "Apr": "เม.ย.", "May": "พ.ค.", "Jun": "มิ.ย.", "Jul": "ก.ค.", "Aug": "ส.ค.", "Sep": "ก.ย.", "Oct": "ต.ค.", "Nov": "พ.ย.", "Dec": "ธ.ค.",
+  "English": "English", "Thai": "ไทย", "Foreign": "ต่างชาติ", "thuragirl": "thuragirl",
+
+  // home
+  "Needs you": "รอคุณอยู่", "Needs your yes": "รอคุณกดยืนยัน", "Tasks that need you": "งานที่รอคุณ", "Coming up": "เร็ว ๆ นี้", "You're all caught up": "เคลียร์ครบแล้ว",
+  "Nothing else needs you today.": "วันนี้ไม่มีอะไรรอคุณแล้ว", "Nothing needs you yet": "ยังไม่มีอะไรรอคุณ", "That is everything for today. Ask me anything below.": "วันนี้มีแค่นี้ ถามหนูได้ทุกเรื่องด้านล่างเลย",
+  "Cash on hand": "เงินสดคงเหลือ", "in the bank": "ในบัญชีธนาคาร", "Cash, last 30 days": "เงินสด 30 วันล่าสุด", "Money in": "เงินเข้า", "Money out": "เงินออก", "Money in and out": "เงินเข้าและออก", "Your money in and out": "เงินเข้าออกของคุณ",
+  "Profit this month": "กำไรเดือนนี้", "Profit this quarter": "กำไรไตรมาสนี้", "Profit this year": "กำไรปีนี้", "Profit margin": "อัตรากำไร", "Owed to you": "ลูกค้าค้างจ่าย", "You owe": "คุณค้างจ่าย",
+  "Set aside for taxes": "กันไว้จ่ายภาษี", "Tax to set aside (estimate)": "ภาษีที่ควรกันไว้ (ประมาณ)", "See money": "ดูการเงิน", "Upload a statement": "อัปโหลดรายการเดินบัญชี", "Upload a file": "อัปโหลดไฟล์",
+  "Add a statement or receipt": "เพิ่มรายการเดินบัญชีหรือใบเสร็จ", "Try it with sample data": "ลองด้วยข้อมูลตัวอย่าง", "Show the sample tasks again": "แสดงงานตัวอย่างอีกครั้ง",
+  "Finish setting up": "ตั้งค่าให้เสร็จ", "Finish setup": "ตั้งค่าให้เสร็จ", "Finish setting up your company": "ตั้งค่าบริษัทให้เสร็จ", "Setup": "ตั้งค่า", "Three things": "สามเรื่อง",
+  "Three quick things. They also live in Settings, so there is no rush.": "สามเรื่องสั้น ๆ อยู่ในหน้าตั้งค่าด้วย ไม่ต้องรีบ",
+  "Connect your bank or upload a statement, and I build your dashboard from it: your cash, money in and out, and what needs you.": "เชื่อมบัญชีธนาคารหรืออัปโหลดรายการเดินบัญชี แล้วหนูจะสร้างแดชบอร์ดให้ ทั้งเงินสด เงินเข้าออก และเรื่องที่รอคุณ",
+  "Money fills in once you upload a bank statement.": "หน้าการเงินจะขึ้นเมื่อคุณอัปโหลดรายการเดินบัญชี", "Upload a bank statement and I will find what does.": "อัปโหลดรายการเดินบัญชี แล้วหนูจะหาให้ว่ามีอะไรบ้าง",
+  "Nothing to show yet.": "ยังไม่มีอะไรให้ดู", "This fills in after your company is registered and its bank account has a statement.": "ส่วนนี้จะขึ้นหลังจดทะเบียนบริษัทและบัญชีธนาคารของบริษัทมีรายการเดินบัญชีแล้ว",
+  "Bank statements and your dashboard open once the company is registered. Finish the registration and I take it to DBD for you.": "รายการเดินบัญชีและแดชบอร์ดจะเปิดใช้ได้เมื่อจดทะเบียนบริษัทแล้ว กรอกการจดทะเบียนให้ครบ แล้วหนูจะยื่นกับ DBD ให้",
+  "Have a look around. Registering the company is five short parts, whenever you are ready.": "ลองดูรอบ ๆ ได้เลย การจดทะเบียนบริษัทมีห้าส่วนสั้น ๆ พร้อมเมื่อไหร่ก็เริ่มได้",
+  "Welcome to ThuraGirl.": "ยินดีต้อนรับสู่ ThuraGirl", "Welcome back.": "ยินดีต้อนรับกลับมา", "Good morning,": "สวัสดีตอนเช้า", "Good afternoon,": "สวัสดีตอนบ่าย", "Good evening,": "สวัสดีตอนเย็น",
+  "Sample statement loaded. 680 transactions read.": "โหลดรายการเดินบัญชีตัวอย่างแล้ว อ่านไป 680 รายการ",
+  "Bank statement": "รายการเดินบัญชี", "Bank statements": "รายการเดินบัญชี", "Banks": "ธนาคาร", "Add another bank": "เพิ่มธนาคาร", "Statement in": "รับรายการเดินบัญชีแล้ว",
+  "Show K-Bank account number": "แสดงเลขบัญชีกสิกรไทย", "Pay day is today": "วันนี้วันจ่ายเงินเดือน",
+
+  // upload sheet
+  "CSV, Excel or PDF from your bank, up to 10 MB.": "ไฟล์ CSV, Excel หรือ PDF จากธนาคาร ไม่เกิน 10 MB", "Take a photo": "ถ่ายรูป", "Use your camera": "ใช้กล้อง", "PDF, JPG or PNG": "PDF, JPG หรือ PNG",
+
+  // chat and guided flows
+  "How's my cash?": "เงินสดเป็นยังไงบ้าง", "What's overdue?": "มีอะไรเลยกำหนดบ้าง", "Where did the money go?": "เงินไปไหนหมด", "Who owes me money?": "ใครค้างเงินเราบ้าง",
+  "Show the full P&L": "ดูงบกำไรขาดทุนทั้งหมด", "What bills do I have?": "มีบิลอะไรต้องจ่ายบ้าง", "How much VAT should I set aside?": "ควรกัน VAT ไว้เท่าไหร่", "How was this month?": "เดือนนี้เป็นยังไง",
+  "Ask ThuraGirl for the full profit and loss": "ขอดูงบกำไรขาดทุนทั้งหมดจาก ThuraGirl",
+  "I'm not sure about that one yet. In this test build I answer from your statements, invoices and bills. Try \"How's my cash?\", \"What's overdue?\" or \"Where did the money go?\"": "เรื่องนี้หนูยังตอบไม่ได้ ในเวอร์ชันทดสอบนี้หนูตอบจากรายการเดินบัญชี ใบแจ้งหนี้ และบิลของคุณ ลองถาม \"เงินสดเป็นยังไงบ้าง\" \"มีอะไรเลยกำหนดบ้าง\" หรือ \"เงินไปไหนหมด\"",
+  "Let's make an invoice. Who is it for?": "มาออกใบแจ้งหนี้กัน ออกให้ใคร", "What is it for? One line is enough, like \"Catering for 80 guests\".": "ค่าอะไร เขียนบรรทัดเดียวพอ เช่น \"จัดเลี้ยง 80 ท่าน\"",
+  "How much, before VAT?": "เท่าไหร่ (ก่อน VAT)", "Add 7% VAT on top?": "บวก VAT 7% ไหม", "Yes, add VAT": "ใช่ บวก VAT", "No VAT": "ไม่มี VAT", "When should they pay?": "ให้จ่ายเมื่อไหร่",
+  "In 7 days": "ภายใน 7 วัน", "In 15 days": "ภายใน 15 วัน", "In 30 days": "ภายใน 30 วัน", "Use the full form": "ใช้แบบฟอร์มเต็ม", "Create invoice": "สร้างใบแจ้งหนี้", "Create an invoice": "สร้างใบแจ้งหนี้",
+  "Who do you need to pay?": "ต้องจ่ายใคร", "Okay, I dropped it.": "โอเค ยกเลิกแล้ว", "Copy message": "คัดลอกข้อความ", "Message": "ข้อความ", "Email it": "ส่งอีเมล",
+  "In the full app I send this for you. Here it goes out from your own email or chat app.": "ในแอปตัวจริงหนูจะส่งให้เอง ตอนนี้จะส่งผ่านอีเมลหรือแอปแชตของคุณ",
+  "Reminder sent. I will tell you the moment they pay.": "ส่งข้อความทวงแล้ว ลูกค้าจ่ายเมื่อไหร่หนูจะบอกทันที",
+
+  // invoices, bills, money tab
+  "New invoice": "ใบแจ้งหนี้ใหม่", "Customer": "ลูกค้า", "Customer email (optional)": "อีเมลลูกค้า (ไม่บังคับ)", "What for": "ค่าอะไร", "Qty": "จำนวน", "Price each": "ราคาต่อหน่วย", "Add a line": "เพิ่มรายการ",
+  "Charge VAT (7%)": "คิด VAT (7%)", "VAT 7%": "VAT 7%", "Payment due in": "ครบกำหนดชำระใน", "15 days": "15 วัน", "30 days": "30 วัน", "7 days": "7 วัน", "Printable invoice": "ใบแจ้งหนี้สำหรับพิมพ์",
+  "I number it, add VAT if you charge it, and remind you when it is late.": "หนูใส่เลขที่ให้ บวก VAT ถ้าคุณคิด และเตือนเมื่อเลยกำหนด",
+  "Add a bill": "เพิ่มบิล", "Bill": "บิล", "Pay to": "จ่ายให้", "Supplier or person": "ซัพพลายเออร์หรือบุคคล", "Save bill": "บันทึกบิล", "Pay someone": "จ่ายเงิน", "Mark as paid": "ทำเครื่องหมายว่าจ่ายแล้ว",
+  "PromptPay ID": "พร้อมเพย์", "PromptPay ID (optional)": "พร้อมเพย์ (ไม่บังคับ)", "PromptPay QR code": "QR พร้อมเพย์", "Phone or tax ID": "เบอร์โทรหรือเลขผู้เสียภาษี", "Note (optional)": "หมายเหตุ (ไม่บังคับ)",
+  "Add the bill. With a PromptPay ID I make a QR code you can scan in any Thai banking app.": "เพิ่มบิล ถ้ามีพร้อมเพย์ หนูจะทำ QR ให้สแกนจ่ายได้จากแอปธนาคารไทยทุกแอป",
+  "Add the supplier's PromptPay ID and I make a QR code with the amount filled in.": "ใส่พร้อมเพย์ของซัพพลายเออร์ แล้วหนูจะทำ QR พร้อมยอดเงินให้",
+  "Delete this bill": "ลบบิลนี้", "Delete this invoice": "ลบใบแจ้งหนี้นี้", "Send a reminder": "ส่งข้อความทวง", "Send reminder": "ส่งข้อความทวง", "Send it to the customer": "ส่งให้ลูกค้า", "Reminder": "ข้อความทวง",
+  "Choose a date": "เลือกวันที่", "Overdue invoices": "ใบแจ้งหนี้เลยกำหนด", "Overdue invoices and bills": "ใบแจ้งหนี้และบิลที่เลยกำหนด",
+  "Customers": "ลูกค้า", "Suppliers": "ซัพพลายเออร์", "Customers and suppliers": "ลูกค้าและซัพพลายเออร์", "Company or person": "บริษัทหรือบุคคล",
+  "Where it comes from": "เงินมาจากไหน", "Where it goes": "เงินไปไหน", "Where it went": "เงินไปไหน", "Receipts still missing": "ใบเสร็จที่ยังขาด", "Missing Makro receipt": "ขาดใบเสร็จแม็คโคร",
+  "Send receipts from chat": "ส่งใบเสร็จทางแชต", "Filed. The receipts are in your files.": "จัดเก็บแล้ว ใบเสร็จอยู่ในไฟล์ของคุณ", "Download a copy": "ดาวน์โหลดสำเนา",
+
+  // brief
+  "No brief yet.": "ยังไม่มีสรุป", "Your morning brief starts the day after I have a bank statement to read.": "สรุปยามเช้าจะเริ่มในวันถัดไปหลังหนูได้อ่านรายการเดินบัญชี",
+  "By ThuraGirl, your bookkeeper": "โดย ThuraGirl นักบัญชีของคุณ", "The week ahead": "สัปดาห์หน้า", "Can wait": "รอได้", "What I noticed": "สิ่งที่หนูสังเกตเห็น", "Done for you": "ทำให้แล้ว",
+  "It is all on one page:": "ทุกอย่างอยู่ในหน้าเดียว:", "The package comes to": "ยอดรวมทั้งชุด", "need your yes.": "รอคุณกดยืนยัน", "and it was due yesterday. One yes files all of it.": "และครบกำหนดเมื่อวาน กดยืนยันครั้งเดียวยื่นได้ทั้งหมด",
+  "kept. Tick the box and I lock the month.": "เหลือเก็บ ติ๊กช่องแล้วหนูจะปิดเดือนให้", "so far, and you have kept": "แล้ว และคุณเหลือเก็บ", "of it.": "", "in,": "เข้า", "out,": "ออก", "and the": "และ",
+  "Approve and file": "อนุมัติและยื่น", "Approve payroll": "อนุมัติเงินเดือน", "Filings submitted for you": "ยื่นแบบให้แล้ว", "Monday morning: cash in, cash out, what to watch": "เช้าวันจันทร์: เงินเข้า เงินออก เรื่องที่ต้องจับตา",
+  "Your cash covers about 1.6 months of spending at the pace of the last three months.": "เงินสดของคุณพอใช้จ่ายได้ราว 1.6 เดือน ตามอัตราใช้จ่ายสามเดือนที่ผ่านมา",
+
+  // tax and payroll
+  "Tax": "ภาษี", "Tax to file": "ภาษีที่ต้องยื่น", "VAT (PP.30)": "VAT (ภ.พ.30)", "Withholding (PND.3)": "หัก ณ ที่จ่าย (ภ.ง.ด.3)", "Social security (SSO)": "ประกันสังคม (สปส.)", "SSO": "ประกันสังคม",
+  "Monthly VAT, net payable": "VAT รายเดือน ยอดชำระสุทธิ", "Monthly VAT, net payable (estimate)": "VAT รายเดือน ยอดชำระสุทธิ (ประมาณ)", "Company tax estimate": "ประมาณการภาษีนิติบุคคล", "End-of-year liability": "ภาระภาษีปลายปี",
+  "Your employees are enrolled": "ลูกจ้างของคุณขึ้นทะเบียนแล้ว", "VAT and social security": "VAT และประกันสังคม", "VAT registered": "จดทะเบียน VAT", "You charge 7% VAT and file PP.30": "คุณเก็บ VAT 7% และยื่น ภ.พ.30",
+  "Team and payroll": "ทีมและเงินเดือน", "Add a person": "เพิ่มคน", "New person": "คนใหม่", "Remove this person": "ลบคนนี้", "Monthly salary": "เงินเดือน", "Salary": "เงินเดือน", "Job": "ตำแหน่ง",
+  "See this month's payroll": "ดูเงินเดือนเดือนนี้", "Add the people you pay each month. I work out SSO and withholding tax, and ask you to approve payroll before the 25th.": "เพิ่มคนที่คุณจ่ายเงินทุกเดือน หนูคำนวณประกันสังคมและภาษีหัก ณ ที่จ่าย แล้วให้คุณอนุมัติเงินเดือนก่อนวันที่ 25",
+  "SSO is 5% of salary up to ฿17,500 a month (max ฿875), and you add the same again as the employer. Tax is a monthly PND.1 estimate with the standard allowances. ThuraGirl's accountant checks each person's real allowances in the live app.": "ประกันสังคม 5% ของเงินเดือน คิดสูงสุดที่ ฿17,500 ต่อเดือน (ไม่เกิน ฿875) และนายจ้างสมทบเท่ากัน ภาษีเป็นประมาณการ ภ.ง.ด.1 รายเดือนตามค่าลดหย่อนมาตรฐาน ในแอปตัวจริงนักบัญชีของ ThuraGirl จะตรวจค่าลดหย่อนจริงของแต่ละคน",
+  "Head chef": "หัวหน้าเชฟ", "Sous chef": "ซูเชฟ", "Server": "พนักงานเสิร์ฟ", "Bookkeeper": "พนักงานบัญชี", "Operations manager": "ผู้จัดการฝ่ายปฏิบัติการ", "Front of house lead": "หัวหน้าหน้าร้าน",
+  "Payroll approvals": "อนุมัติเงินเดือน", "When the month's payroll is ready": "เมื่อเงินเดือนของเดือนพร้อม",
+
+  // settings
+  "Account": "บัญชีผู้ใช้", "Company": "บริษัท", "Team": "ทีม", "Apps": "แอป", "Files": "ไฟล์", "Security": "ความปลอดภัย", "Plan": "แพ็กเกจ",
+  "Your profile": "โปรไฟล์ของคุณ", "Your name": "ชื่อของคุณ", "What I call you": "ชื่อที่ให้หนูเรียก", "Email": "อีเมล", "Phone": "โทรศัพท์", "Language": "ภาษา", "Time zone": "เขตเวลา",
+  "Appearance": "การแสดงผล", "Theme": "ธีม", "Auto": "อัตโนมัติ", "Day": "กลางวัน", "Night": "กลางคืน", "Changes save as you type.": "บันทึกให้อัตโนมัติขณะพิมพ์",
+  "Notifications": "การแจ้งเตือน", "Tax filing reminders": "เตือนยื่นภาษี", "3 days and 1 day before every deadline": "ก่อนครบกำหนด 3 วันและ 1 วัน", "Overdue 1 day": "เลยกำหนด 1 วัน",
+  "One daily summary of what's late": "สรุปรายวันว่ามีอะไรเลยกำหนด", "Weekly money digest": "สรุปการเงินรายสัปดาห์", "Test build: choices are saved, but nothing is sent yet.": "เวอร์ชันทดสอบ: บันทึกตัวเลือกแล้ว แต่ยังไม่มีการส่งจริง",
+  "Your data": "ข้อมูลของคุณ", "Erase this test account": "ลบบัญชีทดสอบนี้", "Sign out": "ออกจากระบบ", "You can erase the account and everything in it from Settings at any time.": "คุณลบบัญชีและข้อมูลทั้งหมดได้จากหน้าตั้งค่าทุกเมื่อ",
+  "680 bank lines from 1 account, 4 invoices, 4 bills and 0 receipts are saved in this browser.": "รายการเดินบัญชี 680 รายการจาก 1 บัญชี ใบแจ้งหนี้ 4 ใบ บิล 4 ใบ และใบเสร็จ 0 ใบ บันทึกอยู่ในเบราว์เซอร์นี้",
+  "Company records": "ข้อมูลบริษัท", "Registered company name": "ชื่อบริษัทที่จดทะเบียน", "Registered address": "ที่อยู่ที่จดทะเบียน", "Registered capital": "ทุนจดทะเบียน", "Tax ID": "เลขประจำตัวผู้เสียภาษี",
+  "Business type": "ประเภทธุรกิจ", "Directors": "กรรมการ", "Director": "กรรมการ", "Director:": "กรรมการ:", "Shareholder": "ผู้ถือหุ้น", "Shareholder:": "ผู้ถือหุ้น:", "Shares": "หุ้น", "Shares held": "จำนวนหุ้นที่ถือ",
+  "Who can sign": "ผู้มีอำนาจลงนาม", "Who can sign for the company": "ผู้มีอำนาจลงนามแทนบริษัท", "These are right": "ข้อมูลถูกต้อง", "Pull from DBD again": "ดึงข้อมูลจาก DBD อีกครั้ง",
+  "From DBD just now. Check each line, fix anything out of date, then confirm.": "ดึงจาก DBD เมื่อสักครู่ ตรวจทีละบรรทัด แก้ส่วนที่ไม่เป็นปัจจุบัน แล้วกดยืนยัน",
+  "From your registration. Change them in the registration.": "มาจากการจดทะเบียนของคุณ แก้ไขได้ในหน้าจดทะเบียน",
+  "Company verification": "ยืนยันตัวตนบริษัท", "Verify your company": "ยืนยันตัวตนบริษัท", "Secure verification": "ยืนยันอย่างปลอดภัย", "Company certificate": "หนังสือรับรองบริษัท",
+  "One photo or PDF of your company certificate, up to 10 MB.": "รูปถ่ายหรือ PDF ของหนังสือรับรองบริษัท หนึ่งไฟล์ ไม่เกิน 10 MB",
+  "One PDF or image, up to 10 MB. Make sure the company name and tax ID are readable.": "PDF หรือรูปภาพหนึ่งไฟล์ ไม่เกิน 10 MB ชื่อบริษัทและเลขผู้เสียภาษีต้องอ่านออก",
+  "In the live app a verification partner handles this step. In this test build the file never leaves your browser.": "ในแอปตัวจริง พาร์ตเนอร์ยืนยันตัวตนจะดูแลขั้นตอนนี้ ในเวอร์ชันทดสอบ ไฟล์จะไม่ออกจากเบราว์เซอร์ของคุณ",
+  "People with access": "ผู้มีสิทธิ์เข้าถึง", "Owner": "เจ้าของ", "Role": "บทบาท", "Roles": "บทบาท", "No role yet": "ยังไม่มีบทบาท",
+  "Admin: Everything except billing and deleting the company": "ผู้ดูแล: ทำได้ทุกอย่าง ยกเว้นเรื่องค่าบริการและลบบริษัท", "Bookkeeper: Books, invoices, bills and uploads": "พนักงานบัญชี: บัญชี ใบแจ้งหนี้ บิล และการอัปโหลด",
+  "Viewer: Can look, can't change anything": "ผู้ดู: ดูได้ แต่แก้ไขไม่ได้", "Accounting": "บัญชี", "Point of sale": "ระบบขายหน้าร้าน", "Messaging": "แชต", "Books you already keep": "โปรแกรมบัญชีที่ใช้อยู่",
+  "Connected apps": "แอปที่เชื่อมต่อ", "Connect apps": "เชื่อมต่อแอป", "Connect your accounts": "เชื่อมต่อบัญชีของคุณ", "The more I can read, the less you type. Pick the ones you use.": "ยิ่งหนูอ่านได้มาก คุณยิ่งพิมพ์น้อย เลือกแอปที่คุณใช้",
+  "Banks: live feeds need each bank's approval, so for now upload a CSV or Excel statement from your banking app. Other apps: tapping Connect marks them in this test build. The live link is set up on ThuraGirl's server.": "ธนาคาร: การดึงข้อมูลอัตโนมัติต้องได้รับอนุมัติจากแต่ละธนาคาร ตอนนี้ให้อัปโหลดรายการเดินบัญชี CSV หรือ Excel จากแอปธนาคารไปก่อน แอปอื่น: ในเวอร์ชันทดสอบ การกดเชื่อมต่อจะทำเครื่องหมายไว้ การเชื่อมจริงตั้งค่าบนเซิร์ฟเวอร์ของ ThuraGirl",
+  "Don't ask me when I sign in": "ไม่ต้องถามตอนเข้าสู่ระบบ", "Active": "ใช้งานอยู่", "Documents": "เอกสาร", "Invoices you make, receipts you send and statements you upload all land here.": "ใบแจ้งหนี้ที่คุณออก ใบเสร็จที่ส่ง และรายการเดินบัญชีที่อัปโหลด จะมาอยู่ที่นี่ทั้งหมด",
+  "Test build: only the name and size of each file are kept, in this browser. The live app stores them in your company vault.": "เวอร์ชันทดสอบ: เก็บเฉพาะชื่อและขนาดไฟล์ไว้ในเบราว์เซอร์นี้ แอปตัวจริงจะเก็บไฟล์ไว้ในคลังเอกสารของบริษัท",
+  "Tax invoices for each payment appear here.": "ใบกำกับภาษีของแต่ละการชำระจะแสดงที่นี่",
+  "Sign-in and security": "การเข้าสู่ระบบและความปลอดภัย", "Passkey (recommended)": "พาสคีย์ (แนะนำ)", "Add passkey": "เพิ่มพาสคีย์", "Use Face ID or Touch ID instead of your password.": "ใช้ Face ID หรือ Touch ID แทนรหัสผ่าน",
+  "Test build: the passkey is made on your device for real, but sign-in is checked in this browser only. The live app checks it on ThuraGirl's server.": "เวอร์ชันทดสอบ: สร้างพาสคีย์บนเครื่องของคุณจริง แต่ตรวจการเข้าสู่ระบบในเบราว์เซอร์นี้เท่านั้น แอปตัวจริงตรวจบนเซิร์ฟเวอร์ของ ThuraGirl",
+  "Two-step sign-in": "ยืนยันตัวตนสองขั้นตอน", "After your password, I also ask for a 6-digit code from an app like Google Authenticator, Microsoft Authenticator or 1Password.": "หลังใส่รหัสผ่าน หนูจะขอรหัส 6 หลักจากแอปอย่าง Google Authenticator, Microsoft Authenticator หรือ 1Password ด้วย",
+  "Scan this in your authenticator app": "สแกนด้วยแอปยืนยันตัวตน", "Or type the key by hand.": "หรือพิมพ์คีย์เอง", "6-digit code from the app": "รหัส 6 หลักจากแอป", "Change password": "เปลี่ยนรหัสผ่าน",
+  "Current password": "รหัสผ่านปัจจุบัน", "New password": "รหัสผ่านใหม่", "Type it again": "พิมพ์อีกครั้ง", "Update password": "อัปเดตรหัสผ่าน", "Your password is stored only as a salted hash.": "รหัสผ่านของคุณถูกเก็บเป็นค่าแฮชแบบ salt เท่านั้น",
+  "Your plan": "แพ็กเกจของคุณ", "Standard": "Standard", "Pro": "Pro", "Most popular": "ยอดนิยม", "Choose Standard": "เลือก Standard", "Choose Pro": "เลือก Pro", "Switch to Pro": "เปลี่ยนเป็น Pro", "a month": "ต่อเดือน",
+  "Bookkeeping, up to 150 documents a month": "ทำบัญชี สูงสุด 150 เอกสารต่อเดือน", "VAT, withholding and SSO prepared every month": "เตรียม VAT ภาษีหัก ณ ที่จ่าย และประกันสังคมทุกเดือน", "Chat and LINE, unlimited": "แชตและ LINE ไม่จำกัด",
+  "Year-end closing with the auditor": "ปิดงบสิ้นปีกับผู้สอบบัญชี", "Everything in Standard, unlimited documents": "ทุกอย่างใน Standard เอกสารไม่จำกัด", "Payroll and more than one company": "เงินเดือน และดูแลได้มากกว่าหนึ่งบริษัท",
+  "Company registration included": "รวมบริการจดทะเบียนบริษัท", "Prices are launch prices in baht, VAT included. Early customers keep them.": "ราคาเปิดตัวเป็นเงินบาท รวม VAT แล้ว ลูกค้ากลุ่มแรกได้ราคานี้ตลอด",
+  "Payment and receipts": "การชำระเงินและใบเสร็จ", "Pay by card or PromptPay through Beam, our payment partner. Card details are typed on Beam's page, never in ThuraGirl.": "จ่ายด้วยบัตรหรือพร้อมเพย์ผ่าน Beam พาร์ตเนอร์รับชำระเงินของเรา ข้อมูลบัตรกรอกบนหน้าของ Beam ไม่ผ่าน ThuraGirl",
+  "Continue to payment": "ไปที่การชำระเงิน", "Next you go to Beam's secure checkout to pay by card or PromptPay. Your plan starts as soon as Beam confirms the payment, and renews every month until you cancel.": "ขั้นต่อไปคุณจะไปหน้าชำระเงินที่ปลอดภัยของ Beam จ่ายด้วยบัตรหรือพร้อมเพย์ แพ็กเกจเริ่มทันทีที่ Beam ยืนยันการชำระ และต่ออายุทุกเดือนจนกว่าคุณจะยกเลิก",
+  "Test build: Beam checkout is not connected yet, so this only records your choice.": "เวอร์ชันทดสอบ: ยังไม่ได้เชื่อมหน้าชำระเงิน Beam ตอนนี้จึงบันทึกแค่ตัวเลือกของคุณ",
+  "Sign in faster next time": "ครั้งหน้าเข้าสู่ระบบได้เร็วขึ้น", "Sign in with Face ID or Touch ID instead of a password.": "เข้าสู่ระบบด้วย Face ID หรือ Touch ID แทนรหัสผ่าน",
+
+  // company menu (app85)
+  "Your companies": "บริษัทของคุณ", "Add a company": "เพิ่มบริษัท", "Current": "ใช้อยู่", "Switch company": "เปลี่ยนบริษัท", "All settings": "ตั้งค่าทั้งหมด",
+  "Add another company to the same sign-in. Each one keeps its own books, bank statements and tasks.": "เพิ่มบริษัทอื่นในบัญชีเดียวกัน แต่ละบริษัทแยกบัญชี รายการเดินบัญชี และงานของตัวเอง",
+  "Back to my company": "กลับไปบริษัทเดิม", "Screens switch to Thai straight away. ThuraGirl answers in the language you write in.": "หน้าจอเปลี่ยนเป็นภาษาไทยทันที ThuraGirl ตอบเป็นภาษาที่คุณพิมพ์มา",
+
+  // sign up and sign in
+  "Create an account": "สร้างบัญชี", "Create account": "สร้างบัญชี", "Sign in": "เข้าสู่ระบบ", "Already have an account?": "มีบัญชีอยู่แล้ว?", "New here?": "เพิ่งเคยมา?", "Let's get you in.": "มาเริ่มกันเลย",
+  "Sign in to pick up where you left off.": "เข้าสู่ระบบเพื่อทำต่อจากที่ค้างไว้", "Full name": "ชื่อ-นามสกุล", "Password": "รหัสผ่าน", "Create a password": "ตั้งรหัสผ่าน", "Show password": "แสดงรหัสผ่าน",
+  "At least 8 characters": "อย่างน้อย 8 ตัวอักษร", "✓ 8 or more characters": "✓ 8 ตัวอักษรขึ้นไป", "I accept the": "ฉันยอมรับ", "Terms": "ข้อกำหนด", "PDPA privacy notice": "ประกาศความเป็นส่วนตัวตาม PDPA",
+  "Terms and PDPA notice": "ข้อกำหนดและประกาศ PDPA", "Before launch": "ก่อนเปิดตัว", "The full Terms of Service and the PDPA privacy notice will be published here before ThuraGirl opens to customers.": "ข้อกำหนดการใช้บริการฉบับเต็มและประกาศความเป็นส่วนตัวตาม PDPA จะเผยแพร่ที่นี่ก่อน ThuraGirl เปิดให้บริการ",
+  "Test build: your details stay in this browser and are not sent anywhere. Please use a made-up password.": "เวอร์ชันทดสอบ: ข้อมูลของคุณอยู่ในเบราว์เซอร์นี้และไม่ถูกส่งไปไหน กรุณาใช้รหัสผ่านสมมติ",
+  "Test build: this account lives only in this browser. Signing in on another device will not find it.": "เวอร์ชันทดสอบ: บัญชีนี้อยู่ในเบราว์เซอร์นี้เท่านั้น เข้าสู่ระบบจากเครื่องอื่นจะไม่พบ",
+  "In this test build your details stay in this browser. Nothing is sent to a server.": "ในเวอร์ชันทดสอบนี้ ข้อมูลของคุณอยู่ในเบราว์เซอร์นี้ ไม่มีการส่งไปยังเซิร์ฟเวอร์",
+  "It takes about a minute. Everything else can wait until you are inside.": "ใช้เวลาประมาณหนึ่งนาที เรื่องอื่นไว้ทำหลังเข้าแอปได้",
+  "Sign in with Face ID or a passkey": "เข้าสู่ระบบด้วย Face ID หรือพาสคีย์", "Almost there.": "ใกล้เสร็จแล้ว", "One more thing": "อีกเรื่องเดียว",
+  "First, your company.": "เริ่มจากบริษัทของคุณ", "Yes, it is registered": "ใช่ จดทะเบียนแล้ว", "Not registered yet": "ยังไม่ได้จดทะเบียน", "Either way, I handle the paperwork.": "ทางไหนก็ได้ หนูจัดการเอกสารให้",
+  "I set it up from your 13-digit tax ID.": "หนูตั้งค่าให้จากเลขผู้เสียภาษี 13 หลัก", "I register one for you with DBD. It is included in every plan.": "หนูจดทะเบียนกับ DBD ให้ รวมอยู่ในทุกแพ็กเกจ",
+  "What is the company tax ID?": "เลขผู้เสียภาษีของบริษัทคืออะไร", "The 13 digits on your company certificate.": "เลข 13 หลักบนหนังสือรับรองบริษัท", "13-digit tax ID": "เลขผู้เสียภาษี 13 หลัก", "✓ 13 digits": "✓ ครบ 13 หลัก",
+  "No tax ID to hand?": "ไม่มีเลขผู้เสียภาษีอยู่ตรงนี้?", "Use the demo company": "ใช้บริษัทตัวอย่าง", "Demo company found. Fix anything that is out of date.": "พบบริษัทตัวอย่าง แก้ส่วนที่ไม่เป็นปัจจุบันได้เลย",
+  "Last one. What kind of business?": "ข้อสุดท้าย ธุรกิจของคุณเป็นแบบไหน", "So I can pick the right tax forms, accounts and vendor categories for you.": "หนูจะได้เลือกแบบภาษี ผังบัญชี และหมวดผู้ขายให้ถูก",
+  "Restaurant": "ร้านอาหาร", "Retail / Shopfront": "ร้านค้าปลีก / หน้าร้าน", "Online / E-commerce": "ออนไลน์ / อีคอมเมิร์ซ", "Cafe / Bakery": "คาเฟ่ / เบเกอรี่", "Beauty / Salon": "ความงาม / ซาลอน",
+  "Services / Agency": "บริการ / เอเจนซี่", "Manufacturing": "การผลิต", "Other": "อื่น ๆ", "Four quick questions": "สี่คำถามสั้น ๆ", "Always needed": "ต้องมีเสมอ",
+  "Take me in": "พาเข้าไปเลย", "Welcome back.": "ยินดีต้อนรับกลับมา",
+  "Is any shareholder or director not Thai?": "มีผู้ถือหุ้นหรือกรรมการที่ไม่ใช่คนไทยไหม", "Do all founders have a Thai ID that works for online identity checks?": "ผู้ก่อการทุกคนมีบัตรประชาชนที่ใช้ยืนยันตัวตนออนไลน์ได้ไหม",
+  "Are the premises rented or owned?": "สถานที่ตั้งเช่าหรือเป็นเจ้าของ", "Rented": "เช่า", "Owned": "เป็นเจ้าของ", "Does the business need a specific licence?": "ธุรกิจต้องมีใบอนุญาตเฉพาะไหม",
+  "They tell me which papers DBD will ask for. You add the papers later, from inside the app.": "คำตอบช่วยให้หนูรู้ว่า DBD จะขอเอกสารอะไร คุณค่อยเพิ่มเอกสารภายหลังในแอปได้",
+  "Charge VAT": "เก็บ VAT", "Have employees (SSO)": "มีลูกจ้าง (ประกันสังคม)",
+
+  // registration
+  "Register your company": "จดทะเบียนบริษัท", "Continue registration": "จดทะเบียนต่อ", "New company": "บริษัทใหม่", "Registered": "จดทะเบียนแล้ว",
+  "Five short parts, in any order. Most people finish in about 15 minutes. Everything saves as you go.": "ห้าส่วนสั้น ๆ ทำส่วนไหนก่อนก็ได้ ส่วนใหญ่เสร็จในราว 15 นาที บันทึกให้อัตโนมัติ",
+  "Name and purpose": "ชื่อและวัตถุประสงค์", "Capital and shares": "ทุนและหุ้น", "People": "บุคคล", "Office and running the company": "สำนักงานและการบริหาร",
+  "What happens after you submit": "หลังส่งแล้วจะเกิดอะไรขึ้น", "Submit for registration": "ส่งจดทะเบียน", "Still needed": "ยังขาด",
+  "I check everything and reserve the name with DBD. A name holds for 30 days.": "หนูตรวจทุกอย่างและจองชื่อกับ DBD ชื่อที่จองมีอายุ 30 วัน",
+  "Everyone named confirms, online with a Thai ID or on paper.": "ทุกคนที่มีชื่อยืนยัน ออนไลน์ด้วยบัตรประชาชนหรือบนกระดาษ",
+  "DBD registers the company, usually in 1 to 3 working days. The company tax ID is the registration number.": "DBD จดทะเบียนบริษัท ปกติใช้เวลา 1 ถึง 3 วันทำการ เลขทะเบียนบริษัทคือเลขผู้เสียภาษี",
+  "You open the company bank account with the certificate, and upload its first statement here.": "คุณเปิดบัญชีธนาคารของบริษัทด้วยหนังสือรับรอง แล้วอัปโหลดรายการเดินบัญชีแรกที่นี่",
+  "Give up to three names in Thai, best first. If DBD says the first is taken, I try the next one.": "ตั้งชื่อภาษาไทยได้สูงสุดสามชื่อ เรียงจากที่ชอบที่สุด ถ้าชื่อแรกมีคนใช้แล้ว หนูจะลองชื่อถัดไป",
+  "First choice": "ชื่อแรก", "Second choice (optional)": "ชื่อที่สอง (ไม่บังคับ)", "Third choice (optional)": "ชื่อที่สาม (ไม่บังคับ)", "Another name, in case": "ชื่อสำรอง", "English name (optional)": "ชื่อภาษาอังกฤษ (ไม่บังคับ)",
+  "Co., Ltd.": "จำกัด", "What the company will do": "วัตถุประสงค์ของบริษัท", "Objectives": "วัตถุประสงค์", "One per line": "บรรทัดละหนึ่งข้อ",
+  "Tap your kind of business to start from the usual wording, then edit. One line per activity, up to 30. Wider is fine; you can do less than you list, never more.": "แตะประเภทธุรกิจเพื่อเริ่มจากข้อความที่ใช้กันทั่วไป แล้วแก้ไขได้ บรรทัดละหนึ่งกิจกรรม สูงสุด 30 ข้อ เขียนกว้างไว้ได้ ทำน้อยกว่าที่เขียนได้ แต่ทำเกินไม่ได้",
+  "When the financial year ends": "วันสิ้นรอบปีบัญชี", "Year ends on": "สิ้นปีบัญชีวันที่", "Most companies use 31 December. Your first year can be shorter than 12 months.": "บริษัทส่วนใหญ่ใช้ 31 ธันวาคม ปีแรกสั้นกว่า 12 เดือนได้",
+  "Capital is what the owners promise to put in. It is not a fee. ฿1,000,000 is the most common, and only a quarter of it has to be paid in at the start.": "ทุนคือเงินที่เจ้าของสัญญาว่าจะลงในบริษัท ไม่ใช่ค่าธรรมเนียม ที่นิยมที่สุดคือ ฿1,000,000 และชำระตอนเริ่มแค่หนึ่งในสี่",
+  "฿1,000,000 (most common)": "฿1,000,000 (นิยมที่สุด)", "Par value per share (at least ฿5)": "มูลค่าหุ้นละ (อย่างน้อย ฿5)", "The par value must divide the capital evenly.": "มูลค่าหุ้นต้องหารทุนได้ลงตัว",
+  "How much is paid in now": "ชำระค่าหุ้นตอนนี้เท่าไหร่", "A quarter (the minimum)": "หนึ่งในสี่ (ขั้นต่ำ)", "All of it": "ทั้งหมด", "Paid-up per share (at least 25% of par)": "ชำระต่อหุ้น (อย่างน้อย 25% ของมูลค่า)",
+  "The founders pay in ฿250,000 now, into the company bank account once it is open.": "ผู้ก่อการชำระ ฿250,000 ตอนนี้ เข้าบัญชีธนาคารของบริษัทเมื่อเปิดบัญชีแล้ว",
+  "Government fees for this capital: about ฿5,500 (memorandum and registration). ThuraGirl's fee is separate.": "ค่าธรรมเนียมราชการสำหรับทุนนี้: ประมาณ ฿5,500 (หนังสือบริคณห์สนธิและจดทะเบียน) ค่าบริการ ThuraGirl แยกต่างหาก",
+  "Shares given out": "หุ้นที่จัดสรรแล้ว", "0 shares": "0 หุ้น",
+  "Add everyone involved. One person can hold several roles.": "เพิ่มทุกคนที่เกี่ยวข้อง หนึ่งคนมีได้หลายบทบาท", "Add me": "เพิ่มตัวฉัน", "Add a director": "เพิ่มกรรมการ", "Add a shareholder": "เพิ่มผู้ถือหุ้น",
+  "Founder": "ผู้ก่อการ", "Founder:": "ผู้ก่อการ:", "Founders": "ผู้ก่อการ", "Founder, Director": "ผู้ก่อการ, กรรมการ",
+  "signs the memorandum and must hold at least 1 share. You need 2 or more.": "ลงนามในหนังสือบริคณห์สนธิและต้องถืออย่างน้อย 1 หุ้น ต้องมีตั้งแต่ 2 คนขึ้นไป",
+  "runs the company and signs for it. You need 1 or more.": "บริหารบริษัทและลงนามแทนบริษัท ต้องมีตั้งแต่ 1 คนขึ้นไป", "owns shares but has no say in day-to-day running.": "ถือหุ้นแต่ไม่ได้บริหารงานประจำวัน",
+  "First name": "ชื่อ", "Last name": "นามสกุล", "Nationality": "สัญชาติ", "Birth date": "วันเกิด", "Occupation": "อาชีพ", "National ID (13 digits)": "เลขบัตรประชาชน (13 หลัก)", "On the front of the ID card": "อยู่ด้านหน้าบัตรประชาชน",
+  "Home address, as on the ID card or passport": "ที่อยู่ตามบัตรประชาชนหรือหนังสือเดินทาง", "House number, street, subdistrict, district, province, postcode": "บ้านเลขที่ ถนน ตำบล/แขวง อำเภอ/เขต จังหวัด รหัสไปรษณีย์",
+  "Choose a person": "เลือกบุคคล", "Person": "บุคคล", "Applicant (must be a founder and a director)": "ผู้ขอจดทะเบียน (ต้องเป็นผู้ก่อการและกรรมการ)",
+  "The registered office is where DBD and the Revenue Department send letters. A rented shop, an office or your home all work, with the owner's consent.": "สำนักงานที่จดทะเบียนคือที่ที่ DBD และกรมสรรพากรส่งจดหมายไป จะเป็นร้านที่เช่า สำนักงาน หรือบ้านก็ได้ ถ้าเจ้าของยินยอม",
+  "House number and street": "บ้านเลขที่และถนน", "Subdistrict": "ตำบล/แขวง", "District": "อำเภอ/เขต", "Province": "จังหวัด", "Postcode": "รหัสไปรษณีย์",
+  "Who owns the place": "เจ้าของสถานที่", "Landlord's name, or yours if you own it": "ชื่อผู้ให้เช่า หรือชื่อคุณถ้าเป็นเจ้าของ",
+  "Any one director": "กรรมการคนใดคนหนึ่ง", "Two directors jointly": "กรรมการสองคนร่วมกัน", "Named directors": "กรรมการที่ระบุชื่อ",
+  "Simplest: any director can sign alone. Most small companies choose this.": "ง่ายที่สุด: กรรมการคนใดลงนามคนเดียวได้ บริษัทเล็กส่วนใหญ่เลือกแบบนี้", "Only the directors you pick can sign.": "เฉพาะกรรมการที่คุณเลือกเท่านั้นที่ลงนามได้",
+  "Any one director signs and affixes the company seal": "กรรมการคนใดคนหนึ่งลงนามและประทับตราบริษัท", "Company seal": "ตราบริษัท", "Optional. Without a seal, the directors' signatures are enough.": "ไม่บังคับ ถ้าไม่มีตรา ลายมือชื่อกรรมการก็พอ",
+  "First meeting date": "วันประชุมจัดตั้งบริษัท", "Chair of the first meeting": "ประธานที่ประชุมจัดตั้ง",
+  "The first meeting is when the founders agree the rules and appoint the directors. It can be the same day you submit. The applicant files the papers and is usually you.": "การประชุมจัดตั้งคือตอนที่ผู้ก่อการตกลงข้อบังคับและแต่งตั้งกรรมการ เป็นวันเดียวกับที่ส่งได้ ผู้ขอจดทะเบียนเป็นคนยื่นเอกสาร ซึ่งปกติคือคุณ",
+  "Auditor: ThuraGirl appoints a licensed auditor for you. Nothing to fill in here.": "ผู้สอบบัญชี: ThuraGirl แต่งตั้งผู้สอบบัญชีรับอนุญาตให้ ไม่ต้องกรอกอะไรตรงนี้",
+  "ID card copy": "สำเนาบัตรประชาชน", "Signed consent letter to use the premises": "หนังสือยินยอมให้ใช้สถานที่ที่ลงนามแล้ว", "Title document for the premises": "เอกสารสิทธิ์ของสถานที่", "Upload": "อัปโหลด",
+  "· A first-choice company name": "· ชื่อบริษัทลำดับแรก", "· At least 1 director": "· กรรมการอย่างน้อย 1 คน", "· At least one named director who can sign": "· กรรมการที่ระบุชื่อและลงนามได้อย่างน้อย 1 คน",
+  "· At least one objective": "· วัตถุประสงค์อย่างน้อย 1 ข้อ", "· First meeting date": "· วันประชุมจัดตั้ง", "· Full office address": "· ที่อยู่สำนักงานครบถ้วน", "· Paid-up amount per share": "· ยอดชำระต่อหุ้น",
+  "· Par value of at least ฿5 per share": "· มูลค่าหุ้นอย่างน้อย ฿5", "· Registered capital": "· ทุนจดทะเบียน", "· The applicant": "· ผู้ขอจดทะเบียน", "· Whether there is a company seal": "· มีตราบริษัทหรือไม่",
+  "· Who can sign for the company": "· ผู้มีอำนาจลงนาม", "· Who chaired the meeting": "· ประธานที่ประชุม", "· Who owns the premises": "· เจ้าของสถานที่", "· 5-digit postcode": "· รหัสไปรษณีย์ 5 หลัก",
+  "· Signed consent letter to use the premises": "· หนังสือยินยอมให้ใช้สถานที่", "· Title document for the premises": "· เอกสารสิทธิ์ของสถานที่",
+  "Operate restaurants and sell food and drinks\nProvide catering and event food services": "ประกอบกิจการร้านอาหารและจำหน่ายอาหารและเครื่องดื่ม\nให้บริการจัดเลี้ยงและอาหารสำหรับงานอีเวนต์",
+
+  // auth top / misc placeholders
+  "name@company.co.th": "name@company.co.th", "customer@example.com": "customer@example.com", "Invoice number, what it is for": "เลขที่ใบแจ้งหนี้ ค่าอะไร",
+  "Bangkok Bank": "ธนาคารกรุงเทพ", "Krungsri": "กรุงศรี", "Krungthai": "กรุงไทย", "Lotus Wholesale": "Lotus Wholesale",
+  "MEA (electricity)": "กฟน. (ค่าไฟ)", "PTT (electricity)": "PTT (ค่าไฟ)", "Electricity, PTT": "ค่าไฟ, PTT", "Rent, Watthana Property": "ค่าเช่า, Watthana Property",
+  "Catering": "จัดเลี้ยง", "Catering, 50 guests": "จัดเลี้ยง 50 ท่าน", "Catering, staff party": "จัดเลี้ยงงานเลี้ยงพนักงาน", "Thai Beverage Co": "Thai Beverage Co"
+};
+
+/* ── several companies under one sign-in ── */
+var COFIELDS = ["onboarded", "path", "company", "four", "setup", "banks", "tx", "txv", "hasData", "stmt", "done", "briefSeen", "reg", "invoices", "bills", "rcpt", "requests", "team", "records", "docs", "matched", "sample", "ctab", "welcome", "filesTab", "invites"];
+function coSnap(u){ var o = {}; COFIELDS.forEach(function(k){ if (u[k] !== undefined) o[k] = u[k]; }); return o; }
+function coEnsure(u){ if (!u.cos) u.cos = {}; if (!u.cur) u.cur = "c" + (u.created || Date.now()).toString(36); }
+function coLoad(u, snap){ COFIELDS.forEach(function(k){ delete u[k]; }); Object.keys(snap).forEach(function(k){ u[k] = snap[k]; }); }
+function coSub(s){
+  if (!s.onboarded) return L("Not set up yet", "ยังตั้งค่าไม่เสร็จ");
+  if (s.path === "new") return s.reg && s.reg.submitted ? L("Registering with DBD", "กำลังจดทะเบียนกับ DBD") : L("Not registered yet", "ยังไม่ได้จดทะเบียน");
+  return (s.company && s.company.type ? T(s.company.type) : L("Company", "บริษัท")) + (s.company && s.company.taxid ? " · " + s.company.taxid : "");
+}
+function coLabel(s){ try { return coName(s); } catch (e) { return L("New company", "บริษัทใหม่"); } }
+function switchCo(id, quiet){
+  var u = me(); coEnsure(u); var tgt = u.cos[id]; if (!tgt || id === u.cur) return;
+  if (u.onboarded) u.cos[u.cur] = coSnap(u);
+  coLoad(u, tgt); delete u.cos[id]; u.cur = id; delete u.prevCo; save();
+  BK_CACHE.key = ""; lastKey = ""; closeGS();
+  if (!u.onboarded){ location.href = "../signup/"; return; }
+  if (PAGE === "signup"){ location.replace("../dashboard/"); return; }
+  go(""); if (!quiet) toast(L("Switched to ", "เปลี่ยนเป็น ") + coLabel(u));
+}
+function addCo(){
+  var u = me(); coEnsure(u);
+  var prev = u.cur; u.cos[prev] = coSnap(u);
+  coLoad(u, { onboarded: false, path: "", company: { taxid: "", name: "", addr: "", type: "" }, four: {}, setup: { vat: "", sso: "", conn: {}, verify: null }, banks: [], hasData: false, stmt: null, done: {}, welcome: false, briefSeen: false, reg: blankReg() });
+  u.cur = "c" + Date.now().toString(36); u.prevCo = prev; save();
+  location.href = "../signup/";
+}
+function cancelAddCo(){
+  var u = me(); if (!u || !u.prevCo || !u.cos || !u.cos[u.prevCo]) return;
+  var id = u.prevCo; coLoad(u, u.cos[id]); delete u.cos[id]; u.cur = id; delete u.prevCo; save();
+  location.replace("../dashboard/");
+}
+function openCoMenu(){
+  var u = me(); coEnsure(u);
+  var b = openGS(L("Company", "บริษัท"), L("Your companies", "บริษัทของคุณ"), "");
+  var list = el("div", "co-list");
+  var rows = [{ id: u.cur, s: u, cur: true }].concat(Object.keys(u.cos).map(function(id){ return { id: id, s: u.cos[id] }; }));
+  rows.forEach(function(r){
+    var n = coLabel(r.s), row = el("button", "co-row" + (r.cur ? " cur" : "")); row.type = "button";
+    row.appendChild(el("b", "co-av", initials(n)));
+    var tx = el("span", "co-tx"); tx.appendChild(el("strong", "", n)); tx.appendChild(el("small", "", coSub(r.s))); row.appendChild(tx);
+    if (r.cur){ row.setAttribute("aria-current", "true"); var ck = el("span", "co-ck"); ck.innerHTML = '<svg class="i"><use href="#i-check"/></svg>'; row.appendChild(ck); }
+    else row.addEventListener("click", function(){ switchCo(r.id); });
+    list.appendChild(row);
+  });
+  var add = el("button", "co-row co-add"); add.type = "button"; add.innerHTML = '<b class="co-av"><svg class="i"><use href="#i-plus"/></svg></b>';
+  var at = el("span", "co-tx"); at.appendChild(el("strong", "", L("Add a company", "เพิ่มบริษัท"))); at.appendChild(el("small", "", L("Registered already, or one I register for you", "จดทะเบียนแล้ว หรือให้หนูจดให้"))); add.appendChild(at);
+  add.addEventListener("click", addCo); list.appendChild(add);
+  b.appendChild(list);
+  b.appendChild(el("p", "tnote", L("Each company keeps its own books, bank statements, team and tasks. Same sign-in, same plan price per company.", "แต่ละบริษัทแยกบัญชี รายการเดินบัญชี ทีม และงานของตัวเอง ใช้บัญชีเข้าสู่ระบบเดียวกัน ราคาแพ็กเกจต่อบริษัทเท่าเดิม")));
+  var prefs = el("div", "co-prefs");
+  prefs.appendChild(prefRow(L("Language", "ภาษา"), langSeg()));
+  prefs.appendChild(prefRow(L("Theme", "ธีม"), themeSeg()));
+  b.appendChild(prefs);
+  var ft = el("div", "shB-f one"); ft.appendChild(btn("btn", L("All settings", "ตั้งค่าทั้งหมด"), function(){ closeGS(); go("settings"); }, "i-set")); b.appendChild(ft);
+}
+function prefRow(label, ctl){ var r = el("div", "frow"); r.appendChild(el("b", "", label)); r.appendChild(ctl); return r; }
+function themeSeg(){
+  var u = me(), labels = { auto: L("Auto", "อัตโนมัติ"), day: L("Day", "กลางวัน"), night: L("Night", "กลางคืน") }, keys = ["auto", "day", "night"];
+  var cur = (u && u.theme) || db.theme || "auto";
+  var w = seg(keys.map(function(k){ return labels[k]; }), labels[cur], function(v){ var k = keys[keys.map(function(x){ return labels[x]; }).indexOf(v)]; if (u) u.theme = k; db.theme = k; save(); applyTheme(); });
+  $$("button", w).forEach(function(x){ x.setAttribute("data-noi18n", ""); }); return w;
+}
+function langSeg(){
+  var w = seg(["English", "ไทย"], lang() === "th" ? "ไทย" : "English", function(v){ setLang(v === "ไทย" ? "th" : "en"); });
+  w.setAttribute("data-noi18n", ""); $$("button", w).forEach(function(x){ x.setAttribute("data-noi18n", ""); x.setAttribute("lang", x.textContent === "ไทย" ? "th" : "en"); }); return w;
+}
+(function(){ var oc = $("#b-co"); if (!oc) return; var nc = oc.cloneNode(true); oc.parentNode.replaceChild(nc, oc); nc.addEventListener("click", openCoMenu); nc.setAttribute("aria-haspopup", "dialog"); })();
+
+/* theme also works before sign-in */
+applyTheme = (function(orig){ return function(){
+  var u = me(); if (!u && db.theme){ var dark = false; try { dark = window.matchMedia("(prefers-color-scheme: dark)").matches; } catch (e) {} var night = db.theme === "night" || (db.theme === "auto" && dark); $("#mock").setAttribute("data-mode", night ? "night" : "day"); document.documentElement.classList.toggle("night", night); return; }
+  orig();
+}; })(applyTheme);
+
+/* sign-up screens: language and theme in the top bar, and a way back when adding a company */
+renderAuth = (function(orig){ return function(){
+  orig();
+  var top = $("#su .su-top"); if (top && !$(".su-lang", top)){ var w = langSeg(); w.classList.add("su-lang"); top.appendChild(w); }
+  var u = me();
+  if (u && u.prevCo && u.cos && u.cos[u.prevCo] && authMode !== "login"){
+    var bk = el("button", "alt su-cancel", L("Back to ", "กลับไปที่ ") + coLabel(u.cos[u.prevCo])); bk.type = "button"; bk.addEventListener("click", cancelAddCo);
+    var body = $("#su .su-body"); if (body) body.appendChild(bk);
+  }
+}; })(renderAuth);
+
+/* ── language ── */
+function lang(){ var u = me(); return (u && u.lang) || db.lang || "en"; }
+function L(en, th){ return lang() === "th" ? th : en; }
+function setLang(l){
+  var u = me(); if (u) u.lang = l; db.lang = l; save();
+  document.documentElement.lang = l;
+  i18nAll();
+  if (u && u.onboarded && PAGE !== "signup"){ refresh(); if ($("#gs") && !$("#gs").hidden && $(".co-list")) openCoMenu(); }
+  else if (PAGE === "signup") renderAuth();
+}
+
+var MF = { January: "มกราคม", February: "กุมภาพันธ์", March: "มีนาคม", April: "เมษายน", May: "พฤษภาคม", June: "มิถุนายน", July: "กรกฎาคม", August: "สิงหาคม", September: "กันยายน", October: "ตุลาคม", November: "พฤศจิกายน", December: "ธันวาคม" };
+var MS = { Jan: "ม.ค.", Feb: "ก.พ.", Mar: "มี.ค.", Apr: "เม.ย.", May: "พ.ค.", Jun: "มิ.ย.", Jul: "ก.ค.", Aug: "ส.ค.", Sep: "ก.ย.", Oct: "ต.ค.", Nov: "พ.ย.", Dec: "ธ.ค." };
+var WD = { Monday: "วันจันทร์", Tuesday: "วันอังคาร", Wednesday: "วันพุธ", Thursday: "วันพฤหัสบดี", Friday: "วันศุกร์", Saturday: "วันเสาร์", Sunday: "วันอาทิตย์" };
+var MO = "(January|February|March|April|May|June|July|August|September|October|November|December)";
+var CATL = { "stock and supplies": "สินค้าและวัตถุดิบ", "rent": "ค่าเช่า", "other costs": "ค่าใช้จ่ายอื่น", "tax and social security": "ภาษีและประกันสังคม", "utilities": "ค่าน้ำค่าไฟ", "marketing": "การตลาด", "wages": "ค่าจ้าง", "payroll": "เงินเดือน" };
+function mth(m){ return MF[m] || m; }
+function dates(s){
+  return s.replace(/\b(\d{1,2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4})\b/g, function(x, d, m, y){ return d + " " + MS[m] + " " + (+y + 543); })
+    .replace(new RegExp("\\b(\\d{1,2}) " + MO + "(?: (\\d{4}))?\\b", "g"), function(x, d, m, y){ return d + " " + MF[m] + (y ? " " + (+y + 543) : ""); })
+    .replace(/\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b/g, function(x){ return WD[x]; });
+}
+// fragments inside longer sentences
+function inl(s){
+  s = dates(s)
+    .replace(/(\d+) days? late/g, "เลยกำหนด $1 วัน").replace(/\b[Dd]ue in (\d+) days?/g, "ครบกำหนดใน $1 วัน").replace(/\b[Dd]ue today\b/g, "ครบกำหนดวันนี้")
+    .replace(/\binvoice (#\S+) from ([^(;]+?) \(/g, "ใบแจ้งหนี้ $1 จาก $2 (").replace(/\byour ([^(;]+?) bill \(/g, "บิล $1 ของคุณ (")
+    .replace(/\bstock and supplies|\bother costs|\btax and social security|\brent\b|\butilities\b|\bmarketing\b|\bwages\b/g, function(x){ return CATL[x] || x; });
+  Object.keys(TH).forEach(function(k){ if (k.length > 3 && /\(/.test(k) && s.indexOf(k) >= 0) s = s.split(k).join(TH[k]); });
+  return s;
+}
+var UPD = function(d){ return d === "Up" || d === "up" ? "เพิ่มขึ้น" : "ลดลง"; };
+var RULES = [
+  [/^(\d[\d,]*) of (\d[\d,]*)$/, "$1 จาก $2"],
+  [/^(\d+) of (\d+) digits$/, "$1 จาก $2 หลัก"],
+  [/^(\d+) of (\d+) parts done$/, "เสร็จแล้ว $1 จาก $2 ส่วน"],
+  [/^(\d+) of (\d+) parts still need you\.?$/, "ยังเหลืออีก $1 จาก $2 ส่วน"],
+  [/^(\d+) of (\d+) added\.$/, "เพิ่มแล้ว $1 จาก $2"],
+  [/^(\d+) invoices?$/, "ใบแจ้งหนี้ $1 ใบ"], [/^(\d+) bills?$/, "บิล $1 ใบ"], [/^(\d+) receipts?$/, "ใบเสร็จ $1 ใบ"], [/^(\d+) people$/, "$1 คน"], [/^(\d+) (?:person|people)$/, "$1 คน"],
+  [/^(฿[\d,.]+) open$/, "ค้างรับ $1"], [/^(\d+) min read$/, "อ่าน $1 นาที"], [/^(\d+) overdue$/, "เลยกำหนด $1 รายการ"], [/^([\d,.]+) baht$/, "$1 บาท"],
+  [/^(\d+) days? late\.?$/, "เลยกำหนด $1 วัน"], [/^Overdue (\d+) days?$/, "เลยกำหนด $1 วัน"], [/^(\d+) days?$/, "$1 วัน"], [/^Due in (\d+) days?$/, "ครบกำหนดใน $1 วัน"],
+  [/^([\d,]+) shares?$/, "$1 หุ้น"], [/^([\d,]+) shares of (฿[\d,]+)$/, "$1 หุ้น หุ้นละ $2"], [/^That makes ([\d,]+) shares\.$/, "รวมเป็น $1 หุ้น"],
+  [/^(-?[\d.]+)% margin$/, "อัตรากำไร $1%"], [/^(-?[\d.]+)% vs last month$/, "$1% เทียบเดือนก่อน"], [/^(-?[\d.]+)% this month$/, "$1% เดือนนี้"],
+  [/^(\d+) quick things? (?:are|is) left, whenever you are ready\.$/, "เหลืออีก $1 เรื่องสั้น ๆ พร้อมเมื่อไหร่ก็ทำได้"],
+  [/^(\d+) quick things? (?:are )?left$/, "เหลืออีก $1 เรื่องสั้น ๆ"], [/^(\d+) to go$/, "เหลืออีก $1"], [/^(\d+) more scheduled this week$/, "สัปดาห์นี้มีอีก $1 รายการ"],
+  [/^(\d+) more things? coming up this month$/, "เดือนนี้มีอีก $1 เรื่องที่ใกล้ถึง"], [/^(\d+) on file$/, "มีแล้ว $1"], [/^(\d+) open$/, "ค้างอยู่ $1"],
+  [/^paid on (.+)$/, function(m){ return "จ่ายวันที่ " + dates(m[1]); }],
+  [/^(฿[\d,]+) a month before SSO and tax\.$/, "$1 ต่อเดือน ก่อนหักประกันสังคมและภาษี"], [/^(฿[\d,]+) a month$/, "$1 ต่อเดือน"], [/^(฿[\d,]+) a month, VAT included$/, "$1 ต่อเดือน รวม VAT"],
+  [/^(Up|Down) ([\d.]+)% (?:on|vs) last month$/, function(m){ return UPD(m[1]) + " " + m[2] + "% จากเดือนก่อน"; }],
+  [/^(Up|Down) ([\d.]+)% (?:on|vs) last quarter$/, function(m){ return UPD(m[1]) + " " + m[2] + "% จากไตรมาสก่อน"; }],
+  [/^(Up|Down) ([\d.]+)% (?:on|vs) last year$/, function(m){ return UPD(m[1]) + " " + m[2] + "% จากปีก่อน"; }],
+  [/^(Up|Down) ([\d.]+)% since (.+)$/, function(m){ return UPD(m[1]) + " " + m[2] + "% ตั้งแต่ " + dates(m[3]); }],
+  [/^(Up|Down) ([\d.]+)% this (month|quarter|year)$/, function(m){ return UPD(m[1]) + " " + m[2] + "% " + { month: "เดือนนี้", quarter: "ไตรมาสนี้", year: "ปีนี้" }[m[3]]; }],
+  [/^Cash is (up|down) ([\d.]+)%\.$/, function(m){ return "เงินสด" + UPD(m[1]) + " " + m[2] + "%"; }],
+  [/^(Revenue|Expenses|Profit|Money in|Money out), ([\d,.-]+) baht\. Open Money$/, function(m){ return T(m[1]) + " " + m[2] + " บาท เปิดหน้าการเงิน"; }],
+  [/^([^.]+): in (฿[\d,]+), out (฿[\d,]+), kept (-?฿[\d,-]+)$/, function(m){ return T(m[1]) + ": เข้า " + m[2] + " ออก " + m[3] + " เหลือ " + m[4]; }],
+  [/^Wk (\d+)$/, "สัปดาห์ $1"],
+  [/^(Invoices|Bills|Bank statements|Receipts|Statements|Files) (\d+)$/, function(m){ return T(m[1]) + " " + m[2]; }],
+  [/^Good (morning|afternoon|evening), (.+?)\. You have$/, function(m){ return "สวัสดีตอน" + { morning: "เช้า", afternoon: "บ่าย", evening: "เย็น" }[m[1]] + " คุณ " + m[2] + " คุณมี"; }],
+  [/^Good (morning|afternoon|evening), (.+?)\.?$/, function(m){ return "สวัสดีตอน" + { morning: "เช้า", afternoon: "บ่าย", evening: "เย็น" }[m[1]] + " คุณ " + m[2]; }],
+  [/^Do you already have a company, (.+)\?$/, "คุณ $1 มีบริษัทอยู่แล้วหรือยัง"], [/^You're in, ([^.]+)\.$/, "เข้ามาแล้ว คุณ $1"], [/^Welcome, ([^.]+)\.$/, "ยินดีต้อนรับ คุณ $1"],
+  [/^Welcome back, (.+)\.$/, "ยินดีต้อนรับกลับมา คุณ $1"], [/^Connect your apps, (.+)$/, "คุณ $1 มาเชื่อมต่อแอปกัน"], [/^([^.]+) \(you\)$/, "$1 (คุณ)"],
+  [/^Invoice (#?\S+) for (฿[\d,.]+) is (\d+) days late\. I have a polite reminder ready to go\.$/, "ใบแจ้งหนี้ $1 ยอด $2 เลยกำหนดมา $3 วันแล้ว หนูเตรียมข้อความทวงแบบสุภาพไว้ให้แล้ว"],
+  [/^Invoice (#?\S+) for$/, "ใบแจ้งหนี้ $1 ยอด"], [/^is (\d+) days late\. I have a polite reminder ready to go\.$/, "เลยกำหนดมา $1 วันแล้ว หนูเตรียมข้อความทวงแบบสุภาพไว้ให้แล้ว"],
+  [/^Invoice (#?\S+) is unpaid$/, "ใบแจ้งหนี้ $1 ยังไม่ได้รับชำระ"], [/^Invoice (#?INV-\S+)$/, "ใบแจ้งหนี้ $1"], [/^([^.]+) has not paid you$/, "$1 ยังไม่จ่ายเงิน"],
+  [/^Invoice to (.+)$/, "ใบแจ้งหนี้ถึง $1"],
+  [/^Pay (฿[\d,]+) to (\d+) people on ([^.]+)\.$/, function(m){ return "จ่าย " + m[1] + " ให้ " + m[2] + " คน วันที่ " + dates(m[3]); }],
+  [/^Here it is: (.+?), (.+), (฿[\d,.]+)( with VAT)?, due (.+)\. Shall I create it\?$/, function(m){ return "สรุปนะ: " + m[1] + ", " + m[2] + ", " + m[3] + (m[4] ? " รวม VAT" : "") + " ครบกำหนด " + dates(m[5]) + " ให้หนูสร้างเลยไหม"; }],
+  [/^Pay (.+?) (฿[\d,.]+), due (.+?)(, by PromptPay)?\. Save it\?$/, function(m){ return "จ่าย " + m[1] + " " + m[2] + " ครบกำหนด " + dates(m[3]) + (m[4] ? " ผ่านพร้อมเพย์" : "") + " บันทึกเลยไหม"; }],
+  [/^Pay ([^.]+)$/, function(m){ return "จ่าย " + T(m[1]); }],
+  [new RegExp("^Your " + MO + " books are ready to sign off$"), function(m){ return "บัญชีเดือน" + mth(m[1]) + " พร้อมให้คุณรับรองแล้ว"; }],
+  [new RegExp("^Your " + MO + " taxes are ready$"), function(m){ return "ภาษีเดือน" + mth(m[1]) + " พร้อมแล้ว"; }],
+  [new RegExp("^" + MO + " Review Pack$"), function(m){ return "สรุปประจำเดือน" + mth(m[1]); }],
+  [new RegExp("^" + MO + " tax package$"), function(m){ return "ชุดภาษีเดือน" + mth(m[1]); }],
+  [new RegExp("^" + MO + ", on one page$"), function(m){ return "เดือน" + mth(m[1]) + " ในหน้าเดียว"; }],
+  [new RegExp("^Signed off\\. " + MO + " is locked and filed\\.$"), function(m){ return "รับรองแล้ว ปิดบัญชีเดือน" + mth(m[1]) + " และยื่นเรียบร้อย"; }],
+  [new RegExp("^I've reviewed " + MO + " and it looks right\\.$"), function(m){ return "ฉันตรวจบัญชีเดือน" + mth(m[1]) + " แล้ว ถูกต้อง"; }],
+  [new RegExp("^How was " + MO + "\\?$"), function(m){ return "เดือน" + mth(m[1]) + " เป็นยังไงบ้าง"; }],
+  [new RegExp("^" + MO + " tax forms approved$"), function(m){ return "อนุมัติแบบภาษีเดือน" + mth(m[1]) + " แล้ว"; }],
+  [new RegExp("^Closed your " + MO + " books, every baht accounted for$"), function(m){ return "ปิดบัญชีเดือน" + mth(m[1]) + " แล้ว ครบทุกบาท"; }],
+  [new RegExp("^" + MO + " payroll$"), function(m){ return "เงินเดือนเดือน" + mth(m[1]); }],
+  [new RegExp("^" + MO + " payroll is ready$"), function(m){ return "เงินเดือนเดือน" + mth(m[1]) + " พร้อมแล้ว"; }],
+  [new RegExp("^" + MO + " so far$"), function(m){ return "เดือน" + mth(m[1]) + " ถึงตอนนี้"; }],
+  [new RegExp("^(\\d+) to (\\d+) " + MO + "$"), function(m){ return m[1] + " ถึง " + m[2] + " " + mth(m[3]); }],
+  [new RegExp("^\\. " + MO + " has brought in$"), function(m){ return " เดือน" + mth(m[1]) + " มีเงินเข้า"; }],
+  [new RegExp("^across (.+), as of (.+?)\\. " + MO + " has brought in$"), function(m){ return "ใน " + T(m[1]) + " ณ วันที่ " + dates(m[2]) + " เดือน" + mth(m[3]) + " มีเงินเข้า"; }],
+  [/^(฿[\d,]+) kept\.$/, "เหลือเก็บ $1"],
+  [/^Issued (.+)$/, function(m){ return "ออกวันที่ " + dates(m[1]); }], [/^due (.+)$/, function(m){ return "ครบกำหนด " + dates(m[1]); }],
+  [/^Free trial until ([^.]+)\.$/, function(m){ return "ทดลองใช้ฟรีถึง " + dates(m[1]); }],
+  [/^From (\d.+) to (\d.+)$/, function(m){ return "ตั้งแต่ " + dates(m[1]) + " ถึง " + dates(m[2]); }],
+  [/^Up to (\d.+)$/, function(m){ return "ถึง " + dates(m[1]); }], [/^Left your account on (.+)$/, function(m){ return "ออกจากบัญชีวันที่ " + dates(m[1]); }],
+  [/^· ID card copy for (.+)$/, "· สำเนาบัตรประชาชนของ $1"], [/^· At least 2 founders \(you have (\d+)\)$/, "· ผู้ก่อการอย่างน้อย 2 คน (ตอนนี้มี $1)"],
+  [/^· Shares must add up to ([\d,]+) \(now ([\d,]+)\)$/, "· หุ้นรวมต้องได้ $1 หุ้น (ตอนนี้ $2)"],
+  [/^· (.+?): ((?:birth date|complete address|occupation|13-digit national ID|at least 1 share|first and last name|a role|nationality)(?:, .+)?)$/, function(m){ var P = { "birth date": "วันเกิด", "complete address": "ที่อยู่ครบถ้วน", "occupation": "อาชีพ", "13-digit national ID": "เลขบัตรประชาชน 13 หลัก", "at least 1 share": "อย่างน้อย 1 หุ้น", "first and last name": "ชื่อและนามสกุล", "a role": "บทบาท", "nationality": "สัญชาติ" }; return "· " + m[1] + ": " + m[2].split(", ").map(function(x){ return P[x] || x; }).join(", "); }],
+  [/^Filed (\d+) receipts you snapped or forwarded$/, "จัดเก็บใบเสร็จ $1 ใบที่คุณถ่ายหรือส่งต่อมา"], [/^Matched (\d+) bank payments to the right bills$/, "จับคู่รายการจ่าย $1 รายการกับบิลที่ถูกต้อง"],
+  [/^(\d[\d,]*) bank lines read and sorted into (\d+) kinds of cost$/, "อ่านรายการเดินบัญชี $1 รายการ แยกเป็นค่าใช้จ่าย $2 ประเภท"], [/^(\d[\d,]*) transactions read\.$/, "อ่านไป $1 รายการ"],
+  [/^Cash is (฿[\d,]+) across (\d+) accounts?, as of ([^.]+)\.$/, function(m){ return "เงินสด " + m[1] + " จาก " + m[2] + " บัญชี ณ วันที่ " + dates(m[3]); }],
+  [new RegExp("^That is (up|down) ([\\d.]+)% since the start of " + MO + "\\.$"), function(m){ return UPD(m[1]) + " " + m[2] + "% นับจากต้นเดือน" + mth(m[3]); }],
+  [/^The lowest point in the last 30 days was (฿[\d,]+) on ([^.]+)\.$/, function(m){ return "จุดต่ำสุดใน 30 วันที่ผ่านมาคือ " + m[1] + " เมื่อ " + dates(m[2]); }],
+  [/^Cash over the last 30 days, from (฿[\d,]+) to (฿[\d,]+)$/, "เงินสด 30 วันล่าสุด จาก $1 เป็น $2"],
+  [/^Cash over the last 30 days, (rising|falling) from ([\d.]+) to ([\d.]+) million baht$/, function(m){ return "เงินสด 30 วันล่าสุด " + (m[1] === "rising" ? "เพิ่ม" : "ลด") + "จาก " + m[2] + " เป็น " + m[3] + " ล้านบาท"; }],
+  [/^([^.]+) is (up|down) ([\d.]+)% on the same days last month: (฿[\d,]+) against (฿[\d,]+)\.$/, function(m){ return T(m[1]) + " " + UPD(m[2]) + " " + m[3] + "% เทียบช่วงเดียวกันของเดือนก่อน: " + m[4] + " เทียบกับ " + m[5]; }],
+  [/^(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)days bring in the most: about (฿[\d,]+) each over the last four weeks\.$/, function(m){ return WD[m[1] + "day"] + "ขายได้มากที่สุด: เฉลี่ยราว " + m[2] + " ต่อวัน ในสี่สัปดาห์ที่ผ่านมา"; }],
+  [/^Your cash covers about ([\d.]+) months? of spending at the pace of the last three months\.$/, "เงินสดของคุณพอใช้จ่ายได้ราว $1 เดือน ตามอัตราการใช้จ่ายสามเดือนที่ผ่านมา"],
+  [new RegExp("^" + MO + ": (฿[\\d,]+) in and (฿[\\d,]+) out\\.$"), function(m){ return "เดือน" + mth(m[1]) + ": เงินเข้า " + m[2] + " เงินออก " + m[3]; }],
+  [/^You kept (-?฿[\d,-]+), a (-?[\d.]+)% margin\.$/, "คุณเหลือเก็บ $1 อัตรากำไร $2%"],
+  [/^The biggest cost was ([^.]+) at (฿[\d,]+)\.$/, function(m){ return "ค่าใช้จ่ายก้อนใหญ่สุดคือ" + (CATL[m[1]] || m[1]) + " " + m[2]; }],
+  [new RegExp("^(฿[\\d,]+) went out in " + MO + " so far\\.$"), function(m){ return "เดือน" + mth(m[2]) + " ถึงตอนนี้ เงินออก " + m[1]; }],
+  [/^The biggest: ([^.]+)\.$/, function(m){ return "ก้อนใหญ่สุด: " + inl(m[1]); }],
+  [new RegExp("^For " + MO + " so far I would set aside (฿[\\d,]+): VAT (฿[\\d,]+), withholding (฿[\\d,]+), and (฿[\\d,]+) towards company tax\\.$"), function(m){ return "สำหรับเดือน" + mth(m[1]) + " ถึงตอนนี้ หนูแนะนำให้กันไว้ " + m[2] + ": VAT " + m[3] + " ภาษีหัก ณ ที่จ่าย " + m[4] + " และภาษีนิติบุคคล " + m[5]; }],
+  [/^You have (\d+) bills? to pay, (฿[\d,]+) in total\.$/, "คุณมีบิลต้องจ่าย $1 ใบ รวม $2"], [/^Next: ([^.]+)\.$/, function(m){ return "ถัดไป: " + inl(m[1]); }],
+  [/^(\d+) invoices? (?:are|is) open, (฿[\d,]+) in total\.$/, "มีใบแจ้งหนี้ค้างรับ $1 ใบ รวม $2"], [/^Late: ([^.]+)\.$/, function(m){ return "เลยกำหนด: " + inl(m[1]); }],
+  [/^(\d+) things are overdue: ([^.]+)\.$/, function(m){ return "มี " + m[1] + " รายการเลยกำหนด: " + inl(m[2]); }],
+  [/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday) (\d{1,2} \w+)$/, function(m){ return WD[m[1]] + "ที่ " + dates(m[2]); }],
+  [new RegExp("^(\\d{1,2} " + MO + "( \\d{4})?|\\d{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \\d{4})$"), function(m){ return dates(m[0]); }],
+  [new RegExp("^" + MO + "$"), function(m){ return mth(m[1]); }],
+  [/^Switched to (.+)$/, "เปลี่ยนเป็น $1 แล้ว"], [/^Request(?:s)? sent to (.+)$/, "ส่งคำขอถึง $1 แล้ว"],
+  [/^Your accountant asked for (\d+) documents$/, "นักบัญชีขอเอกสาร $1 รายการ"], [/^Receipt missing: (.+)$/, function(m){ return "ขาดใบเสร็จ: " + T(m[1]); }],
+  [/^It is all on one page: (฿[\d,]+) in, (฿[\d,]+) out, (-?฿[\d,-]+) kept\.$/, "ทุกอย่างอยู่ในหน้าเดียว: เงินเข้า $1 เงินออก $2 เหลือเก็บ $3"],
+  [new RegExp("^Profit and loss, " + MO + " so far \\(from your bank lines\\)$"), function(m){ return "งบกำไรขาดทุน เดือน" + mth(m[1]) + " ถึงตอนนี้ (จากรายการเดินบัญชี)"; }],
+  [/^Kept (-?฿[\d,-]+), a (-?[\d.]+)% margin$/, "เหลือเก็บ $1 อัตรากำไร $2%"],
+  [/^([A-Z][A-Za-z ,&]+?) (-?฿[\d,.-]+)$/, function(m){ var t = T(m[1]); return t === m[1] ? m[0] : t + " " + m[2]; }],
+  [/^Sample statement loaded\. (\d[\d,]*) transactions read\.$/, "โหลดรายการเดินบัญชีตัวอย่างแล้ว อ่านไป $1 รายการ"]
+];
+var TCACHE = {};
+function T(s){
+  if (s == null) return s; var k = String(s), t = k.replace(/\s+/g, " ").trim(); if (!t || !/[A-Za-z]/.test(t)) return k;
+  if (TCACHE[t] != null) return TCACHE[t];
+  var out = tr(t); TCACHE[t] = out; return out;
+}
+function tr(t){
+  if (TH.hasOwnProperty(t)) return TH[t];
+  var e = t.match(/^(.*?)\s*·$/); if (e) return T(e[1]) + " ·";
+  e = t.match(/^·\s*(.*)$/); if (e && TH.hasOwnProperty(e[1])) return "· " + TH[e[1]];
+  if (t.indexOf(" · ") > 0) return t.split(" · ").map(T).join(" · ");
+  for (var i = 0; i < RULES.length; i++){ var m = t.match(RULES[i][0]); if (m) return typeof RULES[i][1] === "function" ? RULES[i][1](m) : t.replace(RULES[i][0], RULES[i][1]); }
+  var parts = t.split(/(?<=[.?!])\s+(?=[A-Z฿0-9"“])/); if (parts.length > 1) return parts.map(T).join(" ");
+  return t;
+}
+
+/* walk the page and swap text, keeping the English so it can switch back */
+var I18N = new WeakMap(), I18NA = new WeakMap(), i18nBusy = false, ATTRS = ["placeholder", "aria-label", "title"];
+function skipEl(e){ for (var n = e; n && n.nodeType === 1; n = n.parentNode){ if (/^(SCRIPT|STYLE|TEXTAREA|INPUT|svg)$/i.test(n.tagName) || n.hasAttribute("data-noi18n") || n.isContentEditable || n.id === "b-me" || n.id === "b-in") return true; } return false; }
+function i18nNode(n, th){
+  var rec = I18N.get(n), v = n.nodeValue;
+  if (rec && (v === rec.th || v === rec.en)){ var want = th ? rec.th : rec.en; if (v !== want) n.nodeValue = want; return; }
+  if (!th) return; if (!/[A-Za-z]{2}/.test(v)) return;
+  var pe = n.parentElement; if (!pe || skipEl(pe)) return;
+  var lead = v.match(/^\s*/)[0], trail = v.match(/\s*$/)[0], out = /\n/.test(v.trim()) ? v.trim().split("\n").map(function(x){ return x.trim() ? T(x) : x; }).join("\n") : T(v);
+  if (out === v.replace(/\s+/g, " ").trim() || out === v.trim()) return;
+  var nv = out ? lead + out + trail : (lead || trail ? " " : "");
+  I18N.set(n, { en: v, th: nv }); n.nodeValue = nv;
+}
+function i18nAttrs(e, th){
+  var rec = I18NA.get(e) || {};
+  ATTRS.forEach(function(a){
+    var v = e.getAttribute(a); if (v == null) return; var r = rec[a];
+    if (r && (v === r.th || v === r.en)){ var w = th ? r.th : r.en; if (v !== w) e.setAttribute(a, w); return; }
+    if (!th || !/[A-Za-z]{2}/.test(v) || e.hasAttribute("data-noi18n")) return;
+    var o = T(v); if (o === v) return; rec[a] = { en: v, th: o }; e.setAttribute(a, o);
+  });
+  I18NA.set(e, rec);
+}
+function i18nTree(root, th){
+  if (!root) return;
+  if (root.nodeType === 3){ i18nNode(root, th); return; }
+  if (root.nodeType !== 1) return;
+  var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), n; while ((n = w.nextNode())) i18nNode(n, th);
+  if (root.matches && root.matches("[placeholder],[aria-label],[title]")) i18nAttrs(root, th);
+  if (root.querySelectorAll) root.querySelectorAll("[placeholder],[aria-label],[title]").forEach(function(e){ i18nAttrs(e, th); });
+}
+function i18nAll(){ i18nBusy = true; var th = lang() === "th"; document.documentElement.lang = th ? "th" : "en"; i18nTree(document.body, th); i18nObs.takeRecords(); i18nBusy = false; }
+var i18nQ = [], i18nT = 0;
+var i18nObs = new MutationObserver(function(recs){
+  if (i18nBusy || lang() !== "th") return;
+  recs.forEach(function(r){ if (r.type === "childList") r.addedNodes.forEach(function(n){ i18nQ.push(n); }); else i18nQ.push(r.target); });
+  if (!i18nT) i18nT = requestAnimationFrame(function(){ i18nT = 0; i18nBusy = true; var q = i18nQ; i18nQ = []; q.forEach(function(n){ if (n.isConnected) i18nTree(n, true); }); i18nObs.takeRecords(); i18nBusy = false; });
+});
+i18nObs.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS });
+// toasts appear right away
+toast = (function(orig){ return function(msg){ orig(lang() === "th" ? T(msg) : msg); }; })(toast);
+document.documentElement.lang = lang();
+
+/* Thai questions reach the same answers */
+var THQ = [[/เงินสด|เงินในบัญชี|เงินเหลือ/, "How's my cash?"], [/เลยกำหนด|ค้างจ่าย|เกินกำหนด/, "What's overdue?"], [/ใครค้าง|ลูกหนี้|ยังไม่จ่าย/, "Who owes me money?"], [/เงินไปไหน|ใช้จ่าย|ค่าใช้จ่าย/, "Where did the money go?"],
+  [/กำไรขาดทุน|งบกำไร|p&l/i, "Show the full P&L"], [/บิล|ต้องจ่าย/, "What bills do I have?"], [/vat|ภาษีมูลค่าเพิ่ม|ภาษี/i, "How much VAT should I set aside?"], [/เดือนนี้|เดือนที่แล้ว|เป็นยังไง/, "How was this month?"]];
+brain = (function(orig){ return function(q){ if (/[\u0E00-\u0E7F]/.test(q)){ for (var i = 0; i < THQ.length; i++) if (THQ[i][0].test(q)) return orig(THQ[i][1]); } return orig(q); }; })(brain);
+if (lang() === "th") i18nAll();
+window.__tgT = T;
 
 /* ── start ── */
 buildSpark();

@@ -192,7 +192,7 @@ function renderRegister(){
         og.appendChild(fld("Subdistrict", of.sub, { on: function(v){ of.sub = v; keep(); } }));
         og.appendChild(fld("District", of.dist, { on: function(v){ of.dist = v; keep(); } }));
         og.appendChild(fld("Province", of.prov, { on: function(v){ of.prov = v; keep(); } }));
-        og.appendChild(fld("Postcode", of.zip, { mode: "numeric", max: 5, on: function(v, inp){ inp.value = v.replace(/\D/g, ""); of.zip = inp.value; keep(); if (inp.value.length === 5 && !of.prov && ZIPPROV[inp.value.slice(0, 2)]){ of.prov = ZIPPROV[inp.value.slice(0, 2)]; var pv = $$("#b-register .fld input").filter(function(x){ return x.parentNode.parentNode.firstChild.textContent === "Province"; })[0]; if (pv) pv.value = of.prov; } } }));
+        og.appendChild(fld("Postcode", of.zip, { mode: "numeric", max: 5, on: function(v, inp){ inp.value = v.replace(/\D/g, ""); of.zip = inp.value; keep(); if (inp.value.length === 5 && !of.prov && ZIPPROV[inp.value.slice(0, 2)]){ of.prov = ZIPPROV[inp.value.slice(0, 2)]; var pv = $$("#b-register .fld input").filter(function(x){ return /^(Province|จังหวัด)$/.test(x.parentNode.parentNode.firstChild.textContent); })[0]; if (pv) pv.value = of.prov; } } }));
         og.appendChild(fld("Who owns the place", r.owner, { wide: 1, ph: "Landlord's name, or yours if you own it", on: function(v){ r.owner = v; keep(); } }));
         og.appendChild(fld("Applicant (must be a founder and a director)", r.applicant, { options: who, on: function(v){ r.applicant = v; keep(); } }));
         og.appendChild(fld("Chair of the first meeting", r.chair, { options: who, on: function(v){ r.chair = v; keep(); } }));

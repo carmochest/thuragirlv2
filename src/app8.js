@@ -152,13 +152,13 @@ function profileCard(u, root){
   g.appendChild(fld("Role", u.path === "new" && !(u.reg && u.reg.submitted) ? "Founder" : "Owner", { ro: 1 }));
   g.appendChild(fld("Time zone", "Bangkok (GMT+7)", { ro: 1 }));
   c.appendChild(g);
-  var lr = el("div", "frow"); lr.appendChild(el("b", "", "Language")); lr.appendChild(seg(["English", "ไทย"], u.lang === "th" ? "ไทย" : "English", function(v){ u.lang = v === "ไทย" ? "th" : "en"; save(); renderSettings(); })); c.appendChild(lr);
-  if (u.lang === "th") c.appendChild(el("p", "tnote", "Saved. In this test build the screens are still in English; ThuraGirl replies in Thai when you write to her in Thai, and the mic listens in Thai."));
+  var lr = el("div", "frow"); lr.appendChild(el("b", "", "Language")); lr.appendChild(langSeg()); c.appendChild(lr);
+  c.appendChild(el("p", "tnote", "Screens switch straight away. ThuraGirl answers in the language you write in."));
   root.appendChild(c);
 }
 function appearanceCard(u, root){
   var ap = card("Appearance"), row = el("div", "frow"); row.appendChild(el("b", "", "Theme"));
-  var labels = { auto: "Auto", day: "Day", night: "Night" }, sg = seg(["Auto", "Day", "Night"], labels[u.theme || "auto"], function(v){ u.theme = v.toLowerCase(); save(); applyTheme(); });
+  var labels = { auto: "Auto", day: "Day", night: "Night" }, sg = seg(["Auto", "Day", "Night"], labels[u.theme || "auto"], function(v){ u.theme = v.toLowerCase(); db.theme = u.theme; save(); applyTheme(); });
   sg.classList.add("on-soft"); row.appendChild(sg); ap.appendChild(row); root.appendChild(ap);
 }
 function accountCard(u, root){

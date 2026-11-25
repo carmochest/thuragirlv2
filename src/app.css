@@ -288,3 +288,20 @@
   .plan li{display:flex;gap:8px;align-items:flex-start}
   .plan li .i{width:16px;height:16px;color:var(--m-hint);margin-top:1px}
   .pill[hidden],.emptyB [hidden],.emptyP [hidden]{display:none!important}
+  /* company menu */
+  .co-list{display:grid;gap:6px;margin:4px 0 10px}
+  .co-row{display:flex;align-items:center;gap:12px;width:100%;border:1.5px solid var(--m-line,rgba(0,0,0,.08));background:var(--m-surface);color:var(--m-ink);border-radius:16px;padding:10px 12px;text-align:left;font:inherit;cursor:pointer}
+  .co-row:hover{border-color:var(--m-mute)}
+  .co-row.cur{border-color:var(--m-accent);cursor:default}
+  .co-av{width:34px;height:34px;border-radius:50%;background:var(--m-ink);color:var(--m-bg);display:grid;place-items:center;font:800 12px var(--font-display);flex:none}
+  .co-add .co-av{background:var(--m-soft);color:var(--m-ink)}
+  .co-av .i{width:16px;height:16px}
+  .co-tx{display:grid;gap:2px;flex:1;min-width:0}
+  .co-tx strong{font:700 14.5px var(--font-display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .co-tx small{color:var(--m-mute);font-size:12.5px}
+  .co-ck .i{width:18px;height:18px;color:var(--m-accent)}
+  .co-prefs{display:grid;gap:10px;margin:14px 0 4px}
+  .co-prefs .frow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .su-top .su-lang{margin-left:auto}
+  .su-top .su-lang button{padding:6px 12px;font-size:12px}
+  .su-cancel{display:block;margin:18px auto 0}
