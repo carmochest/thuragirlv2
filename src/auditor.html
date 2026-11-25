@@ -1,0 +1,373 @@
+<title>ThuraGirl Auditor Desk</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700&family=Manrope:wght@500;600;700;800&family=Noto+Sans+Thai:wght@500;600;700&display=swap">
+<style>
+  /* Layout: a work desk. Queue of companies on the left, the selected company's document checklist on the right. */
+  :root{
+    --bg:#F4F5F5; --surface:#FFFFFF; --soft:#EFF1F1; --ink:#0F1514; --mute:#667270; --line:#E2E6E5; --accent:#0FBFB6; --accent-ink:#04201D; --hint:#067A73; --tint:#E3F6F4;
+    --bad:#C92342; --bad-bg:#FCE9ED; --warn:#96590A; --warn-bg:#FBEFD9; --shadow:0 12px 34px rgba(15,21,20,.10);
+    --font:"Manrope","Noto Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif; --num:"DM Sans","Noto Sans Thai","Manrope",system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --bg:#0B0E0E; --surface:#151919; --soft:#1F2424; --ink:#F1F4F3; --mute:#98A4A1; --line:#293030; --accent:#2DD4C8; --accent-ink:#04201D; --hint:#2DD4C8; --tint:#11302C;
+      --bad:#FF8296; --bad-bg:#3A1820; --warn:#F0BC66; --warn-bg:#3A2C12; --shadow:0 16px 40px rgba(0,0,0,.5); color-scheme:dark }
+  }
+  :root[data-theme="dark"]{ --bg:#0B0E0E; --surface:#151919; --soft:#1F2424; --ink:#F1F4F3; --mute:#98A4A1; --line:#293030; --accent:#2DD4C8; --accent-ink:#04201D; --hint:#2DD4C8; --tint:#11302C;
+    --bad:#FF8296; --bad-bg:#3A1820; --warn:#F0BC66; --warn-bg:#3A2C12; --shadow:0 16px 40px rgba(0,0,0,.5); color-scheme:dark }
+
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased}
+  button{font-family:inherit;color:inherit}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .num{font-family:var(--num);font-variant-numeric:tabular-nums}
+  .i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+  .wrap{max-width:1320px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));display:grid;gap:16px}
+
+  .top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;letter-spacing:-.035em}
+  .brand b{font-weight:800}
+  .brand i{font-style:normal;color:#EC4899}
+  .brand span{font:700 11.5px var(--num);letter-spacing:.1em;text-transform:uppercase;color:var(--mute);background:var(--surface);border-radius:99px;padding:5px 10px;margin-left:4px}
+  .url{font:600 12.5px var(--num);color:var(--mute)}
+  .url b{color:var(--ink)}
+  .seg{display:inline-flex;background:var(--surface);border-radius:99px;padding:4px;gap:2px}
+  .seg button{border:0;background:none;font-weight:700;font-size:13px;color:var(--mute);padding:7px 15px;border-radius:99px;cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+  .sp{flex:1}
+  .me{display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:99px;padding:5px 14px 5px 5px;font-size:13px;font-weight:700}
+  .me b{width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:10.5px}
+
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  .stat{background:var(--surface);border:0;border-radius:20px;padding:14px 16px;text-align:left;cursor:pointer;display:grid;gap:4px}
+  .stat[aria-pressed="true"]{box-shadow:inset 0 0 0 1.5px var(--ink)}
+  .stat span{font-size:12.5px;font-weight:700;color:var(--mute)}
+  .stat b{font:600 26px var(--num);letter-spacing:-.03em}
+
+  .desk{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:16px;align-items:start}
+  .pane{background:var(--surface);border-radius:26px;padding:16px}
+  .ph{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 6px 12px}
+  .ph h2{font-size:17px;font-weight:800;letter-spacing:-.02em}
+  .ph small{font-size:12.5px;font-weight:600;color:var(--mute)}
+  .search{width:100%;border:0;background:var(--soft);border-radius:14px;padding:11px 14px;font:600 14px var(--font);color:var(--ink);margin-bottom:8px}
+  .search::placeholder{color:var(--mute)}
+  .q{display:grid;gap:2px}
+  .co{width:100%;border:0;background:none;text-align:left;border-radius:18px;padding:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;cursor:pointer}
+  .co:hover{background:var(--soft)}
+  .co[aria-current="true"]{background:var(--soft);box-shadow:inset 0 0 0 1.5px var(--ink)}
+  .co .nm{font-size:14.5px;font-weight:700;letter-spacing:-.01em}
+  .co .ty{font-size:12.5px;color:var(--mute);margin-top:2px}
+  .co .due{font-size:12.5px;font-weight:700;color:var(--mute);text-align:right;white-space:nowrap}
+  .co .due.hot{color:var(--bad)}
+  .co .due.ok{color:var(--hint)}
+  .co .cnt{font:600 12.5px var(--num);color:var(--mute);text-align:right;margin-top:2px}
+  .strip{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:5px}
+  .fs{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:4px 9px;font:700 11.5px var(--num);background:var(--soft);color:var(--mute)}
+  .co[aria-current="true"] .fs,.co:hover .fs{background:var(--surface)}
+  .fs::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+  .fs.done{color:var(--hint)} .fs.miss{color:var(--bad)} .fs.ask{color:var(--warn)} .fs.na{opacity:.55} .fs.na::before{display:none}
+  .none{padding:28px 12px;text-align:center;color:var(--mute);font-size:14px}
+
+  .dh{display:grid;gap:12px;padding:4px 6px 14px}
+  .dh h2{font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1.15}
+  .tags{display:flex;flex-wrap:wrap;gap:6px}
+  .tag{font:600 12px var(--num);color:var(--mute);background:var(--soft);border-radius:99px;padding:5px 10px}
+  .sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .sum div{background:var(--soft);border-radius:16px;padding:11px 13px}
+  .sum dt{font-size:12px;font-weight:700;color:var(--mute)}
+  .sum dd{font:600 20px var(--num);letter-spacing:-.02em;margin-top:3px}
+  .bar{height:6px;border-radius:99px;background:var(--soft);overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--accent);border-radius:0 99px 99px 0;transition:width .3s}
+  .acts{display:flex;flex-wrap:wrap;gap:8px}
+  .btn{border:0;border-radius:99px;padding:11px 17px;font-weight:700;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;background:var(--soft)}
+  .btn.pri{background:var(--accent);color:var(--accent-ink)}
+  .btn[disabled]{opacity:.4;cursor:default}
+  .btn .i{width:16px;height:16px}
+  .back{display:none}
+
+  .sec{border-top:1px solid var(--line)}
+  .sh{width:100%;border:0;background:none;display:flex;align-items:center;gap:10px;padding:14px 6px;cursor:pointer;text-align:left}
+  .sh .t{flex:1;min-width:0}
+  .sh b{font-size:15px;font-weight:800;letter-spacing:-.015em}
+  .sh small{display:block;font-size:12.5px;color:var(--mute);margin-top:2px;font-weight:500}
+  .sh .cv{width:16px;height:16px;color:var(--mute);transition:transform .2s}
+  .sec.open .sh .cv{transform:rotate(180deg)}
+  .pill{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:4px 10px;font:700 12px var(--num);white-space:nowrap;background:var(--soft);color:var(--mute)}
+  .pill .i{width:13px;height:13px;stroke-width:2}
+  .pill.done{background:var(--tint);color:var(--hint)} .pill.miss{background:var(--bad-bg);color:var(--bad)} .pill.ask{background:var(--warn-bg);color:var(--warn)}
+  .built{font:700 10.5px var(--num);letter-spacing:.08em;text-transform:uppercase;color:var(--mute);border:1px solid var(--line);border-radius:99px;padding:2px 7px;margin-left:6px;vertical-align:2px}
+  .sb{display:none;padding:0 6px 14px}
+  .sec.open .sb{display:grid}
+  .doc{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+  .doc:first-child{border-top:0}
+  .doc .ic{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--soft);color:var(--mute)}
+  .doc .ic .i{width:13px;height:13px;stroke-width:2}
+  .doc.done .ic{background:var(--tint);color:var(--hint)} .doc.miss .ic{background:var(--bad-bg);color:var(--bad)} .doc.ask .ic{background:var(--warn-bg);color:var(--warn)}
+  .doc .tx{flex:1;min-width:0;font-size:14px;line-height:1.4;font-weight:600}
+  .doc .tx small{display:block;font-size:12.5px;font-weight:500;color:var(--mute)}
+  .doc .mini{border:0;background:var(--soft);border-radius:99px;padding:7px 12px;font-weight:700;font-size:12.5px;cursor:pointer;white-space:nowrap}
+  .doc .mini:hover{background:var(--ink);color:var(--bg)}
+  .after{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:12px 0 0;border-top:1px solid var(--line);font-size:12.5px;font-weight:700;color:var(--mute)}
+  .after button{border:0;cursor:pointer}
+  .trig{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:12px 6px;border-top:1px solid var(--line);font-size:13.5px;font-weight:700}
+  .trig small{display:block;font-weight:500;color:var(--mute);font-size:12.5px;margin-top:2px}
+  .sw{width:42px;height:24px;border-radius:99px;border:0;background:var(--soft);position:relative;cursor:pointer;flex:none;box-shadow:inset 0 0 0 1.5px var(--line)}
+  .sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--mute);transition:transform .18s}
+  .sw[aria-checked="true"]{background:var(--accent);box-shadow:none} .sw[aria-checked="true"]::after{transform:translateX(18px);background:var(--accent-ink)}
+  .grp{font:700 11.5px var(--num);letter-spacing:.1em;text-transform:uppercase;color:var(--mute);padding:18px 6px 8px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);border-radius:99px;padding:11px 18px;font-weight:700;font-size:13.5px;box-shadow:var(--shadow);z-index:9;max-width:calc(100vw - 32px);text-align:center}
+  .toast[hidden]{display:none}
+  .foot{font-size:12.5px;line-height:1.55;color:var(--mute);max-width:80ch;padding:0 6px}
+
+  @media (max-width:900px){
+    .desk{grid-template-columns:minmax(0,1fr)}
+    .desk.detail .left{display:none}
+    .desk:not(.detail) .right{display:none}
+    .back{display:inline-flex}
+    .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .url{display:none}
+    .pane{padding:12px;border-radius:22px}
+    .doc{flex-wrap:wrap}
+    .doc .tx{flex-basis:calc(100% - 34px)}
+    .doc .pill{margin-left:32px}
+    .me span{display:none} .me{padding:5px}
+  }
+  @media (prefers-reduced-motion:reduce){ .bar i,.sw::after,.sh .cv{transition:none} }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5.5 12.5 4.2 4.2L18.5 8"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="m6.5 6.5 11 11m0-11-11 11"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 1.8"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6.5 9.5 5.5 5.5 5.5-5.5"/></symbol>
+  <symbol id="i-chevl" viewBox="0 0 24 24"><path d="m14.5 6.5-5.5 5.5 5.5 5.5"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M20 4 10.5 13.5M20 4l-6 16-3.500-6.500L4 10z"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2.5"/><path d="M8.500 10.500v-3a3.500 3.500 0 0 1 7 0v3"/></symbol>
+  <symbol id="i-dash" viewBox="0 0 24 24"><path d="M7 12h10"/></symbol>
+</svg>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><b>thuragirl<i>.</i></b><span>Auditor</span></div>
+    <div class="url">thuragirl.com<b>/auditor</b></div>
+    <div class="sp"></div>
+    <div class="seg" id="mode" role="group" aria-label="Close type">
+      <button type="button" data-m="month" aria-pressed="true">Monthly close · April 2026</button>
+      <button type="button" data-m="year" aria-pressed="false">Yearly close · FY 2025</button>
+    </div>
+    <div class="me"><b>SA</b><span>Somchai A., CPA</span></div>
+  </header>
+
+  <div class="stats" id="stats" role="group" aria-label="Filter the queue"></div>
+
+  <div class="desk" id="desk">
+    <section class="pane left" aria-label="Company queue">
+      <div class="ph"><h2>Queue</h2><small id="qn"></small></div>
+      <input class="search" id="search" type="search" placeholder="Find a company" aria-label="Find a company">
+      <div class="q" id="queue"></div>
+    </section>
+    <section class="pane right" id="detail" aria-label="Company documents"></section>
+  </div>
+  <p class="foot">Sample data. The company list, statuses and due dates are made up to show the layout; the document checklist is the one from your brief. "Request" is drawn as sending a task into the owner's Needs you list in the ThuraGirl app.</p>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+  var $ = function(s, r){ return (r || document).querySelector(s); };
+  function el(tag, cls, text){ var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function ico(id){ return '<svg class="i"><use href="#' + id + '"/></svg>'; }
+
+  var WHT = ["Full payment list: supplier payments, bank, petty cash, card and platform payouts", "Payee record: tax ID, person or company, branch, address", "Contract or scope of work, invoice, service acceptance", "Payment voucher and bank proof with date paid", "Withholding certificates issued (50 ทวิ)", "Earlier forms and certificates, for corrections"];
+  var SETS = {
+    month: { forms: [
+      { id: "books", short: "Books", name: "Books", sub: "Every month, no form", docs: ["Bank, card and wallet statements for the full month", "Reconciliations: bank, customer balances, supplier balances", "Adjustment entries with supporting documents", "Trial balance (all account balances) and ledger", "List of open exceptions"] },
+      { id: "pp30", short: "ภ.พ.30", name: "ภ.พ.30", sub: "VAT return", built: 1, needs: "vat", due: 15, docs: ["Sales tax invoices, receipts, credit and debit notes", "Orders or contracts, and delivery or service acceptance", "Sales channel exports, platform settlements, payment-provider statements", "Supplier full tax invoices, credit and debit notes", "Purchase orders, goods or service received, proof of payment", "Sales VAT report and purchase VAT report", "Last month's ภ.พ.30 and receipt, with any overpaid VAT carried forward", "VAT registration (ภ.พ.20), branch list, approval for combined filing"] },
+      { id: "wht", short: "ภ.ง.ด.3/53", name: "ภ.ง.ด.3 and ภ.ง.ด.53", sub: "Withholding tax: payments to individuals and to companies", built: 1, due: 7, docs: WHT },
+      { id: "pnd1", short: "ภ.ง.ด.1", name: "ภ.ง.ด.1", sub: "Withholding tax on salaries", built: 1, needs: "staff", due: 7, docs: ["Employee list: joiners and leavers", "Employment contracts", "Payroll register: gross, deductions, net", "Bank payroll file and proof of payment", "Payroll journal entry"] },
+      { id: "sso", short: "สปส.1-10", name: "สปส.1-10", sub: "Social security", built: 1, needs: "sso", due: 15, docs: ["Employee list with status: active, joined, left, unpaid leave", "HR change documents: resignation, termination, start dates", "Attendance, overtime, commission, bonus inputs", "Payroll register with wage base and both contributions", "Bank payroll file and proof of payment", "Form parts 1 and 2, submission response, official receipt"] }
+    ], trig: [
+      { id: "pp36", short: "ภ.พ.36", name: "ภ.พ.36", sub: "VAT paid on behalf of a foreign supplier", docs: ["Foreign contract", "Invoice", "Proof of where the service was used", "Remittance proof", "Exchange rate source"] },
+      { id: "pnd54", short: "ภ.ง.ด.54", name: "ภ.ง.ด.54", sub: "Payments abroad", docs: ["Payee country", "Tax residency certificate", "Contract", "Invoice", "Remittance proof", "Exchange rate source"] },
+      { id: "pnd2", short: "ภ.ง.ด.2", name: "ภ.ง.ด.2", sub: "Royalties, interest, dividends. Same documents as ภ.ง.ด.3 and 53", docs: WHT }
+    ] },
+    year: { forms: [
+      { id: "ybooks", short: "Books", name: "Books", sub: "Year-end books", docs: ["12 monthly packs", "Final locked trial balance, ledger, sub-ledgers", "Year-end adjustments with supporting documents", "Schedules: fixed assets and depreciation, accruals, provisions, loans, stock count"] },
+      { id: "pnd51", short: "ภ.ง.ด.51", name: "ภ.ง.ด.51", sub: "Half-year corporate income tax", docs: ["Year-to-date trial balance and management accounts", "Full-year profit forecast with assumptions", "Tax losses brought forward, incentives (BOI, SME status)", "Withholding certificates received (tax credits)", "Earlier ภ.ง.ด.51 payment and receipt"] },
+      { id: "pnd50", short: "ภ.ง.ด.50", name: "ภ.ง.ด.50", sub: "Annual corporate income tax", docs: ["Final financial statements, notes, audit report", "Bridge from accounting profit to taxable profit", "Schedules: tax depreciation, donations, entertainment, non-deductible expenses, tax losses", "Credits: ภ.ง.ด.51 payment, withholding certificates received", "Related-party transaction records"] },
+      { id: "pnd1k", short: "ภ.ง.ด.1ก", name: "ภ.ง.ด.1ก", sub: "Annual payroll summary", needs: "staff", docs: ["Full-year payroll, matched to the 12 monthly ภ.ง.ด.1 forms", "Annual withholding certificates for employees (50 ทวิ)"] },
+      { id: "dbd", short: "DBD", name: "DBD financial statements", sub: "Annual filing with DBD", docs: ["Final financial statements with last year's figures, and notes", "Signed audit report with the CPA's name and registration number", "Board documents, AGM notice and minutes", "Filing files: the statements in DBD's electronic format, audit report PDF, notes PDF", "Submission reference and accepted status"] },
+      { id: "boj5", short: "บอจ.5", name: "บอจ.5", sub: "Shareholder list", docs: ["Share register as of the AGM date", "Share transfers during the year", "Capital and share data"] }
+    ], trig: [] }
+  };
+  var AFTER = ["Submission response", "Payment proof", "Official receipt"];
+  var COS = [
+    { n: "Bangkok Bites Co., Ltd.", t: "Restaurant · Bangkok", vat: 1, sso: 1, staff: 7, c: .78 },
+    { n: "Chiang Mai Crafts Studio", t: "Craft and manufacturing · Chiang Mai", vat: 1, sso: 1, staff: 4, c: .5 },
+    { n: "Phuket Digital Agency", t: "Services and agency · Phuket", vat: 1, sso: 1, staff: 12, c: 1 },
+    { n: "Nimman Coffee Roasters", t: "Cafe and bakery · Chiang Mai", vat: 0, sso: 1, staff: 5, c: .9 },
+    { n: "Siam Glow Salon", t: "Beauty and salon · Bangkok", vat: 0, sso: 0, staff: 0, c: .62 },
+    { n: "Baan Suan Online", t: "Online and e-commerce · Nonthaburi", vat: 1, sso: 0, staff: 0, c: .4 },
+    { n: "Rayong Parts Manufacturing", t: "Manufacturing · Rayong", vat: 1, sso: 1, staff: 38, c: 2 },
+    { n: "Krabi Dive Tours", t: "Services and agency · Krabi", vat: 1, sso: 1, staff: 9, c: .86 }
+  ];
+  // deterministic sample statuses
+  function rnd(seed){ var x = Math.sin(seed * 9301 + 49297) * 233280; return x - Math.floor(x); }
+  var ST = {}, FILED = {}, TRIGON = {}, AFT = {};
+  COS.forEach(function(co, ci){
+    ["month", "year"].forEach(function(m, mi){
+      SETS[m].forms.concat(SETS[m].trig).forEach(function(f, fi){
+        var c = m === "year" ? Math.min(1, co.c * 0.7) : co.c;
+        f.docs.forEach(function(d, di){
+          var r = rnd(ci * 131 + mi * 977 + fi * 53 + di * 7 + 1), r2 = rnd(ci * 71 + fi * 113 + di * 37 + mi * 211 + 5);
+          ST[ci + m + f.id + di] = r < c ? (r2 < .62 ? "auto" : "client") : (r2 < .35 ? "ask" : "miss");
+        });
+        if (co.c >= 2 && m === "month"){ FILED[ci + m + f.id] = 1; AFTER.forEach(function(a, ai){ AFT[ci + m + f.id + ai] = 1; }); }
+      });
+    });
+  });
+  TRIGON["0monthpnd54"] = 1;
+
+  var mode = "month", sel = 0, filter = "all", term = "", open = {};
+  function applies(co, f){ return !f.needs || (f.needs === "vat" ? co.vat : f.needs === "sso" ? co.sso : co.staff > 0); }
+  function activeForms(ci){
+    var co = COS[ci], S = SETS[mode];
+    return S.forms.filter(function(f){ return applies(co, f); }).concat(S.trig.filter(function(f){ return TRIGON[ci + mode + f.id]; }));
+  }
+  function formStat(ci, f){
+    var o = { got: 0, ask: 0, miss: 0, n: f.docs.length };
+    f.docs.forEach(function(d, di){ var s = ST[ci + mode + f.id + di]; if (s === "miss") o.miss++; else if (s === "ask") o.ask++; else o.got++; });
+    o.filed = !!FILED[ci + mode + f.id]; return o;
+  }
+  function coStat(ci){
+    var o = { got: 0, ask: 0, miss: 0, n: 0, filed: 0, forms: 0, due: 99 };
+    activeForms(ci).forEach(function(f){
+      var s = formStat(ci, f); o.got += s.got; o.ask += s.ask; o.miss += s.miss; o.n += s.n; o.forms++; if (s.filed) o.filed++;
+      if (!s.filed && f.due && f.due < o.due) o.due = f.due;
+    });
+    o.stage = o.filed === o.forms ? "filed" : (o.miss + o.ask) ? "collect" : "ready"; return o;
+  }
+  var TODAY = 7;
+  function dueText(s){
+    if (s.stage === "filed") return ["Filed", "ok"];
+    if (mode === "year" || s.due === 99) return [s.stage === "ready" ? "Ready to close" : "Collecting", s.stage === "ready" ? "ok" : ""];
+    var d = s.due - TODAY; return [d === 0 ? "Due today" : d < 0 ? Math.abs(d) + " days late" : "Due in " + d + " days", d <= 0 ? "hot" : ""];
+  }
+  var toastT = 0;
+  function toast(m){ var t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(function(){ t.hidden = true; }, 2600); }
+
+  function renderStats(){
+    var c = { all: 0, collect: 0, ready: 0, filed: 0 };
+    COS.forEach(function(co, ci){ var s = coStat(ci); c.all++; c[s.stage]++; });
+    var root = $("#stats"); root.textContent = "";
+    [["all", "All companies"], ["collect", "Waiting on documents"], ["ready", "Ready to close"], ["filed", "Filed"]].forEach(function(x){
+      var b = el("button", "stat"); b.type = "button"; b.setAttribute("aria-pressed", String(filter === x[0]));
+      b.appendChild(el("span", "", x[1])); b.appendChild(el("b", "num", c[x[0]]));
+      b.addEventListener("click", function(){ filter = x[0]; render(); }); root.appendChild(b);
+    });
+  }
+  function renderQueue(){
+    var root = $("#queue"); root.textContent = "";
+    var rows = COS.map(function(co, ci){ return { co: co, ci: ci, s: coStat(ci) }; })
+      .filter(function(r){ return (filter === "all" || r.s.stage === filter) && r.co.n.toLowerCase().indexOf(term) >= 0; })
+      .sort(function(a, b){ var o = { collect: 0, ready: 1, filed: 2 }; return (o[a.s.stage] - o[b.s.stage]) || (a.s.due - b.s.due) || (b.s.miss + b.s.ask - a.s.miss - a.s.ask); });
+    $("#qn").textContent = rows.length + (rows.length === 1 ? " company" : " companies") + " · most urgent first";
+    if (!rows.length) root.appendChild(el("div", "none", "No companies match."));
+    rows.forEach(function(r){
+      var b = el("button", "co"); b.type = "button"; if (r.ci === sel) b.setAttribute("aria-current", "true");
+      var l = el("div"); l.appendChild(el("div", "nm", r.co.n)); l.appendChild(el("div", "ty", r.co.t)); b.appendChild(l);
+      var d = dueText(r.s), rt = el("div"); rt.appendChild(el("div", "due " + d[1], d[0])); rt.appendChild(el("div", "cnt", r.s.got + " of " + r.s.n + " documents")); b.appendChild(rt);
+      var strip = el("div", "strip");
+      SETS[mode].forms.forEach(function(f){
+        var ok = applies(r.co, f), fs = ok ? formStat(r.ci, f) : null, cls = !ok ? "na" : fs.filed || !(fs.miss + fs.ask) ? "done" : fs.miss ? "miss" : "ask";
+        var word = !ok ? "not needed" : fs.filed ? "filed" : fs.miss ? fs.miss + " missing" : fs.ask ? fs.ask + " requested" : "complete";
+        var p = el("span", "fs " + cls, f.short); p.title = f.short + ": " + word; p.setAttribute("aria-label", f.short + ", " + word); strip.appendChild(p);
+      });
+      b.appendChild(strip);
+      b.addEventListener("click", function(){ sel = r.ci; open = {}; $("#desk").classList.add("detail"); render(); window.scrollTo(0, 0); });
+      root.appendChild(b);
+    });
+  }
+  function statusPill(s){
+    var map = { auto: ["done", "i-check", "From ThuraGirl"], client: ["done", "i-check", "From client"], ask: ["ask", "i-clock", "Requested"], miss: ["miss", "i-x", "Missing"] }[s];
+    var p = el("span", "pill " + map[0]); p.innerHTML = ico(map[1]); p.appendChild(document.createTextNode(map[2])); return p;
+  }
+  function renderDetail(){
+    var root = $("#detail"), co = COS[sel], s = coStat(sel), S = SETS[mode]; root.textContent = "";
+    var h = el("div", "dh");
+    var back = el("button", "btn back"); back.type = "button"; back.innerHTML = ico("i-chevl") + "Queue"; back.style.justifySelf = "start";
+    back.addEventListener("click", function(){ $("#desk").classList.remove("detail"); }); h.appendChild(back);
+    h.appendChild(el("h2", "", co.n));
+    var tags = el("div", "tags");
+    [mode === "month" ? "April 2026" : "FY 2025", co.vat ? "VAT registered" : "Not VAT registered", co.sso ? "SSO enrolled" : "No SSO", co.staff ? co.staff + " employees" : "No employees"].forEach(function(t){ tags.appendChild(el("span", "tag", t)); });
+    h.appendChild(tags);
+    var sum = el("dl", "sum");
+    [["Received", s.got], ["Requested", s.ask], ["Missing", s.miss]].forEach(function(x){ var d = el("div"); d.appendChild(el("dt", "", x[0])); d.appendChild(el("dd", "num", x[1])); sum.appendChild(d); });
+    h.appendChild(sum);
+    var bar = el("div", "bar"); bar.setAttribute("role", "img"); bar.setAttribute("aria-label", s.got + " of " + s.n + " documents received"); var fill = el("i"); fill.style.width = (s.n ? s.got / s.n * 100 : 0) + "%"; bar.appendChild(fill); h.appendChild(bar);
+    var acts = el("div", "acts");
+    var req = el("button", "btn pri"); req.type = "button"; req.innerHTML = ico("i-send") + (s.miss ? "Request " + s.miss + " missing" : "Nothing to request"); req.disabled = !s.miss;
+    req.addEventListener("click", function(){ var n = 0; activeForms(sel).forEach(function(f){ f.docs.forEach(function(d, di){ var k = sel + mode + f.id + di; if (ST[k] === "miss"){ ST[k] = "ask"; n++; } }); }); toast(n + " requests sent to " + co.n); render(); });
+    var cls = el("button", "btn"); cls.type = "button"; cls.innerHTML = ico("i-lock") + (s.stage === "filed" ? "Closed" : mode === "month" ? "Close April" : "Close FY 2025"); cls.disabled = s.stage !== "ready" || s.filed !== s.forms;
+    if (s.stage === "ready" && s.filed !== s.forms) cls.title = "File every form first";
+    acts.appendChild(req); acts.appendChild(cls); h.appendChild(acts);
+    root.appendChild(h);
+
+    var act = activeForms(sel), auto = act.filter(function(f){ return formStat(sel, f).miss; })[0] || act.filter(function(f){ return formStat(sel, f).ask; })[0];
+    function section(f, isTrig){
+      var fs = formStat(sel, f), key = f.id, isOpen = open[key] != null ? open[key] : (auto && auto.id === f.id);
+      var sec = el("div", "sec" + (isOpen ? " open" : "")), sh = el("button", "sh"); sh.type = "button"; sh.setAttribute("aria-expanded", String(isOpen));
+      var t = el("div", "t"), b = el("b", "", f.name); t.appendChild(b); if (f.built) t.insertAdjacentHTML("beforeend", '<span class="built">Built</span>'); t.appendChild(el("small", "", f.sub)); sh.appendChild(t);
+      var pc = fs.filed ? "done" : fs.miss ? "miss" : fs.ask ? "ask" : "done", pt = fs.filed ? "Filed" : fs.miss ? fs.miss + " missing" : fs.ask ? fs.ask + " requested" : "Complete";
+      var pill = el("span", "pill " + pc); pill.innerHTML = ico(pc === "done" ? "i-check" : pc === "miss" ? "i-x" : "i-clock"); pill.appendChild(document.createTextNode(pt)); sh.appendChild(pill);
+      sh.insertAdjacentHTML("beforeend", '<svg class="i cv"><use href="#i-chev"/></svg>');
+      sh.addEventListener("click", function(){ open[key] = !isOpen; renderDetail(); }); sec.appendChild(sh);
+      var sb = el("div", "sb");
+      f.docs.forEach(function(d, di){
+        var k = sel + mode + f.id + di, st = ST[k], cl = st === "miss" ? "miss" : st === "ask" ? "ask" : "done";
+        var row = el("div", "doc " + cl), ic = el("span", "ic"); ic.innerHTML = ico(cl === "done" ? "i-check" : cl === "miss" ? "i-x" : "i-clock"); row.appendChild(ic);
+        row.appendChild(el("div", "tx", d)); row.appendChild(statusPill(st));
+        if (st === "miss"){ var a = el("button", "mini", "Request"); a.type = "button"; a.addEventListener("click", function(){ ST[k] = "ask"; toast("Request sent to " + co.n); render(); }); row.appendChild(a); }
+        else if (st === "ask"){ var a2 = el("button", "mini", "Mark received"); a2.type = "button"; a2.addEventListener("click", function(){ ST[k] = "client"; render(); }); row.appendChild(a2); }
+        else { var a3 = el("button", "mini", "View"); a3.type = "button"; a3.addEventListener("click", function(){ toast("Opens the file. Not part of this mock."); }); row.appendChild(a3); }
+        sb.appendChild(row);
+      });
+      if (f.id !== "books" && f.id !== "ybooks"){
+        var af = el("div", "after"), complete = !(fs.miss + fs.ask);
+        if (!fs.filed){
+          var fb = el("button", "btn"); fb.type = "button"; fb.textContent = "Mark " + f.short + " as filed"; fb.disabled = !complete; if (!complete) fb.title = "Collect every document first";
+          fb.addEventListener("click", function(){ FILED[sel + mode + f.id] = 1; toast(f.short + " marked as filed"); render(); }); af.appendChild(fb);
+          af.appendChild(el("span", "", complete ? "Then collect the filing proof." : "Available once every document is in."));
+        } else {
+          af.appendChild(el("span", "", "After filing:"));
+          AFTER.forEach(function(a, ai){
+            var k2 = sel + mode + f.id + ai, on = !!AFT[k2], p = el("button", "pill " + (on ? "done" : "miss")); p.type = "button"; p.innerHTML = ico(on ? "i-check" : "i-x"); p.appendChild(document.createTextNode(a));
+            p.setAttribute("aria-pressed", String(on)); p.addEventListener("click", function(){ AFT[k2] = !on; renderDetail(); }); af.appendChild(p);
+          });
+        }
+        sb.appendChild(af);
+      }
+      sec.appendChild(sb); return sec;
+    }
+    S.forms.forEach(function(f){
+      if (applies(co, f)) root.appendChild(section(f));
+      else { var na = el("div", "trig"), t = el("div"); t.appendChild(document.createTextNode(f.name)); t.appendChild(el("small", "", "Not needed: " + (f.needs === "vat" ? "the company is not VAT registered" : f.needs === "sso" ? "the company is not enrolled with SSO" : "the company has no employees"))); na.appendChild(t); var p = el("span", "pill"); p.innerHTML = ico("i-dash") + "Not needed"; na.appendChild(p); root.appendChild(na); }
+    });
+    if (S.trig.length){
+      root.appendChild(el("div", "grp", "Only when triggered"));
+      S.trig.forEach(function(f){
+        var k = sel + mode + f.id, on = !!TRIGON[k];
+        var row = el("div", "trig"), t = el("div"); t.appendChild(document.createTextNode(f.name)); t.appendChild(el("small", "", f.sub)); row.appendChild(t);
+        var sw = el("button", "sw"); sw.type = "button"; sw.setAttribute("role", "switch"); sw.setAttribute("aria-checked", String(on)); sw.setAttribute("aria-label", f.name + " applies this month");
+        sw.addEventListener("click", function(){ TRIGON[k] = !on; if (!on) open[f.id] = true; render(); }); row.appendChild(sw); root.appendChild(row);
+        if (on){ var sc = section(f, true); sc.style.borderTop = "0"; root.appendChild(sc); }
+      });
+    }
+  }
+  function render(){ renderStats(); renderQueue(); renderDetail(); }
+  [].forEach.call(document.querySelectorAll("#mode button"), function(b){
+    b.addEventListener("click", function(){ mode = b.getAttribute("data-m"); open = {}; [].forEach.call(document.querySelectorAll("#mode button"), function(x){ x.setAttribute("aria-pressed", String(x === b)); }); render(); });
+  });
+  $("#search").addEventListener("input", function(){ term = this.value.trim().toLowerCase(); renderQueue(); });
+  render();
+})();
+</script>

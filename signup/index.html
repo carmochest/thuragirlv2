@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Sign up · ThuraGirl</title>
+<link rel="icon" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700&family=Instrument+Serif:ital@0;1&family=Manrope:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="../assets/app.css">
+</head>
+<body data-page="signup">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="g-hair" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBB6CE"/><stop offset="100%" stop-color="#EC4899"/></linearGradient>
+    <linearGradient id="g-band" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0FBFB6"/><stop offset="100%" stop-color="#0AA39B"/></linearGradient>
+    <radialGradient id="g-eye" cx="0.4" cy="0.3"><stop offset="0%" stop-color="#A7F3D0"/><stop offset="55%" stop-color="#0FBFB6"/><stop offset="100%" stop-color="#0D9488"/></radialGradient>
+  </defs>
+  <symbol id="tg" viewBox="6 3 52 54">
+    <path d="M9 36 C 9 17, 19 6, 32 6 C 45 6, 55 17, 55 36 C 55 44, 54 50, 51.5 53 C 50 54.8, 47 54.5, 47 51.5 L 47 41.5 L 17 41.5 L 17 51.5 C 17 54.5, 14 54.8, 12.5 53 C 10 50, 9 44, 9 36 Z" fill="url(#g-hair)" stroke="#0A0A0A" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M11 27.5 C 14 18, 22.5 13.5, 32 13.5 C 41.5 13.5, 50 18, 53 27.5 C 53.35 28.75, 52.6 30, 51 30 L 13 30 C 11.4 30, 10.65 28.75, 11 27.5 Z" fill="url(#g-band)" stroke="#0A0A0A" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M17 35 C 17 31.2, 19.2 29.8, 22.6 29.8 L 41.4 29.8 C 44.8 29.8, 47 31.2, 47 35 L 47 43 C 47 49.8, 40.8 54, 32 54 C 23.2 54, 17 49.8, 17 43 Z" fill="#FFE4CC" stroke="#0A0A0A" stroke-width="2" stroke-linejoin="round"/>
+    <g class="tg-eye"><ellipse cx="26" cy="40" rx="3.4" ry="4.2" fill="#0A0A0A"/><ellipse cx="26" cy="40" rx="2.6" ry="3.4" fill="url(#g-eye)"/><circle cx="27.2" cy="38.6" r="1.3" fill="#fff"/></g>
+    <g class="tg-eye"><ellipse cx="38" cy="40" rx="3.4" ry="4.2" fill="#0A0A0A"/><ellipse cx="38" cy="40" rx="2.6" ry="3.4" fill="url(#g-eye)"/><circle cx="39.2" cy="38.6" r="1.3" fill="#fff"/></g>
+    <circle cx="22.5" cy="46" r="1.6" fill="#FBB6CE"/><circle cx="41.5" cy="46" r="1.6" fill="#FBB6CE"/>
+    <path d="M29 48 Q 32 51 35 48" stroke="#0A0A0A" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <circle cx="47" cy="37.5" r="2.2" fill="#0FBFB6" stroke="#0A0A0A" stroke-width="1.6"/>
+  </symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 15V4.5m-4 4 4-4 4 4"/><path d="M4.5 14.5v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3.5H8a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-11z"/><path d="M14 3.5v4h4M9.5 12.5h5m-5 3.5h3"/></symbol>
+  <symbol id="i-pay" viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 14.5h3"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-11.2 6.5L4.5 19.5l1.4-4A7.5 7.5 0 1 1 20 11.5z"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.6 4.6 3.3 17.2a1.6 1.6 0 0 0 1.4 2.4h14.6a1.6 1.6 0 0 0 1.4-2.4L13.4 4.6a1.6 1.6 0 0 0-2.8 0z"/><path d="M12 9.5v4m0 3v.01"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 1.8"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="10.5" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5"/></symbol>
+  <symbol id="i-sendup" viewBox="0 0 24 24"><path d="M12 19V5.5m-5.5 5.5L12 5.5l5.5 5.5"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.75"/></symbol>
+  <symbol id="i-eyeoff" viewBox="0 0 24 24"><path d="m4 4 16 16M9.9 5.8a9.6 9.6 0 0 1 2.1-.3c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.6 3.4M6.3 7.6A16.6 16.6 0 0 0 2.5 12S6 18.5 12 18.5a9.3 9.3 0 0 0 4-.9M10 10.1a2.75 2.75 0 0 0 3.9 3.9"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5.5 12.5 4.2 4.2L18.5 8"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><path d="M7 17 17 7m0 0H9.5M17 7v7.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="m6.5 6.5 11 11m0-11-11 11"/></symbol>
+  <symbol id="i-chevr" viewBox="0 0 24 24"><path d="m9.5 6.5 5.5 5.5-5.5 5.5"/></symbol>
+  <symbol id="i-news" viewBox="0 0 24 24"><path d="M7.5 4.5h12v13a2 2 0 0 1-2 2h-12"/><path d="M7.5 4.5v13a2 2 0 0 1-4 0v-8h4"/><path d="M10.5 8.5h6V12h-6zM10.5 15.5h6"/></symbol>
+  <symbol id="i-chevl" viewBox="0 0 24 24"><path d="m14.5 6.5-5.5 5.5 5.5 5.5"/></symbol>
+  <symbol id="i-t-rest" viewBox="0 0 24 24"><path d="M5 3.5v5a2.5 2.5 0 0 0 5 0v-5M7.5 3.5v17M16.5 20.5v-17c-2.2 1.2-3.2 3.8-3.2 7.5h3.2"/></symbol>
+  <symbol id="i-t-shop" viewBox="0 0 24 24"><path d="M4 9.5 5.5 4.5h13L20 9.5M5 12v7.5h14V12M10 19.5v-4.5h4v4.5"/><path d="M4 9.5a2.67 2.67 0 0 0 5.33 0 2.67 2.67 0 0 0 5.34 0 2.67 2.67 0 0 0 5.33 0"/></symbol>
+  <symbol id="i-t-online" viewBox="0 0 24 24"><path d="M3.5 4.5h2.3L8 15h9.6l1.9-7.5H6.5"/><circle cx="9.5" cy="19" r="1.1"/><circle cx="16.5" cy="19" r="1.1"/></symbol>
+  <symbol id="i-t-cafe" viewBox="0 0 24 24"><path d="M5 9.5h11v5a4.5 4.5 0 0 1-4.5 4.5h-2A4.5 4.5 0 0 1 5 14.5zM16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8.5 3.5V6m3.5-2.5V6"/></symbol>
+  <symbol id="i-t-beauty" viewBox="0 0 24 24"><circle cx="6.5" cy="7" r="2.5"/><circle cx="6.5" cy="17" r="2.5"/><path d="M8.6 8.5 20 17.5M8.6 15.5 20 6.5"/></symbol>
+  <symbol id="i-t-serv" viewBox="0 0 24 24"><rect x="3.5" y="7.5" width="17" height="12" rx="2.5"/><path d="M9 7.5v-2A1.5 1.5 0 0 1 10.500 4h3A1.5 1.5 0 0 1 15 5.5v2M3.5 13h17"/></symbol>
+  <symbol id="i-t-mfg" viewBox="0 0 24 24"><path d="M3.5 19.500V11L9 14v-3l5.500 3V5.500H19v14z"/><path d="M7 16.500h2m3 0h2"/></symbol>
+  <symbol id="i-t-other" viewBox="0 0 24 24"><path d="M11 4.500c.6 3.900 2.600 5.900 6.500 6.500-3.900.6-5.900 2.600-6.500 6.500-.6-3.900-2.600-5.900-6.500-6.500 3.900-.6 5.900-2.600 6.500-6.500zM18.500 16v4m-2-2h4"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2.5"/><path d="M8.5 10.500v-3a3.500 3.500 0 0 1 7 0v3"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24"><path d="M4.500 8.500h3L9 6h6l1.500 2.500h3a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V9.500a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.500" r="3.250"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M5 19.5v-7m7 7v-15m7 15v-10"/></symbol>
+  <symbol id="i-set" viewBox="0 0 24 24"><path d="M4 7.5h8.5m5 0H20M4 16.5h2.5m5 0H20"/><circle cx="15" cy="7.5" r="2.5"/><circle cx="9" cy="16.5" r="2.5"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6.5 9.5 5.5 5.5 5.5-5.5"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M6.5 3.5h11v17l-2.75-1.6L12 20.5l-2.75-1.6L6.5 20.5z"/><path d="M9.5 8.5h5m-5 3.5h5"/></symbol>
+</svg>
+<div class="stage">
+  <div class="mock" id="mock" data-dir="b" data-mode="day">
+        <div class="scr" id="scr-auth" hidden><div class="su" id="su"></div></div>
+        <!-- B · Midnight, with a day mode -->
+        <div class="scr dB" id="app" hidden>
+          <div class="nav">
+            <div class="navl"><button type="button" class="nbtn" id="b-back" aria-label="Back to Home" hidden><svg class="i"><use href="#i-chevl"/></svg></button><div class="logo" id="b-logo"><svg class="tg" width="28" height="29"><use href="#tg"/></svg><span>thuragirl<i>.</i></span></div></div>
+            <div class="navr"><button type="button" class="nbtn" id="b-money-btn" aria-label="Money" aria-pressed="false" title="Money"><svg class="i"><use href="#i-chart"/></svg></button><button type="button" class="nbtn" id="b-brief-btn" aria-label="Morning brief" aria-pressed="false" title="Morning brief"><svg class="i"><use href="#i-news"/></svg><i class="nb-dot" id="b-brief-dot"></i></button><button type="button" class="co" id="b-co" aria-label="Settings" title="Settings"><b id="b-co-i">BB</b><span id="b-co-n">Bangkok Bites</span><svg class="i"><use href="#i-chev"/></svg></button></div>
+          </div>
+          <div class="pg" id="b-home">
+          <div class="welB" id="b-wel" hidden><svg class="tg" width="34" height="36"><use href="#tg"/></svg><div class="rt"><div class="t" id="b-wel-t"></div><div class="m" id="b-wel-m"></div></div><button type="button" class="pill soft act" id="b-wel-go">Finish setup</button><button type="button" class="cb-btn" id="b-wel-x" aria-label="Dismiss"><svg class="i"><use href="#i-x"/></svg></button></div>
+          <div class="emptyB"><svg class="tg" width="64" height="67"><use href="#tg"/></svg><h1>Let's see your money.</h1><p>Upload a bank statement and I build your dashboard from it: your cash, money in and out, and what needs you.</p><div class="acts"><button type="button" class="pill acc js-upload"><svg class="i"><use href="#i-up"/></svg>Upload a statement</button></div></div>
+          <div class="dB-hero">
+            <div class="lab">Cash on hand</div>
+            <div class="big num" aria-label="1,842,300 baht"><span class="cur">฿</span><span id="b-val">1,842,300</span></div>
+            <div class="delta" id="b-delta"><svg class="i"><use href="#i-trend"/></svg><span id="b-dtxt">6.4% this month</span></div>
+            <div class="spark" id="b-spark" role="img" aria-label="Cash over the last 30 days, rising from 1.73 to 1.84 million baht">
+              <svg viewBox="0 0 600 100" preserveAspectRatio="none" aria-hidden="true">
+                <defs><linearGradient id="b-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--m-accent);stop-opacity:.2"/><stop offset="1" style="stop-color:var(--m-accent);stop-opacity:0"/></linearGradient></defs>
+                <path class="sp-a" id="b-area"/><path class="sp-l" id="b-line"/>
+              </svg>
+              <i class="sp-x" id="b-x"></i><i class="sp-dot" id="b-dot"></i>
+            </div>
+            <div class="bkwrap"><button type="button" class="bkbar" id="b-bkbar" aria-expanded="false" aria-controls="b-bkpanel"></button><div class="bkpanel" id="b-bkpanel" hidden></div></div>
+            <div class="circ">
+              <button type="button" class="pri js-upload"><i><svg class="i"><use href="#i-up"/></svg></i>Upload</button>
+              <button type="button" class="js-soon"><i><svg class="i"><use href="#i-doc"/></svg></i>Invoice</button>
+              <button type="button" class="js-soon"><i><svg class="i"><use href="#i-pay"/></svg></i>Pay</button>
+            </div>
+          </div>
+          <div class="snapB">
+            <div class="sech"><span>This month</span><button type="button" class="lnk" data-go="money">See money<svg class="i"><use href="#i-chevr"/></svg></button></div>
+            <div class="minis">
+              <button type="button" class="mini t1" data-go="money" aria-label="Revenue, 854,200 baht. Open Money"><span class="lab">Revenue</span><span class="n num">฿854,200</span><span class="d num"><svg class="i"><use href="#i-trend"/></svg>12.8%<em>vs last month</em></span></button>
+              <button type="button" class="mini t2" data-go="money" aria-label="Expenses, 612,400 baht. Open Money"><span class="lab">Expenses</span><span class="n num">฿612,400</span><span class="d num"><svg class="i"><use href="#i-trend"/></svg>4.2%<em>vs last month</em></span></button>
+              <button type="button" class="mini t3" data-go="money" aria-label="Profit, 241,800 baht. Open Money"><span class="lab">Profit</span><span class="n num">฿241,800</span><span class="d num"><svg class="i"><use href="#i-trend"/></svg>38.4%<em>28.3% margin</em></span></button>
+            </div>
+          </div>
+          <section class="card needB" aria-label="Tasks that need you">
+            <h2>Needs you <span class="cnt num" id="b-cnt">6</span></h2>
+            <div class="revB tk" id="b-rev" data-k="rev"><svg class="tg" width="38" height="40"><use href="#tg"/></svg><div class="rt"><div class="t">April Review Pack</div><div class="m">Your month on one page. Due today.</div></div><button type="button" class="pill acc" id="b-review">Review</button></div>
+            <div class="row tk" data-k="t0"><span class="ic"><svg class="i"><use href="#i-alert"/></svg></span><div class="rt"><div class="t">Invoice #INV-2026-038 is unpaid</div><div class="m"><span class="bad">45 days late</span><span class="ma"> · <span class="num">฿88,500</span></span></div></div><span class="amt num">฿88,500</span><button type="button" class="pill soft act">Approve</button></div>
+            <div class="row tk" data-k="t1"><span class="ic"><svg class="i"><use href="#i-alert"/></svg></span><div class="rt"><div class="t">April tax package</div><div class="m"><span class="bad">Overdue 1 day</span><span class="ma"> · <span class="num">฿14,200</span></span></div></div><span class="amt num">฿14,200</span><button type="button" class="pill soft act">Approve</button></div>
+            <div class="row tk" data-k="t2"><span class="ic"><svg class="i"><use href="#i-clock"/></svg></span><div class="rt"><div class="t">Invoice to Sukhumvit Catering</div><div class="m"><span class="warn">Due today</span><span class="ma"> · <span class="num">฿142,000</span></span></div></div><span class="amt num">฿142,000</span><button type="button" class="pill soft act">Approve</button></div>
+            <div class="row tk" data-k="t3"><span class="ic"><svg class="i"><use href="#i-receipt"/></svg></span><div class="rt"><div class="t">Missing Makro receipt</div><div class="m">Due in 2 days<span class="ma"> · <span class="num">฿18,400</span></span></div></div><span class="amt num">฿18,400</span><button type="button" class="pill soft act">Upload</button></div>
+            <div class="row tk" id="b-setuprow"><span class="ic"><svg class="i"><use href="#i-set"/></svg></span><div class="rt"><div class="t" id="b-setup-t">Finish setting up your company</div><div class="m" id="b-setup-m">3 quick things left</div></div><button type="button" class="pill soft act2" id="b-setup-btn">Set up</button></div>
+            <div class="clearB" id="b-clear" hidden><svg class="tg" width="44" height="46"><use href="#tg"/></svg><b id="b-clear-t"></b><span id="b-clear-m"></span><button type="button" id="b-reset">Show the sample tasks again</button></div>
+            <div class="more">3 more scheduled this week<svg class="i"><use href="#i-chevr"/></svg></div>
+          </section>
+          </div>
+
+          <div class="pg brf" id="b-brief" hidden>
+            <div class="emptyP"><svg class="tg" width="64" height="67"><use href="#tg"/></svg><h1>No brief yet.</h1><p>Your morning brief starts the day after I have a bank statement to read.</p><div class="acts"><button type="button" class="pill acc js-upload"><svg class="i"><use href="#i-up"/></svg>Upload a statement</button></div></div>
+            <div class="br-mast"><b>The Morning Brief</b><span>Thursday 7 May</span><span class="br-rt">1 min read</span></div>
+            <header class="br-head">
+              <h1 id="br-h1"><span class="l1">Cash is up 6.4%.</span><em>Three things</em> need your yes.</h1>
+              <p class="br-lede">Good morning, <span id="br-name">Nok</span>. You have <b class="num">฿1,842,300</b> <span id="br-banks">in the bank</span>. May has brought in <b class="num">฿854,200</b> so far, and you have kept <b class="num">฿241,800</b> of it.</p>
+              <div class="br-by"><svg class="tg" width="26" height="27"><use href="#tg"/></svg><span>By ThuraGirl, your bookkeeper</span></div>
+            </header>
+            <div class="br-grid">
+              <div class="br-main">
+                <div class="br-sec">Needs your yes</div>
+                <article class="story"><span class="no">1</span><h3>Your April books are ready to sign off</h3>
+                  <p class="todo">It is all on one page: <span class="num">฿816,600</span> in, <span class="num">฿637,800</span> out, <span class="num">฿178,800</span> kept. Tick the box and I lock the month.</p>
+                  <p class="dn">Signed off. April is locked and filed.</p>
+                  <button type="button" class="pill acc" data-act="rev" data-label="Review" data-ok="Approved">Review</button></article>
+                <article class="story"><span class="no">2</span><h3>Bangkok Hotel Group has not paid you</h3>
+                  <p class="todo">Invoice #INV-2026-038 for <span class="num">฿88,500</span> is 45 days late. I have a polite reminder ready to go.</p>
+                  <p class="dn">Reminder sent. I will tell you the moment they pay.</p>
+                  <button type="button" class="pill soft act" data-act="0" data-label="Send reminder" data-ok="Sent">Send reminder</button></article>
+                <article class="story"><span class="no">3</span><h3>Your April taxes are ready</h3>
+                  <p class="todo">The package comes to <span class="num">฿14,200</span> and it was due yesterday. One yes files all of it.</p>
+                  <p class="dn">Filed. The receipts are in your files.</p>
+                  <button type="button" class="pill soft act" data-act="1" data-label="Approve and file" data-ok="Filed">Approve and file</button></article>
+                <div class="br-sec br-gap">Can wait</div>
+                <div class="row"><div class="rt"><div class="t">Invoice to Sukhumvit Catering</div><div class="m">Ready to send · <span class="num">฿142,000</span></div></div><button type="button" class="pill soft act" data-act="2" data-label="Approve" data-ok="Done">Approve</button></div>
+                <div class="row"><div class="rt"><div class="t">Missing Makro receipt</div><div class="m">Left your account on 2 May · <span class="num">฿18,400</span></div></div><button type="button" class="pill soft act" data-act="3" data-label="Upload" data-ok="Done">Upload</button></div>
+                <div class="row"><div class="rt"><div class="t" id="br-bank-t"></div><div class="m" id="br-bank-m"></div></div><button type="button" class="pill soft" id="br-bank">Update</button></div>
+              </div>
+              <aside class="br-side">
+                <div class="br-sec">Done for you</div>
+                <ul class="br-done">
+                  <li><svg class="i"><use href="#i-check"/></svg>Closed your April books, every baht accounted for</li>
+                  <li><svg class="i"><use href="#i-check"/></svg>Matched 12 bank payments to the right bills</li>
+                  <li><svg class="i"><use href="#i-check"/></svg>Filed 8 receipts you snapped or forwarded</li>
+                </ul>
+                <div class="br-sec br-gap br-lk"><span>May so far</span><button type="button" class="lnk" data-go="money">See money<svg class="i"><use href="#i-chevr"/></svg></button></div>
+                <ul class="br-nums">
+                  <li><span>Money in</span><b class="num">฿854,200</b><em class="num up">12.8%</em></li>
+                  <li><span>Money out</span><b class="num">฿612,400</b><em class="num">4.2%</em></li>
+                  <li><span>Kept</span><b class="num">฿241,800</b><em class="num up">38.4%</em></li>
+                </ul>
+                <div class="br-sec br-gap">Coming up</div>
+                <ul class="br-nums br-up">
+                  <li><span>Rent, Watthana Property<small class="bad">2 days late</small></span><b class="num">฿65,000</b></li>
+                  <li><span>Electricity, PTT<small>Due in 3 days</small></span><b class="num">฿12,200</b></li>
+                  <li><span>Makro Sukhumvit<small>Due in 5 days</small></span><b class="num">฿18,400</b></li>
+                </ul>
+              </aside>
+            </div>
+            <p class="br-end">That is everything for today. Ask me anything below.</p>
+          </div>
+
+          <div class="pg" id="b-money" hidden>
+            <div class="emptyP"><svg class="tg" width="64" height="67"><use href="#tg"/></svg><h1>Nothing to show yet.</h1><p>Money fills in once you upload a bank statement.</p><div class="acts"><button type="button" class="pill acc js-upload"><svg class="i"><use href="#i-up"/></svg>Upload a statement</button></div></div>
+            <div class="dB-hero mH">
+              <div class="tabs per" id="m-per" role="group" aria-label="Period"><button type="button" class="on" data-per="mtd" aria-pressed="true">Month</button><button type="button" data-per="qtd" aria-pressed="false">Quarter</button><button type="button" data-per="ytd" aria-pressed="false">Year</button></div>
+              <div class="lab" id="m-lab">Profit this month</div>
+              <div class="big num"><span class="cur">฿</span><span id="m-val">241,800</span></div>
+              <div class="mH-sub"><div class="delta"><svg class="i"><use href="#i-trend"/></svg><span id="m-dtxt">38.4% vs last month</span></div><span class="mg num" id="m-mg">28.3% margin</span></div>
+            </div>
+            <section class="card flowB" aria-label="Money in and out">
+              <div class="cardh"><h2>Money in and out</h2>
+                <div class="lgd"><span><i class="swc in"></i>In <b class="num" id="m-in">฿854,200</b></span><span><i class="swc out"></i>Out <b class="num" id="m-out">฿612,400</b></span></div>
+              </div>
+              <div class="bars"><div class="bplot"><div class="bgrid" id="m-grid"></div><div class="bcols" id="m-cols"></div><div class="btip" id="m-tip" hidden></div></div><div class="bx" id="m-x" aria-hidden="true"></div></div>
+              <table class="sr" id="m-tbl"></table>
+            </section>
+            <div class="two">
+              <section class="card listB" aria-label="Owed to you">
+                <div class="cardh"><h2>Owed to you</h2><span class="tot num">฿322,700</span><div class="sub">4 invoices · <span class="bad">2 overdue</span></div></div>
+                <div class="row"><div class="rt"><div class="t">Bangkok Hotel Group</div><div class="m"><span class="bad">45 days late</span><span class="ma"> · <span class="num">฿88,500</span></span></div></div><span class="amt num">฿88,500</span><button type="button" class="pill soft act" data-ok="Sent">Remind</button></div>
+                <div class="row"><div class="rt"><div class="t">Lotus Wholesale</div><div class="m"><span class="bad">9 days late</span><span class="ma"> · <span class="num">฿64,200</span></span></div></div><span class="amt num">฿64,200</span><button type="button" class="pill soft act" data-ok="Sent">Remind</button></div>
+                <div class="row"><div class="rt"><div class="t">Sukhumvit Catering</div><div class="m">Due in 15 days<span class="ma"> · <span class="num">฿142,000</span></span></div></div><span class="amt num">฿142,000</span><button type="button" class="pill soft act" data-ok="Sent">Remind</button></div>
+                <div class="row"><div class="rt"><div class="t">Asok Tower Building</div><div class="m">Due in 23 days<span class="ma"> · <span class="num">฿28,000</span></span></div></div><span class="amt num">฿28,000</span><button type="button" class="pill soft act" data-ok="Sent">Remind</button></div>
+              </section>
+              <section class="card listB" aria-label="You owe">
+                <div class="cardh"><h2>You owe</h2><span class="tot num">฿128,400</span><div class="sub">4 bills · <span class="bad">1 overdue</span></div></div>
+                <div class="row"><div class="rt"><div class="t">Watthana Property Mgmt</div><div class="m"><span class="bad">2 days late</span><span class="ma"> · <span class="num">฿65,000</span></span></div></div><span class="amt num">฿65,000</span><button type="button" class="pill soft act" data-ok="Paid">Pay</button></div>
+                <div class="row"><div class="rt"><div class="t">PTT (electricity)</div><div class="m">Due in 3 days<span class="ma"> · <span class="num">฿12,200</span></span></div></div><span class="amt num">฿12,200</span><button type="button" class="pill soft act" data-ok="Paid">Pay</button></div>
+                <div class="row"><div class="rt"><div class="t">Makro Sukhumvit</div><div class="m">Due in 5 days<span class="ma"> · <span class="num">฿18,400</span></span></div></div><span class="amt num">฿18,400</span><button type="button" class="pill soft act" data-ok="Paid">Pay</button></div>
+                <div class="row"><div class="rt"><div class="t">Thai Beverage Co</div><div class="m">Due in 8 days<span class="ma"> · <span class="num">฿32,800</span></span></div></div><span class="amt num">฿32,800</span><button type="button" class="pill soft act" data-ok="Paid">Pay</button></div>
+              </section>
+            </div>
+            <div class="two">
+              <section class="card mixB" aria-label="Where it comes from"><div class="cardh"><h2>Where it comes from</h2></div><div id="m-rev"></div></section>
+              <section class="card mixB" aria-label="Where it goes"><div class="cardh"><h2>Where it goes</h2></div><div id="m-exp"></div></section>
+            </div>
+            <section class="card taxB" aria-label="Set aside for taxes">
+              <div class="cardh"><h2>Set aside for taxes</h2><span class="tot num" id="m-tax">฿75,760</span></div>
+              <ul>
+                <li><div><b>VAT (PP.30)</b><small>Monthly VAT, net payable</small></div><span id="m-vat">฿24,850</span></li>
+                <li><div><b>Withholding (PND.3)</b><small>Supplier payments</small></div><span id="m-wht">฿2,550</span></li>
+                <li><div><b>Company tax estimate</b><small>End-of-year liability</small></div><span id="m-corp">฿48,360</span></li>
+              </ul>
+            </section>
+            <button type="button" class="askrow" id="m-pl">Ask ThuraGirl for the full profit and loss<svg class="i"><use href="#i-chevr"/></svg></button>
+          </div>
+
+          <div class="pg" id="b-settings" hidden></div>
+          <div class="pg" id="b-register" hidden></div>
+
+          <div class="dockB">
+            <div class="popB" id="b-pop" hidden aria-live="polite">
+              <button type="button" class="cb-btn x" id="b-popx" aria-label="Close reply"><svg class="i"><use href="#i-x"/></svg></button>
+              <div class="me" id="b-me"></div>
+              <div class="tgm"><svg class="tg" width="28" height="29"><use href="#tg"/></svg><p id="b-reply"></p></div>
+            </div>
+            <div class="sugB" id="b-sug" hidden>
+              <button type="button">What's overdue?</button><button type="button">How was April?</button><button type="button">How's my cash?</button>
+            </div>
+            <form class="chatB" id="b-chat" novalidate>
+              <button type="button" class="cb-btn" aria-label="Upload a file"><svg class="i"><use href="#i-plus"/></svg></button>
+              <input class="cb-in" id="b-in" type="text" placeholder="Ask ThuraGirl" aria-label="Ask ThuraGirl" autocomplete="off">
+              <button type="button" class="cb-btn" aria-label="Speak"><svg class="i"><use href="#i-mic"/></svg></button>
+              <button type="submit" class="cb-send" id="b-send" aria-label="Send" disabled><svg class="i"><use href="#i-sendup"/></svg></button>
+            </form>
+          </div>
+        </div>
+
+
+        <!-- B · Review Pack sheet -->
+        <div class="shB" id="b-sheet" hidden>
+          <div class="shB-card" role="dialog" aria-modal="true" aria-labelledby="b-sh-t">
+            <div class="shB-h">
+              <div><div class="shB-k">Monthly Review Pack</div><h3 id="b-sh-t">April, on one page</h3><div class="shB-sub">Bangkok Bites · 1 to 30 April</div></div>
+              <button type="button" class="cb-btn shB-x" id="b-shx" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button>
+            </div>
+            <dl class="shB-n">
+              <div><dt>Money in</dt><dd>฿816,600</dd></div>
+              <div><dt>Money out</dt><dd>฿637,800</dd></div>
+              <div><dt>Profit</dt><dd>฿178,800</dd></div>
+            </dl>
+            <ul class="shB-l">
+              <li><span>Profit margin</span><b class="num">21.9%</b></li>
+              <li><span>Tax to file</span><b class="num">฿14,200</b></li>
+              <li><span>Overdue invoices</span><b class="num">฿152,700</b></li>
+              <li><span>Receipts still missing</span><b class="num">1</b></li>
+            </ul>
+            <label class="shB-ok"><input type="checkbox" id="b-agree"><span>I've reviewed April and it looks right.</span></label>
+            <div class="shB-f">
+              <button type="button" class="pill soft" id="b-shask">Ask ThuraGirl</button>
+              <button type="button" class="pill acc" id="b-approve" disabled>Approve</button>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- B · setup that follows signup -->
+        <div class="shB" id="b-setup" hidden>
+          <div class="shB-card" role="dialog" aria-modal="true" aria-labelledby="st-t">
+            <div class="shB-h">
+              <div><div class="shB-k" id="st-k">Setup</div><h3 id="st-t">Finish setting up</h3><div class="shB-sub" id="st-sub"></div></div>
+              <button type="button" class="cb-btn shB-x" id="st-x" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button>
+            </div>
+            <div class="st-body" id="st-body"></div>
+            <button type="button" class="pill acc st-done" id="st-done">Done for now</button>
+          </div>
+        </div>
+
+
+        <!-- B · signup: verification handed to a third-party partner -->
+        <div class="kyc" id="kyc" hidden>
+          <div class="kyc-card" role="dialog" aria-modal="true" aria-label="Secure verification">
+            <div class="kyc-h"><svg class="i"><use href="#i-lock"/></svg><span>Secure verification</span><button type="button" class="cb-btn" id="kyc-x" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button></div>
+            <div class="kyc-b" id="kyc-body"></div>
+            <div class="kyc-f">In the live app a verification partner handles this step. In this test build the file never leaves your browser.</div>
+            <input type="file" id="kyc-cam" accept="image/*" capture="environment" hidden><input type="file" id="kyc-file" accept="image/*,application/pdf" hidden>
+          </div>
+        </div>
+
+
+        <div class="shB" id="up-sheet" hidden>
+          <div class="shB-card" role="dialog" aria-modal="true" aria-labelledby="up-t">
+            <div class="shB-h">
+              <div><div class="shB-k">Bank statement</div><h3 id="up-t">Upload a statement</h3><div class="shB-sub">CSV, Excel or PDF from your bank, up to 10 MB.</div></div>
+              <button type="button" class="cb-btn shB-x" id="up-x" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button>
+            </div>
+            <div class="upf" id="up-body"></div>
+            <input type="file" id="up-file" accept=".csv,.xlsx,.xls,.pdf,text/csv,application/pdf" hidden>
+          </div>
+        </div>
+  </div>
+</div>
+<script src="../assets/app.js"></script>
+</body>
+</html>
