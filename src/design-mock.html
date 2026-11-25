@@ -59,7 +59,7 @@
   .mock{font-family:var(--font-display);background:var(--m-bg);color:var(--m-ink);min-height:640px}
   .mock[data-dir="a"]{--m-bg:#EDF2F1;--m-surface:#FFFFFF;--m-soft:#F1F5F4;--m-ink:#0A1412;--m-mute:#5F6E6B;--m-accent:#0FBFB6;--m-accent-ink:#06211F;--m-hint:#067A73;--m-pink:#EC4899;--m-line:#E1E8E6;--m-t1:#D3F3EF;--m-t2:#FCDFED;--m-t3:#FFEDC2;--m-bad:#E11D48;--m-warn:#B45309}
   .mock[data-dir="b"]{--m-bg:#0B0E0E;--m-surface:#151919;--m-soft:#1F2424;--m-ink:#F1F4F3;--m-mute:#94A09D;--m-accent:#2DD4C8;--m-accent-ink:#04201D;--m-hint:#2DD4C8;--m-pink:#F472B6;--m-line:#272D2C;--m-bad:#FF7A8C;--m-warn:#E8B45A;--m-t1:#11302C;--m-t2:#151919;--m-t3:#151919}
-  .mock[data-dir="b"][data-mode="day"]{--m-bg:#F4F5F5;--m-surface:#FFFFFF;--m-soft:#EFF1F1;--m-ink:#0F1514;--m-mute:#6A7472;--m-accent:#0FBFB6;--m-accent-ink:#04201D;--m-hint:#067A73;--m-pink:#EC4899;--m-line:#E4E7E6;--m-bad:#D92D4B;--m-warn:#A8650A;--m-t1:#E3F6F4;--m-t2:#FFFFFF;--m-t3:#FFFFFF}
+  .mock[data-dir="b"][data-mode="day"]{--m-bg:#F4F5F5;--m-surface:#FFFFFF;--m-soft:#EFF1F1;--m-ink:#0F1514;--m-mute:#5A6462;--m-accent:#0FBFB6;--m-accent-ink:#04201D;--m-hint:#067A73;--m-pink:#EC4899;--m-line:#E4E7E6;--m-bad:#C4203D;--m-warn:#A8650A;--m-t1:#E3F6F4;--m-t2:#FFFFFF;--m-t3:#FFFFFF}
   .mock[data-dir="c"]{--m-bg:#FFFFFF;--m-surface:#F3F6F6;--m-soft:#FFFFFF;--m-ink:#0F1A1B;--m-mute:#62727A;--m-accent:#0AA39B;--m-accent-ink:#FFFFFF;--m-hint:#067A73;--m-pink:#EC4899;--m-line:#E1E9E9;--m-bad:#E11D48;--m-warn:#B45309}
   .mock[data-dir="d"]{--m-bg:#E6F3EE;--m-surface:#FDFBF8;--m-soft:#EEF1EE;--m-ink:#17302F;--m-mute:#687A77;--m-accent:#0FBFB6;--m-accent-ink:#06211F;--m-hint:#067A73;--m-pink:#EC4899;--m-line:#DFE6E2;--m-bad:#D61F4B;--m-warn:#B45309;
     background:linear-gradient(180deg,#A6E3DC 0%,#D6EFE7 32%,#F8E8D9 64%,#F4C9DA 100%)}
@@ -867,7 +867,7 @@
         <div class="scr dB" data-d="b">
           <div class="nav">
             <div class="navl"><button type="button" class="nbtn" id="b-back" aria-label="Back to Home" hidden><svg class="i"><use href="#i-chevl"/></svg></button><div class="logo" id="b-logo"><svg class="tg" width="28" height="29"><use href="#tg"/></svg><span>thuragirl<i>.</i></span></div></div>
-            <div class="navr"><button type="button" class="nbtn" id="b-money-btn" aria-label="Money" aria-pressed="false" title="Money"><svg class="i"><use href="#i-chart"/></svg></button><button type="button" class="nbtn" id="b-brief-btn" aria-label="Morning brief" aria-pressed="false" title="Morning brief"><svg class="i"><use href="#i-news"/></svg><i class="nb-dot" id="b-brief-dot"></i></button><div class="co"><b>BB</b><span>Bangkok Bites</span><svg class="i"><use href="#i-chev"/></svg></div></div>
+            <div class="navr"><button type="button" class="nbtn" id="b-money-btn" aria-label="Finance" aria-pressed="false" title="Finance"><svg class="i"><use href="#i-chart"/></svg></button><button type="button" class="nbtn" id="b-brief-btn" aria-label="Morning brief" aria-pressed="false" title="Morning brief"><svg class="i"><use href="#i-news"/></svg><i class="nb-dot" id="b-brief-dot"></i></button><div class="co"><b>BB</b><span>Bangkok Bites</span><svg class="i"><use href="#i-chev"/></svg></div></div>
           </div>
           <div class="pg" id="b-home">
           <div class="welB" id="b-wel" hidden><svg class="tg" width="34" height="36"><use href="#tg"/></svg><div class="rt"><div class="t" id="b-wel-t"></div><div class="m" id="b-wel-m"></div></div><button type="button" class="pill soft act" id="b-wel-go">Finish setup</button><button type="button" class="cb-btn" id="b-wel-x" aria-label="Dismiss"><svg class="i"><use href="#i-x"/></svg></button></div>
@@ -908,11 +908,11 @@
             </div>
           </div>
           <div class="snapB">
-            <div class="sech"><span>This month</span><button type="button" class="lnk" data-go="money">See money<svg class="i"><use href="#i-chevr"/></svg></button></div>
+            <div class="sech"><span>This month</span><button type="button" class="lnk" data-go="money">See finance<svg class="i"><use href="#i-chevr"/></svg></button></div>
             <div class="minis">
-              <button type="button" class="mini t1" data-go="money" aria-label="Revenue, 854,200 baht. Open Money"><span class="lab">Revenue</span><span class="n num">฿854,200</span><span class="d num"><svg class="i"><use href="#i-trend"/></svg>12.8%<em>vs last month</em></span></button>
-              <button type="button" class="mini t2" data-go="money" aria-label="Expenses, 612,400 baht. Open Money"><span class="lab">Expenses</span><span class="n num">฿612,400</span><span class="d num"><svg class="i"><use href="#i-trend"/></svg>4.2%<em>vs last month</em></span></button>
-              <button type="button" class="mini t3" data-go="money" aria-label="Profit, 241,800 baht. Open Money"><span class="lab">Profit</span><span class="n num">฿241,800</span><span class="d num"><svg class="i"><use href="#i-trend"/></svg>38.4%<em>28.3% margin</em></span></button>
+              <button type="button" class="mini t1" data-go="money" aria-label="Revenue, 854,200 baht. Open Finance"><span class="lab">Revenue</span><span class="n num">฿854,200</span><span class="d num"><svg class="i"><use href="#i-trend"/></svg>12.8%<em>vs last month</em></span></button>
+              <button type="button" class="mini t2" data-go="money" aria-label="Expenses, 612,400 baht. Open Finance"><span class="lab">Expenses</span><span class="n num">฿612,400</span><span class="d num"><svg class="i"><use href="#i-trend"/></svg>4.2%<em>vs last month</em></span></button>
+              <button type="button" class="mini t3" data-go="money" aria-label="Profit, 241,800 baht. Open Finance"><span class="lab">Profit</span><span class="n num">฿241,800</span><span class="d num"><svg class="i"><use href="#i-trend"/></svg>38.4%<em>28.3% margin</em></span></button>
             </div>
           </div>
           <section class="card needB" aria-label="Tasks that need you">
@@ -962,7 +962,7 @@
                   <li><svg class="i"><use href="#i-check"/></svg>Matched 12 bank payments to the right bills</li>
                   <li><svg class="i"><use href="#i-check"/></svg>Filed 8 receipts you snapped or forwarded</li>
                 </ul>
-                <div class="br-sec br-gap br-lk"><span>May so far</span><button type="button" class="lnk" data-go="money">See money<svg class="i"><use href="#i-chevr"/></svg></button></div>
+                <div class="br-sec br-gap br-lk"><span>May so far</span><button type="button" class="lnk" data-go="money">See finance<svg class="i"><use href="#i-chevr"/></svg></button></div>
                 <ul class="br-nums">
                   <li><span>Money in</span><b class="num">฿854,200</b><em class="num up">12.8%</em></li>
                   <li><span>Money out</span><b class="num">฿612,400</b><em class="num">4.2%</em></li>

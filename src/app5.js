@@ -113,7 +113,7 @@ function paintHero(u){
   $("#b-spark").setAttribute("aria-label", "Cash over the last 30 days, from " + baht(CASH[0]) + " to " + baht(TOTAL));
   var F = B.fin.mtd, tiles = [[".mini.t1", "Revenue", F.rev, F.dIn, "vs last month"], [".mini.t2", "Expenses", F.exp, F.dOut, "vs last month"], [".mini.t3", "Profit", F.rev - F.exp, F.d, F.rev ? ((F.rev - F.exp) / F.rev * 100).toFixed(1) + "% margin" : ""]];
   tiles.forEach(function(x){
-    var b = $(x[0]); $(".n", b).textContent = baht(x[2]); b.setAttribute("aria-label", x[1] + ", " + money(x[2]) + " baht. Open Money");
+    var b = $(x[0]); $(".n", b).textContent = baht(x[2]); b.setAttribute("aria-label", x[1] + ", " + money(x[2]) + " baht. Open Finance");
     var d = $(".d", b); d.textContent = ""; if (x[3] != null){ d.insertAdjacentHTML("beforeend", '<svg class="i"' + (x[3] < 0 ? ' style="transform:scaleY(-1)"' : "") + '><use href="#i-trend"/></svg>'); d.appendChild(document.createTextNode(pctTxt(x[3]))); }
     d.appendChild(el("em", "", x[3] == null && x[0] !== ".mini.t3" ? "this month" : x[4])); d.classList.toggle("down", x[3] != null && x[3] < 0);
   });
@@ -139,10 +139,10 @@ function paintLists(u){
   }
   fill(L[0], "Owed to you", (u.invoices || []).filter(function(v){ return !v.paid; }).sort(function(a, b){ return a.due < b.due ? -1 : 1; }).map(function(v){
     return { name: v.to, due: v.due, amt: invTotal(v), btn: v.due < t ? "Remind" : "View", act: function(){ if (v.due < t) openRemind(v); else openInvoice(v); }, open: function(){ openInvoice(v); } };
-  }), "No unpaid invoices. Make one and I keep track of it.", "Create an invoice", function(){ newInvoice(); });
+  }), "No unpaid invoices. Make one and I keep track of it.", "Create an invoice", function(){ startInvoiceFlow(); });
   fill(L[1], "You owe", (u.bills || []).filter(function(v){ return !v.paid; }).sort(function(a, b){ return a.due < b.due ? -1 : 1; }).map(function(v){
     return { name: v.to, due: v.due, amt: v.amount, btn: "Pay", act: function(){ openBill(v); }, open: function(){ openBill(v); } };
-  }), "No bills waiting. Add one and I remind you before it is due.", "Add a bill", function(){ newBill(); });
+  }), "No bills waiting. Add one and I remind you before it is due.", "Add a bill", function(){ startPayFlow(); });
 }
 
 /* ── review pack ── */
@@ -325,17 +325,17 @@ var CATWORDS = [[/wage|salar|payroll|staff/, "Wages"], [/rent|landlord/, "Rent"]
 function brain(q){
   var u = me(), t = q.toLowerCase(), B = books(u), T = today();
   if (/^(hi|hello|hey|สวัสดี)/.test(t)) return "Hello " + first(u) + ". Ask me about your cash, a month, who owes you, your bills or where the money goes.";
-  if (/(create|make|new|send|write|ทำ|สร้าง).*(invoice|bill to|ใบแจ้งหนี้)|^invoice/.test(t)){ setTimeout(function(){ newInvoice(); }, 300); return "Opening a new invoice for you."; }
+  if (/(create|make|new|send|write|ทำ|สร้าง).*(invoice|bill to|ใบแจ้งหนี้)|^invoice/.test(t)){ setTimeout(function(){ startInvoiceFlow(); }, 300); return "Opening a new invoice for you."; }
   if (/upload|statement|import/.test(t) && !/p&l|profit/.test(t)){ setTimeout(function(){ openUpload(); }, 300); return "Opening the statement upload. CSV and Excel files work best."; }
   if (!B) return "I don't have any numbers yet. Upload a bank statement, or try the sample, and I can answer that.";
   var F = B.fin.mtd, mName = MONTH[day(B.asOf).getMonth()];
   var openInv = (u.invoices || []).filter(function(v){ return !v.paid; }), lateInv = openInv.filter(function(v){ return v.due < T; });
   var openBills = (u.bills || []).filter(function(v){ return !v.paid; }), lateBills = openBills.filter(function(v){ return v.due < T; });
-  if (/^(pay|i want to pay|make a payment)/.test(t)){ setTimeout(function(){ newBill(); }, 300); return "Opening a new payment. Add the PromptPay ID and I make a QR code."; }
+  if (/^(pay|i want to pay|make a payment)/.test(t)){ setTimeout(function(){ startPayFlow(); }, 300); return "Opening a new payment. Add the PromptPay ID and I make a QR code."; }
   if (/who owes|owes me|owed to me|receivable|unpaid invoice|outstanding invoice/.test(t)){
     if (!openInv.length) return "Nobody owes you anything right now. Every invoice is paid.";
     return openInv.length + (openInv.length === 1 ? " invoice is" : " invoices are") + " open, " + baht(openInv.reduce(function(s, v){ return s + invTotal(v); }, 0)) + " in total." +
-      (lateInv.length ? " Late: " + lateInv.map(function(v){ return v.to + " (" + baht(invTotal(v)) + ", " + lateTxt(v.due) + ")"; }).join(", ") + ". Open one in Money and tap Remind." : " None are late yet.");
+      (lateInv.length ? " Late: " + lateInv.map(function(v){ return v.to + " (" + baht(invTotal(v)) + ", " + lateTxt(v.due) + ")"; }).join(", ") + ". Open one in Finance and tap Remind." : " None are late yet.");
   }
   if (/overdue|late|behind/.test(t)){
     var L = lateInv.map(function(v){ return "invoice #" + v.id + " from " + v.to + " (" + baht(invTotal(v)) + ", " + lateTxt(v.due) + ")"; }).concat(lateBills.map(function(v){ return "your " + v.to + " bill (" + baht(v.amount) + ", " + lateTxt(v.due) + ")"; }));

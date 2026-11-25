@@ -29,21 +29,39 @@ function flowStep(f, said){
   if (!q){ return; }
   var opts = (q.opts ? q.opts() : []).map(function(x){ return { l: x[0], fn: function(){ flowAnswer(x[1] != null ? x[1] : x[0], x[0]); } }; });
   if (q.extra) opts = opts.concat(q.extra());
-  tgSays(said || "", q.ask(), opts.concat([cancel]));
+  var ask = q.ask(); if (f.note){ ask = f.note + " " + ask; f.note = ""; }
+  tgSays(said || "", ask, opts.concat([cancel]));
+}
+/* names you already deal with, matched as you type */
+function contactNames(u, kind){
+  var seen = {}, out = [];
+  ((kind === "in" ? u.invoices : u.bills) || []).concat((kind === "in" ? u.bills : u.invoices) || []).forEach(function(v){ var k = (v.to || "").trim().toLowerCase(); if (k && !seen[k]){ seen[k] = 1; out.push(v.to.trim()); } });
+  return out;
+}
+function matchName(list, t){ var k = t.trim().toLowerCase(); for (var i = 0; i < list.length; i++) if (list[i].toLowerCase() === k) return list[i]; return t.trim(); }
+function suggestNames(){
+  var f = chat.flow, q = f && f.steps[f.i], o = $("#b-opts"); if (!q || !q.suggest || !o) return;
+  var v = $("#b-in").value.trim().toLowerCase(); o.textContent = "";
+  if (!v){ o.hidden = true; return; }
+  var hits = q.suggest().filter(function(n){ var l = n.toLowerCase(); return l.indexOf(v) === 0 || l.indexOf(" " + v) > 0; }).slice(0, 4);
+  hits.forEach(function(n){ o.appendChild(btn("pill soft", n, function(){ $("#b-in").value = ""; flowAnswer(n, n); })); });
+  o.hidden = !hits.length;
 }
 function flowAnswer(text, shown){
   var f = chat.flow, q = f && f.steps[f.i]; if (!q) return;
   var err = q.take(String(text).trim(), f.d);
   if (err){ tgSays(shown || text, err, (q.opts ? q.opts() : []).map(function(x){ return { l: x[0], fn: function(){ flowAnswer(x[1] != null ? x[1] : x[0], x[0]); } }; }).concat([{ l: "Cancel", fn: function(){ endFlow("Okay, I dropped it."); } }])); return; }
+  var wasName = !!q.suggest;
   f.i++; while (f.steps[f.i] && f.steps[f.i].skip && f.steps[f.i].skip(f.d)) f.i++;
+  if (wasName && f.d.isNew) f.note = "New name. I add them to your contacts when this is saved.";
   flowStep(f, shown || text);
 }
 function startInvoiceFlow(file){
   var u = me(), vatOn = u.setup.vat !== "No";
   if (gated(u)) return tgSays("", "Invoices open once the company is registered. Finish the registration first and I'll be ready.", [{ l: "Continue registration", acc: 1, fn: function(){ endFlow(); go("register"); } }]);
   chat.flow = { d: { file: file || null }, i: 0, steps: [
-    { ask: function(){ return file ? "Which customer is this invoice for?" : "Let's make an invoice. Who is it for?"; }, opts: function(){ return people(u.invoices || []).map(function(n){ return [n]; }); },
-      take: function(t, d){ if (t.length < 2) return "Type the customer's name, please."; d.to = t; } },
+    { ask: function(){ return file ? "Which customer is this invoice for? Type their name." : "Let's make an invoice. Who is it for? Type their name."; }, suggest: function(){ return contactNames(u, "in"); },
+      take: function(t, d){ if (t.length < 2) return "Type the customer's name, please."; d.to = matchName(contactNames(u, "in"), t); d.isNew = d.to === t && contactNames(u, "in").indexOf(t) < 0; } },
     { ask: function(){ return "What is it for? One line is enough, like \"Catering for 80 guests\"."; }, take: function(t, d){ if (!t) return "A short description, please."; d.what = t; } },
     { ask: function(){ return "How much" + (vatOn ? ", before VAT?" : "?"); }, take: function(t, d){ var n = amtOf(t); if (!(n > 0)) return "I need an amount, like 25,000 or 25k."; d.amt = n; } },
     { skip: function(){ return !vatOn; }, ask: function(){ return "Add 7% VAT on top?"; }, opts: function(){ return [["Yes, add VAT", "yes"], ["No VAT", "no"]]; },
@@ -61,8 +79,8 @@ function startInvoiceFlow(file){
 function startPayFlow(file){
   var u = me();
   chat.flow = { d: { file: file || null, pp: "" }, i: 0, steps: [
-    { ask: function(){ return file ? "Got the bill. Who is it from?" : "Who do you need to pay?"; }, opts: function(){ return people(u.bills || []).map(function(n){ return [n]; }); },
-      take: function(t, d){ if (t.length < 2) return "Type who you're paying, please."; d.to = t; } },
+    { ask: function(){ return file ? "Got the bill. Who is it from? Type their name." : "Who do you need to pay? Type their name."; }, suggest: function(){ return contactNames(u, "out"); },
+      take: function(t, d){ if (t.length < 2) return "Type who you're paying, please."; d.to = matchName(contactNames(u, "out"), t); d.isNew = d.to === t && contactNames(u, "out").indexOf(t) < 0; } },
     { ask: function(){ return "How much?"; }, take: function(t, d){ var n = amtOf(t); if (!(n > 0)) return "I need an amount, like 12,500."; d.amt = n; } },
     { ask: function(){ return "When is it due?"; }, opts: function(){ return [["Today", "0"], ["In 7 days", "7"], ["In 30 days", "30"]]; },
       take: function(t, d){ var n = daysOf(t); if (n == null) return "Tell me when, like today or in 7 days."; d.days = n; } },
@@ -335,3 +353,5 @@ function checkout(u, p){
   b.appendChild(el("p", "tnote", "Test build: Beam checkout is not connected yet, so this only records your choice."));
   b.appendChild(foot(btn("pill soft", "Not now", closeGS), btn("pill acc", "Continue to payment", function(){ u.plan = p[0]; u.planPending = true; save(); closeGS(); renderSettings(); toast(p[1] + " chosen. Payment opens when billing goes live."); })));
 }
+
+(function(){ var i = $("#b-in"); if (i) i.addEventListener("input", suggestNames); })();

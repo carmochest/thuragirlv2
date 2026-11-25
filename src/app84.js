@@ -1,7 +1,7 @@
 
 /* ── Thai words for every screen. Exact English → Thai; patterns with numbers live in app85. ── */
 var TH = {
-  "Send them by": "ส่งทาง", "Set capital first": "ตั้งทุนก่อน", "Registered already, or one I register for you": "จดทะเบียนแล้ว หรือให้หนูจดให้",
+  "Send them by": "ส่งทาง", "Let's make an invoice. Who is it for? Type their name.": "มาออกใบแจ้งหนี้กัน ออกให้ใคร พิมพ์ชื่อได้เลย", "Which customer is this invoice for? Type their name.": "ใบแจ้งหนี้นี้ออกให้ลูกค้าคนไหน พิมพ์ชื่อได้เลย", "Got the bill. Who is it from? Type their name.": "ได้บิลแล้ว บิลจากใคร พิมพ์ชื่อได้เลย", "Who do you need to pay? Type their name.": "ต้องจ่ายใคร พิมพ์ชื่อได้เลย", "New name. I add them to your contacts when this is saved.": "ชื่อใหม่ หนูจะเพิ่มเข้ารายชื่อติดต่อเมื่อบันทึก", "Opening a new invoice for you.": "กำลังเปิดใบแจ้งหนี้ใหม่ให้", "Opening a new payment. Add the PromptPay ID and I make a QR code.": "กำลังเปิดรายการจ่ายใหม่ ใส่พร้อมเพย์แล้วหนูจะทำ QR ให้", "Set capital first": "ตั้งทุนก่อน", "Registered already, or one I register for you": "จดทะเบียนแล้ว หรือให้หนูจดให้",
 
   ". You have": " คุณมี", "Add the name and address exactly as registered.": "ใส่ชื่อและที่อยู่ให้ตรงกับที่จดทะเบียน", "Card, cash and QR sales": "ยอดขายบัตร เงินสด และ QR", "Done for now": "พอแค่นี้ก่อน", "Everything else": "อื่น ๆ ทั้งหมด",
   "For sending it": "สำหรับส่ง", "Send to": "ส่งถึง", "vs last month": "เทียบเดือนก่อน", "Tick the box and I lock the month.": "ติ๊กช่องแล้วหนูจะปิดเดือนให้",
@@ -26,7 +26,7 @@ var TH = {
   "Thanks. What is it?": "ขอบคุณ ไฟล์นี้คืออะไร", "A receipt": "ใบเสร็จ", "I can read photos, PDFs, and CSV or Excel statements. That file type doesn't work here.": "หนูอ่านได้ทั้งรูปภาพ PDF และรายการเดินบัญชี CSV หรือ Excel ไฟล์ประเภทนี้ใช้ไม่ได้",
   "Leave out บริษัท and จำกัด. I add them for you.": "ไม่ต้องใส่ บริษัท และ จำกัด หนูเติมให้เอง", "DBD needs the name in Thai letters. Write how it sounds in Thai, like แบงค็อก ไบท์ส. The English name goes below.": "DBD ต้องการชื่อเป็นตัวอักษรไทย เขียนตามเสียงอ่าน เช่น แบงค็อก ไบท์ส ส่วนชื่ออังกฤษใส่ด้านล่าง",
   // shell and navigation
-  "Home": "หน้าหลัก", "Money": "การเงิน", "Morning brief": "สรุปยามเช้า", "The Morning Brief": "สรุปยามเช้า", "Settings": "ตั้งค่า", "Back": "กลับ", "Back to Home": "กลับหน้าหลัก",
+  "Home": "หน้าหลัก", "Money": "การเงิน", "Finance": "การเงิน", "See finance": "ดูการเงิน", "Finance fills in once you upload a bank statement.": "หน้าการเงินจะขึ้นเมื่อคุณอัปโหลดรายการเดินบัญชี", "Open one in Finance and tap Remind.": "เปิดในหน้าการเงินแล้วกดทวง", "Morning brief": "สรุปยามเช้า", "The Morning Brief": "สรุปยามเช้า", "Settings": "ตั้งค่า", "Back": "กลับ", "Back to Home": "กลับหน้าหลัก",
   "Ask ThuraGirl": "ถาม ThuraGirl", "Speak": "พูด", "Send": "ส่ง", "Upload": "อัปโหลด", "Invoice": "ใบแจ้งหนี้", "Pay": "จ่าย", "Close": "ปิด", "Close reply": "ปิดคำตอบ",
   "Dismiss": "ปิด", "Cancel": "ยกเลิก", "Continue": "ต่อไป", "Done": "เสร็จแล้ว", "Edit": "แก้ไข", "Remove": "ลบ", "Add": "เพิ่ม", "Open": "เปิด", "View": "ดู", "Review": "ตรวจดู",
   "Approve": "อนุมัติ", "Yes": "ใช่", "No": "ไม่", "Both": "ทั้งสองแบบ", "On": "เปิด", "Off": "ปิด", "Not now": "ไว้ทีหลัง", "Got it": "เข้าใจแล้ว", "Optional": "ไม่บังคับ",

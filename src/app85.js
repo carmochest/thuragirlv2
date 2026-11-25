@@ -139,7 +139,7 @@ var RULES = [
   [/^(Up|Down) ([\d.]+)% since (.+)$/, function(m){ return UPD(m[1]) + " " + m[2] + "% ตั้งแต่ " + dates(m[3]); }],
   [/^(Up|Down) ([\d.]+)% this (month|quarter|year)$/, function(m){ return UPD(m[1]) + " " + m[2] + "% " + { month: "เดือนนี้", quarter: "ไตรมาสนี้", year: "ปีนี้" }[m[3]]; }],
   [/^Cash is (up|down) ([\d.]+)%\.$/, function(m){ return "เงินสด" + UPD(m[1]) + " " + m[2] + "%"; }],
-  [/^(Revenue|Expenses|Profit|Money in|Money out), ([\d,.-]+) baht\. Open Money$/, function(m){ return T(m[1]) + " " + m[2] + " บาท เปิดหน้าการเงิน"; }],
+  [/^(Revenue|Expenses|Profit|Money in|Money out), ([\d,.-]+) baht\. Open (?:Money|Finance)$/, function(m){ return T(m[1]) + " " + m[2] + " บาท เปิดหน้าการเงิน"; }],
   [/^([^.]+): in (฿[\d,]+), out (฿[\d,]+), kept (-?฿[\d,-]+)$/, function(m){ return T(m[1]) + ": เข้า " + m[2] + " ออก " + m[3] + " เหลือ " + m[4]; }],
   [/^Wk (\d+)$/, "สัปดาห์ $1"],
   [/^(Invoices|Bills|Bank statements|Receipts|Statements|Files) (\d+)$/, function(m){ return T(m[1]) + " " + m[2]; }],
