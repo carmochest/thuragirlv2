@@ -140,6 +140,16 @@
     .me span{display:none} .me{padding:5px}
   }
   @media (prefers-reduced-motion:reduce){ .bar i,.sw::after,.sh .cv{transition:none} }
+  .vw{position:fixed;inset:0;z-index:50;background:rgba(10,20,18,.38);display:grid;place-items:center;padding:16px}
+  .vw[hidden]{display:none}
+  .vw-c{background:var(--surface);border-radius:24px;padding:22px;width:min(520px,100%);display:grid;gap:12px;box-shadow:var(--shadow)}
+  .vw-c small{color:var(--mute);font-weight:700;font-size:12.5px}
+  .vw-c h3{font-size:18px;line-height:1.35}
+  .vw-c p{color:var(--mute);font-size:14px;line-height:1.5}
+  .vw-d{display:grid;grid-template-columns:max-content 1fr;gap:6px 16px;font-size:14px;margin:0}
+  .vw-d dt{color:var(--mute);font-weight:600}
+  .vw-d dd{margin:0;font-weight:600;word-break:break-word}
+  .vw-c .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -160,8 +170,8 @@
     <div class="url">thuragirl.com<b>/auditor</b></div>
     <div class="sp"></div>
     <div class="seg" id="mode" role="group" aria-label="Close type">
-      <button type="button" data-m="month" aria-pressed="true">Monthly close · April 2026</button>
-      <button type="button" data-m="year" aria-pressed="false">Yearly close · FY 2025</button>
+      <button type="button" data-m="month" aria-pressed="true">Monthly close</button>
+      <button type="button" data-m="year" aria-pressed="false">Yearly close</button>
     </div>
     <div class="me"><b>SA</b><span>Somchai A., CPA</span></div>
   </header>
@@ -209,6 +219,8 @@
     ], trig: [] }
   };
   var AFTER = ["Submission response", "Payment proof", "Official receipt"];
+  var NOW = new Date(), PM = new Date(NOW.getFullYear(), NOW.getMonth() - 1, 1), MNAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var PMON = MNAMES[PM.getMonth()], PLABEL = PMON + " " + PM.getFullYear(), FYLABEL = "FY " + (NOW.getFullYear() - 1);
   var COS = [
     { n: "Bangkok Bites Co., Ltd.", t: "Restaurant · Bangkok", vat: 1, sso: 1, staff: 7, c: .78 },
     { n: "Chiang Mai Crafts Studio", t: "Craft and manufacturing · Chiang Mai", vat: 1, sso: 1, staff: 4, c: .5 },
@@ -221,7 +233,7 @@
   ];
   // deterministic sample statuses
   function rnd(seed){ var x = Math.sin(seed * 9301 + 49297) * 233280; return x - Math.floor(x); }
-  var ST = {}, FILED = {}, TRIGON = {}, AFT = {};
+  var ST = {}, FILED = {}, TRIGON = {}, AFT = {}, CLOSED = {};
   COS.forEach(function(co, ci){
     ["month", "year"].forEach(function(m, mi){
       SETS[m].forms.concat(SETS[m].trig).forEach(function(f, fi){
@@ -230,11 +242,54 @@
           var r = rnd(ci * 131 + mi * 977 + fi * 53 + di * 7 + 1), r2 = rnd(ci * 71 + fi * 113 + di * 37 + mi * 211 + 5);
           ST[ci + m + f.id + di] = r < c ? (r2 < .62 ? "auto" : "client") : (r2 < .35 ? "ask" : "miss");
         });
-        if (co.c >= 2 && m === "month"){ FILED[ci + m + f.id] = 1; AFTER.forEach(function(a, ai){ AFT[ci + m + f.id + ai] = 1; }); }
+        if (co.c >= 2 && m === "month"){ FILED[ci + m + f.id] = 1; CLOSED[ci + m] = 1; AFTER.forEach(function(a, ai){ AFT[ci + m + f.id + ai] = 1; }); }
       });
     });
   });
   TRIGON["0monthpnd54"] = 1;
+
+  // companies that signed up in this browser join the queue, ahead of the samples
+  var DB = {}; try { DB = JSON.parse(localStorage.getItem("tg.v2") || "{}"); } catch (e) {}
+  var REAL = [];
+  Object.keys(DB.users || {}).forEach(function(k){
+    var u = DB.users[k]; if (!u.onboarded) return;
+    var name = u.path === "new" ? (u.reg && u.reg.names && u.reg.names[0] ? "บริษัท " + u.reg.names[0] + " จำกัด" : "New company (not registered)") : (u.company && u.company.name) || u.email;
+    REAL.push({ n: name, t: (u.company && u.company.type ? u.company.type : u.path === "new" ? "Registering" : "Company") + " · signed up in this browser", vat: u.setup && u.setup.vat === "Yes" ? 1 : 0, sso: u.setup && u.setup.sso === "Yes" ? 1 : 0, staff: (u.team || []).length, c: 0, real: k });
+  });
+  REAL.forEach(function(co, ri){
+    var ci = COS.length; COS.push(co);
+    var u = DB.users[co.real];
+    ["month", "year"].forEach(function(m){
+      SETS[m].forms.concat(SETS[m].trig).forEach(function(f){
+        f.docs.forEach(function(d, di){
+          var k = ci + m + f.id + di, got = m === "month" && (/Bank, card and wallet statements/.test(d) ? (u.banks || []).length : /Payroll register/.test(d) ? (u.team || []).length : /Sales tax invoices/.test(d) ? (u.invoices || []).length : 0);
+          ST[k] = got ? "auto" : "miss";
+        });
+      });
+    });
+  });
+  function reqId(ci, m, f, di){ return "aud:" + m + ":" + f.id + ":" + di; }
+  // owners' uploads in answer to a request count as received
+  function syncReal(){
+    var db2 = {}; try { db2 = JSON.parse(localStorage.getItem("tg.v2") || "{}"); } catch (e) {}
+    COS.forEach(function(co, ci){
+      if (!co.real) return; var u = (db2.users || {})[co.real]; if (!u) return;
+      (u.requests || []).forEach(function(r){ if (!r.aud) return; var k = ci + r.aud; if (r.file && ST[k] === "ask") ST[k] = "client"; if (r.file) FILE[k] = r.file; });
+    });
+  }
+  function pushRequest(ci, m, f, di){
+    var co = COS[ci]; if (!co.real) return;
+    var db2 = {}; try { db2 = JSON.parse(localStorage.getItem("tg.v2") || "{}"); } catch (e) { return; }
+    var u = (db2.users || {})[co.real]; if (!u) return;
+    u.requests = u.requests || []; var tag = m + f.id + di;
+    if (u.requests.some(function(r){ return r.aud === tag && !r.file; })) return;
+    u.requests.push({ id: "a" + Date.now().toString(36) + di, aud: tag, doc: f.docs[di], form: f.name, at: Date.now() });
+    try { localStorage.setItem("tg.v2", JSON.stringify(db2)); } catch (e) {}
+  }
+  var FILE = {}, SAVEKEY = "tg.aud";
+  try { var sv = JSON.parse(localStorage.getItem(SAVEKEY) || "null"); if (sv){ ["ST", "FILED", "TRIGON", "AFT", "CLOSED"].forEach(function(n){ var o = sv[n] || {}; var tgt = { ST: ST, FILED: FILED, TRIGON: TRIGON, AFT: AFT, CLOSED: CLOSED }[n]; Object.keys(o).forEach(function(k){ tgt[k] = o[k]; }); }); } } catch (e) {}
+  function persist(){ try { localStorage.setItem(SAVEKEY, JSON.stringify({ ST: ST, FILED: FILED, TRIGON: TRIGON, AFT: AFT, CLOSED: CLOSED })); } catch (e) {} }
+  syncReal();
 
   var mode = "month", sel = 0, filter = "all", term = "", open = {};
   function applies(co, f){ return !f.needs || (f.needs === "vat" ? co.vat : f.needs === "sso" ? co.sso : co.staff > 0); }
@@ -250,12 +305,12 @@
   function coStat(ci){
     var o = { got: 0, ask: 0, miss: 0, n: 0, filed: 0, forms: 0, due: 99 };
     activeForms(ci).forEach(function(f){
-      var s = formStat(ci, f); o.got += s.got; o.ask += s.ask; o.miss += s.miss; o.n += s.n; o.forms++; if (s.filed) o.filed++;
+      var s = formStat(ci, f); o.got += s.got; o.ask += s.ask; o.miss += s.miss; o.n += s.n; if (f.id !== "books" && f.id !== "ybooks"){ o.forms++; if (s.filed) o.filed++; }
       if (!s.filed && f.due && f.due < o.due) o.due = f.due;
     });
-    o.stage = o.filed === o.forms ? "filed" : (o.miss + o.ask) ? "collect" : "ready"; return o;
+    o.stage = CLOSED[ci + mode] ? "filed" : (o.miss + o.ask) ? "collect" : "ready"; return o;
   }
-  var TODAY = 7;
+  var TODAY = NOW.getDate();
   function dueText(s){
     if (s.stage === "filed") return ["Filed", "ok"];
     if (mode === "year" || s.due === 99) return [s.stage === "ready" ? "Ready to close" : "Collecting", s.stage === "ready" ? "ok" : ""];
@@ -307,7 +362,7 @@
     back.addEventListener("click", function(){ $("#desk").classList.remove("detail"); }); h.appendChild(back);
     h.appendChild(el("h2", "", co.n));
     var tags = el("div", "tags");
-    [mode === "month" ? "April 2026" : "FY 2025", co.vat ? "VAT registered" : "Not VAT registered", co.sso ? "SSO enrolled" : "No SSO", co.staff ? co.staff + " employees" : "No employees"].forEach(function(t){ tags.appendChild(el("span", "tag", t)); });
+    [mode === "month" ? PLABEL : FYLABEL, co.vat ? "VAT registered" : "Not VAT registered", co.sso ? "SSO enrolled" : "No SSO", co.staff ? co.staff + " employees" : "No employees"].forEach(function(t){ tags.appendChild(el("span", "tag", t)); });
     h.appendChild(tags);
     var sum = el("dl", "sum");
     [["Received", s.got], ["Requested", s.ask], ["Missing", s.miss]].forEach(function(x){ var d = el("div"); d.appendChild(el("dt", "", x[0])); d.appendChild(el("dd", "num", x[1])); sum.appendChild(d); });
@@ -315,9 +370,10 @@
     var bar = el("div", "bar"); bar.setAttribute("role", "img"); bar.setAttribute("aria-label", s.got + " of " + s.n + " documents received"); var fill = el("i"); fill.style.width = (s.n ? s.got / s.n * 100 : 0) + "%"; bar.appendChild(fill); h.appendChild(bar);
     var acts = el("div", "acts");
     var req = el("button", "btn pri"); req.type = "button"; req.innerHTML = ico("i-send") + (s.miss ? "Request " + s.miss + " missing" : "Nothing to request"); req.disabled = !s.miss;
-    req.addEventListener("click", function(){ var n = 0; activeForms(sel).forEach(function(f){ f.docs.forEach(function(d, di){ var k = sel + mode + f.id + di; if (ST[k] === "miss"){ ST[k] = "ask"; n++; } }); }); toast(n + " requests sent to " + co.n); render(); });
-    var cls = el("button", "btn"); cls.type = "button"; cls.innerHTML = ico("i-lock") + (s.stage === "filed" ? "Closed" : mode === "month" ? "Close April" : "Close FY 2025"); cls.disabled = s.stage !== "ready" || s.filed !== s.forms;
-    if (s.stage === "ready" && s.filed !== s.forms) cls.title = "File every form first";
+    req.addEventListener("click", function(){ var n = 0; activeForms(sel).forEach(function(f){ f.docs.forEach(function(d, di){ var k = sel + mode + f.id + di; if (ST[k] === "miss"){ ST[k] = "ask"; pushRequest(sel, mode, f, di); n++; } }); }); toast(n + " requests sent to " + who(co.n) + (co.real ? ". They show on their dashboard." : "")); render(); });
+    var cls = el("button", "btn"); cls.type = "button"; cls.innerHTML = ico("i-lock") + (s.stage === "filed" ? "Closed" : mode === "month" ? "Close " + PMON : "Close " + FYLABEL); cls.disabled = s.stage !== "ready" || s.filed < s.forms;
+    cls.title = s.stage === "filed" ? "Closed" : s.stage !== "ready" ? "Collect every document first" : s.filed < s.forms ? "Mark every form as filed first" : "Lock the books for this period";
+    cls.addEventListener("click", function(){ CLOSED[sel + mode] = Date.now(); toast(co.n + ": " + (mode === "month" ? PLABEL : FYLABEL) + " closed"); render(); });
     acts.appendChild(req); acts.appendChild(cls); h.appendChild(acts);
     root.appendChild(h);
 
@@ -335,9 +391,9 @@
         var k = sel + mode + f.id + di, st = ST[k], cl = st === "miss" ? "miss" : st === "ask" ? "ask" : "done";
         var row = el("div", "doc " + cl), ic = el("span", "ic"); ic.innerHTML = ico(cl === "done" ? "i-check" : cl === "miss" ? "i-x" : "i-clock"); row.appendChild(ic);
         row.appendChild(el("div", "tx", d)); row.appendChild(statusPill(st));
-        if (st === "miss"){ var a = el("button", "mini", "Request"); a.type = "button"; a.addEventListener("click", function(){ ST[k] = "ask"; toast("Request sent to " + co.n); render(); }); row.appendChild(a); }
+        if (st === "miss"){ var a = el("button", "mini", "Request"); a.type = "button"; a.addEventListener("click", function(){ ST[k] = "ask"; pushRequest(sel, mode, f, di); toast("Request sent to " + who(co.n) + (co.real ? ". It shows on their dashboard." : "")); render(); }); row.appendChild(a); }
         else if (st === "ask"){ var a2 = el("button", "mini", "Mark received"); a2.type = "button"; a2.addEventListener("click", function(){ ST[k] = "client"; render(); }); row.appendChild(a2); }
-        else { var a3 = el("button", "mini", "View"); a3.type = "button"; a3.addEventListener("click", function(){ toast("Opens the file. Not part of this mock."); }); row.appendChild(a3); }
+        else { var a3 = el("button", "mini", "View"); a3.type = "button"; a3.addEventListener("click", function(){ viewDoc(co, f, d, st, FILE[k]); }); row.appendChild(a3); }
         sb.appendChild(row);
       });
       if (f.id !== "books" && f.id !== "ybooks"){
@@ -372,11 +428,27 @@
       });
     }
   }
-  function render(){ renderStats(); renderQueue(); renderDetail(); }
+  function render(){ persist(); renderStats(); renderQueue(); renderDetail(); }
+  function viewDoc(co, f, d, st, file){
+    var m = $("#view"); if (!m){ m = el("div", "vw"); m.id = "view"; m.setAttribute("role", "dialog"); m.setAttribute("aria-modal", "true"); document.body.appendChild(m); m.addEventListener("click", function(ev){ if (ev.target === m) m.hidden = true; }); document.addEventListener("keydown", function(ev){ if (ev.key === "Escape") m.hidden = true; }); }
+    m.textContent = ""; m.hidden = false;
+    var c = el("div", "vw-c"), x = el("button", "btn", "Close"); x.type = "button"; x.addEventListener("click", function(){ m.hidden = true; });
+    c.appendChild(el("small", "", co.n + " · " + f.name)); c.appendChild(el("h3", "", d));
+    var dl = el("dl", "vw-d");
+    [["Source", st === "auto" ? "Pulled by ThuraGirl from the books" : "Sent by the client"], ["File", file ? file.name : st === "auto" ? (f.id === "books" ? "ledger-" : "") + (f.short || "doc").replace(/[^\w]+/g, "").toLowerCase() + "-" + (mode === "month" ? PMON.toLowerCase() : "fy") + ".pdf" : "Not kept in this test build"], ["Received", file && file.at ? new Date(file.at).toLocaleDateString("en-GB") : "This period"]].forEach(function(r){ dl.appendChild(el("dt", "", r[0])); dl.appendChild(el("dd", "", r[1])); });
+    c.appendChild(dl);
+    c.appendChild(el("p", "", "Test build: files stay on the client's device, so there is nothing to preview here. In the live app the file opens in this panel."));
+    var mk = el("button", "btn", "Mark as missing"); mk.type = "button"; mk.addEventListener("click", function(){ var k = sel + mode + f.id + f.docs.indexOf(d); ST[k] = "miss"; m.hidden = true; render(); });
+    var row = el("div", "acts"); row.appendChild(mk); row.appendChild(x); c.appendChild(row);
+    m.appendChild(c); setTimeout(function(){ x.focus(); }, 0);
+  }
+  window.addEventListener("storage", function(ev){ if (ev.key === "tg.v2"){ syncReal(); render(); } });
+  function who(n){ return n.replace(/\.$/, ""); }
   [].forEach.call(document.querySelectorAll("#mode button"), function(b){
     b.addEventListener("click", function(){ mode = b.getAttribute("data-m"); open = {}; [].forEach.call(document.querySelectorAll("#mode button"), function(x){ x.setAttribute("aria-pressed", String(x === b)); }); render(); });
   });
   $("#search").addEventListener("input", function(){ term = this.value.trim().toLowerCase(); renderQueue(); });
+  var resetB = $("#reset-aud"); if (resetB) resetB.addEventListener("click", function(){ try { localStorage.removeItem(SAVEKEY); } catch (e) {} location.reload(); });
   render();
 })();
 </script>

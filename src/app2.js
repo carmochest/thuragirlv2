@@ -15,7 +15,7 @@ function showTab(){
   if (tab === "brief" && u.hasData && !u.briefSeen){ u.briefSeen = true; save(); }
   $("#b-brief-dot").hidden = !!u.briefSeen || !u.hasData;
   paintHome();
-  if (tab === "money"){ renderMoney(); paintLists(u); }
+  if (tab === "money"){ renderMoney(); paintLists(u); paintContacts(u); }
   if (tab === "brief") renderBrief();
   if (tab === "settings") renderSettings();
   if (tab === "register") renderRegister();
@@ -23,6 +23,7 @@ function showTab(){
   var key = db.session + ":" + tab + ":" + (u.hasData ? 1 : 0);
   if (key !== lastKey){ closeAll(); play(); window.scrollTo(0, 0); }
   lastKey = key;
+  maybeConnect(u);
 }
 function play(){
   var u = me(), pg = $("#b-" + tab);
@@ -114,7 +115,7 @@ function paintSetup(){
 function paintHome(){
   var u = me();
   if (u.hasData && !(u.tx && u.tx.length)){ u.hasData = false; save(); $("#app").classList.add("nodata"); }
-  paintSetup(); paintBanks(); paintHero(u); paintNeeds(u); setCount();
+  autoRecords(u); paintSetup(); paintBanks(); paintHero(u); paintNeeds(u); setCount(); paintEmpty(u);
 }
 function openSetupTask(){ var u = me(); if (u.path === "new") go("register"); else openSetup(); }
 
@@ -167,6 +168,7 @@ function renderUpload(){
   body.appendChild(el("p", "tnote", "Your bank's app or website can export statements as CSV or Excel. The file is read here, in your browser, and is not sent anywhere."));
 }
 function openUpload(b){
+  if (gated(me())){ toast("Register the company first. Statements open after that."); go("register"); return; }
   up = { file: null, bank: b ? b.bank : "", acct: b ? b.acct : "", err: "" }; renderUpload();
   var s = $("#up-sheet"); s.hidden = false; try { $("#up-x").focus({ preventScroll: true }); $(".shB-card", s).scrollIntoView({ block: "nearest" }); } catch (e) {}
 }
@@ -215,18 +217,7 @@ function stSec(title, tag, done){
   if (done) h.insertAdjacentHTML("beforeend", '<span class="st-ok">' + CHECK + "Done</span>"); else if (tag) h.appendChild(el("span", "st-tag", tag));
   sec.appendChild(h); return sec;
 }
-var CONNS = [["kbank", "KB", "K-Bank", "Bank feed"], ["tiktok", "TT", "TikTok Shop", "Marketplace sales"], ["flow", "FA", "FlowAccount", "Accounting"]];
-function connRows(u, again){
-  var r = el("div", "ob-rows");
-  CONNS.forEach(function(c){
-    var row = el("div", "ob-row"); row.appendChild(el("span", "ob-av", c[1]));
-    var tx = el("div", "tx"); tx.appendChild(el("b", "", c[2])); tx.appendChild(el("span", "", c[3])); row.appendChild(tx);
-    var x = el("button", "pill soft act" + (u.setup.conn[c[0]] ? " ok" : "")); x.type = "button"; x.innerHTML = u.setup.conn[c[0]] ? CHECK + "Linked" : "Connect";
-    x.addEventListener("click", function(){ if (u.setup.conn[c[0]]) delete u.setup.conn[c[0]]; else u.setup.conn[c[0]] = 1; save(); again(); });
-    row.appendChild(x); r.appendChild(row);
-  });
-  return r;
-}
+function connRows(u, again){ return connList(u, again, true); }
 function vatRows(u, again){
   var r = el("div", "ob-rows");
   r.appendChild(qrow("VAT registered", "You charge 7% VAT and file PP.30", ["Yes", "No"], u.setup.vat, function(v){ u.setup.vat = v; save(); again(); }));

@@ -2,53 +2,6 @@
 /* ── settings ── */
 function card(title){ var c = el("section", "setc"); c.appendChild(el("h2", "", title)); return c; }
 var eraseArmed = false;
-function renderSettings(){
-  var u = me(), root = $("#b-settings"), again = function(){ renderSettings(); paintSetup(); setCount(); }; root.textContent = ""; root.classList.remove("in");
-  var h = el("div", "pgh"); h.appendChild(el("h1", "", "Settings")); h.appendChild(el("p", "", "Update anything here whenever you like. Changes save as you type.")); root.appendChild(h);
-
-  var you = card("You"), g1 = el("div", "fgrid");
-  g1.appendChild(fld("Your name", u.name, { saved: 1, on: function(v){ if (!v.trim()) return "Please add your name"; u.name = v.trim(); save(); return ""; } }));
-  g1.appendChild(fld("Email", u.email, { ro: 1 })); you.appendChild(g1); root.appendChild(you);
-
-  var co = card("Company");
-  if (u.path === "new"){
-    co.appendChild(el("p", "st-p", u.reg.submitted ? "Your registration has been submitted." : "Not registered yet. " + (regLeft(u) ? regLeft(u) + " of 5 parts still need you." : "Everything is ready to submit.")));
-    var rb = el("button", "pill soft act", u.reg.submitted ? "View registration" : "Continue registration"); rb.type = "button"; rb.style.justifySelf = "start"; rb.addEventListener("click", function(){ go("register"); }); co.appendChild(rb);
-  } else {
-    var g2 = el("div", "fgrid"), c = u.company;
-    g2.appendChild(fld("Registered company name", c.name, { saved: 1, on: function(v){ if (v.trim().length < 2) return "At least 2 characters"; c.name = v.trim(); save(); $("#b-co-n").textContent = coName(u); $("#b-co-i").textContent = initials(coName(u)); return ""; } }));
-    g2.appendChild(fld("Tax ID", c.taxid, { saved: 1, mode: "numeric", max: 13, on: function(v, inp){ inp.value = v.replace(/\D/g, ""); if (inp.value.length !== 13) return "Exactly 13 digits"; if (taxTaken(inp.value, u)) return "This company is already on ThuraGirl"; c.taxid = inp.value; save(); return ""; } }));
-    g2.appendChild(fld("Registered address", c.addr, { saved: 1, wide: 1, on: function(v){ if (v.trim().length < 5) return "At least 5 characters"; c.addr = v.trim(); save(); return ""; } }));
-    g2.appendChild(fld("Business type", c.type, { saved: 1, options: TYPES.map(function(t){ return [t[0], t[0]]; }), on: function(v){ c.type = v; save(); return ""; } }));
-    co.appendChild(g2); co.appendChild(vatRows(u, function(){ again(); toast("Saved"); })); root.appendChild(co);
-    var cn = card("Connections"); cn.appendChild(connRows(u, function(){ again(); toast("Saved"); })); root.appendChild(cn);
-    co = card("Company verification"); var vb = verifyBlock(u, again); while (vb.firstChild) co.appendChild(vb.firstChild);
-  }
-  root.appendChild(co);
-
-  var bk = card("Bank statements");
-  if (!u.banks.length) bk.appendChild(el("p", "st-p", "No statements yet. Upload one and I build your dashboard from it."));
-  u.banks.forEach(function(b){
-    var r = el("div", "docrow"), tx = el("div", "tx"); tx.appendChild(el("b", "", b.bank + " ···· " + b.acct.slice(-4))); tx.appendChild(el("span", "", "Synced " + ago(b.at, true))); r.appendChild(tx);
-    var x = el("button", "pill soft act", "Upload"); x.type = "button"; x.addEventListener("click", function(){ openUpload(b); }); r.appendChild(x); bk.appendChild(r);
-  });
-  var ub = el("button", "pill soft act", u.banks.length ? "Add another bank" : "Upload a statement"); ub.type = "button"; ub.style.justifySelf = "start"; ub.addEventListener("click", function(){ openUpload(); }); bk.appendChild(ub);
-  root.appendChild(bk);
-
-  dataCard(u, root);
-
-  var ap = card("Appearance"), row = el("div", "frow"); row.appendChild(el("b", "", "Theme"));
-  var labels = { auto: "Auto", day: "Day", night: "Night" }, sg = seg(["Auto", "Day", "Night"], labels[u.theme || "auto"], function(v){ u.theme = v.toLowerCase(); save(); applyTheme(); });
-  sg.classList.add("on-soft"); row.appendChild(sg); ap.appendChild(row); root.appendChild(ap);
-
-  var ac = card("Account"), r2 = el("div", "chips");
-  var so = el("button", "pill soft act", "Sign out"); so.type = "button"; so.addEventListener("click", function(){ db.session = ""; save(); suStep = 0; toAuth("login"); });
-  var er = el("button", "pill soft act danger", eraseArmed ? "Tap again to erase everything" : "Erase this test account"); er.type = "button";
-  er.addEventListener("click", function(){ if (!eraseArmed){ eraseArmed = true; renderSettings(); return; } eraseArmed = false; delete db.users[u.email]; db.session = ""; save(); suStep = 0; toAuth(""); });
-  r2.appendChild(so); r2.appendChild(er); ac.appendChild(r2);
-  ac.appendChild(el("p", "tnote", "Test build: this account lives only in this browser. Signing in on another device will not find it."));
-  root.appendChild(ac);
-}
 
 /* ── register a new company (path B) ── */
 var SECS = [["basics", "Name and purpose"], ["capital", "Capital and shares"], ["people", "People"], ["office", "Office and running the company"], ["docs", "Documents"]];
@@ -67,7 +20,7 @@ function personMissing(p){
   if (!p.dob) m.push("birth date"); else if (p.dob >= today()) m.push("a birth date in the past");
   if (p.addr.trim().length < 5) m.push("complete address");
   if (p.roles.p && !p.occ.trim()) m.push("occupation");
-  if (p.nat === "th" && !/^\d{13}$/.test(p.nid)) m.push("13-digit national ID");
+  if (p.nat === "th" && !thaiIdOk(p.nid)) m.push(/^\d{13}$/.test(p.nid) ? "a national ID that checks out (one digit looks wrong)" : "13-digit national ID");
   if (p.nat === "fo" && (!p.passport.trim() || !p.country.trim())) m.push("passport number and country");
   if (holder(p) && !(num(p.shares) >= 1)) m.push("at least 1 share");
   return m;
@@ -86,7 +39,7 @@ function docList(u){
 }
 function regCheck(u){
   var r = u.reg, o = { basics: [], capital: [], people: [], office: [], docs: [] };
-  if (!r.names[0].trim()) o.basics.push("A first-choice company name");
+  if (!r.names[0].trim()) o.basics.push("A first-choice company name"); else if (/[A-Za-z]/.test(r.names[0]) && !/[\u0E00-\u0E7F]/.test(r.names[0])) o.basics.push("The first-choice name in Thai letters");
   var ob = lines(r.objectives); if (!ob.length) o.basics.push("At least one objective"); else if (ob.length > 30) o.basics.push("No more than 30 objectives (you have " + ob.length + ")");
   var cap = num(r.capital), par = num(r.par), paid = num(r.paid);
   if (!(cap > 0)) o.capital.push("Registered capital");
@@ -137,7 +90,13 @@ function renderRegister(){
     var ed = el("button", "pill soft act", "Edit the application"); ed.type = "button"; ed.style.justifySelf = "start"; ed.addEventListener("click", function(){ r.submitted = false; redo(); paintSetup(); }); done.appendChild(ed);
     root.appendChild(done); return;
   }
-  h.appendChild(el("p", "", "Five short parts, in any order. Everything saves as you go, and I remind you about whatever is left.")); root.appendChild(h);
+  h.appendChild(el("p", "", "Five short parts, in any order. Most people finish in about 15 minutes. Everything saves as you go.")); root.appendChild(h);
+  var doneN = SECS.filter(function(s){ return !c[s[0]].length; }).length, ov = el("div", "regov");
+  var bar = el("div", "regbar"); SECS.forEach(function(s){ bar.appendChild(el("i", c[s[0]].length ? "" : "on")); }); ov.appendChild(bar);
+  ov.appendChild(el("b", "", doneN + " of 5 parts done"));
+  var nx = el("details", "regnext"); nx.appendChild(el("summary", "", "What happens after you submit"));
+  var ol = el("ol"); ["I check everything and reserve the name with DBD. A name holds for 30 days.", "Everyone named confirms, online with a Thai ID or on paper.", "DBD registers the company, usually in 1 to 3 working days. The company tax ID is the registration number.", "You open the company bank account with the certificate, and upload its first statement here."].forEach(function(t){ ol.appendChild(el("li", "", t)); });
+  nx.appendChild(ol); ov.appendChild(nx); root.appendChild(ov);
   if (!regOpen){ var firstOpen = SECS.filter(function(s){ return c[s[0]].length; })[0]; regOpen = firstOpen ? firstOpen[0] : "basics"; }
 
   SECS.forEach(function(s, i){
@@ -150,18 +109,46 @@ function renderRegister(){
     if (regOpen === k){
       if (k === "basics"){
         var nw = el("div", "names");
-        ["First choice", "Second choice (optional)", "Third choice (optional)"].forEach(function(lab, j){ nw.appendChild(fld(lab, r.names[j], { prefix: "บริษัท", suffix: "จำกัด", ph: "Company name", on: function(v){ r.names[j] = v; keep(); } })); });
+        b.appendChild(el("p", "st-p", "Give up to three names in Thai, best first. If DBD says the first is taken, I try the next one."));
+        ["First choice", "Second choice (optional)", "Third choice (optional)"].forEach(function(lab, j){ nw.appendChild(fld(lab, r.names[j], { prefix: "บริษัท", suffix: "จำกัด", ph: j ? "Another name, in case" : "ชื่อบริษัท", on: function(v){ r.names[j] = v; keep(); return nameWarn(v); } })); });
         b.appendChild(nw);
-        b.appendChild(fld("Objectives, one per line (up to 30)", r.objectives, { area: 1, ph: "Run a restaurant\nCater events", on: function(v){ r.objectives = v; keep(); } }));
-        b.appendChild(fld("Fiscal year ends", r.fy, { options: MONTHS.map(function(m, j){ return [String(j + 1), m]; }), on: function(v){ r.fy = v; keep(); } }));
+        b.appendChild(fld("English name (optional)", r.en || "", { suffix: "Co., Ltd.", ph: "Bangkok Bites", on: function(v){ r.en = v; keep(); return /co\.?,?\s*ltd|company limited/i.test(v) ? "Leave out Co., Ltd. I add it." : ""; } }));
+        b.appendChild(el("b", "regsub", "What the company will do"));
+        b.appendChild(el("p", "st-p", "Tap your kind of business to start from the usual wording, then edit. One line per activity, up to 30. Wider is fine; you can do less than you list, never more."));
+        b.appendChild(chipRow(TYPES.map(function(t){ return [t[0], t[0]]; }), function(k){ var have = lines(r.objectives); (OBJ[k] || []).forEach(function(o){ if (have.indexOf(o) < 0) have.push(o); }); r.objectives = have.join("\n"); redo(); }));
+        var obf = fld("One per line", r.objectives, { area: 1, ph: "Operate restaurants and sell food and drinks\nProvide catering and event food services", on: function(v){ r.objectives = v; keep(); var n = lines(v).length; return n > 30 ? n + " lines. The limit is 30." : ""; } }); obf.classList.add("wide"); b.appendChild(obf);
+        b.appendChild(el("b", "regsub", "When the financial year ends"));
+        b.appendChild(el("p", "st-p", "Most companies use 31 December. Your first year can be shorter than 12 months."));
+        b.appendChild(fld("Year ends on", r.fy, { options: MONTHS.map(function(m, j){ return [String(j + 1), m]; }), on: function(v){ r.fy = v; keep(); } }));
       } else if (k === "capital"){
         var g = el("div", "fgrid"), digits = function(set){ return function(v, inp){ inp.value = v.replace(/[^\d.]/g, ""); set(inp.value); keep(); }; };
         g.appendChild(fld("Registered capital", r.capital, { prefix: "฿", mode: "numeric", ph: "1000000", on: digits(function(v){ r.capital = v; }) }));
         g.appendChild(fld("Par value per share (at least ฿5)", r.par, { prefix: "฿", mode: "numeric", ph: "100", on: digits(function(v){ r.par = v; }) }));
         g.appendChild(fld("Paid-up per share (at least 25% of par)", r.paid, { prefix: "฿", mode: "numeric", ph: "25", on: digits(function(v){ r.paid = v; }) }));
-        b.appendChild(g); var sh = el("p", "fhint"); sh.id = "reg-shares"; b.appendChild(sh);
+        b.appendChild(el("p", "st-p", "Capital is what the owners promise to put in. It is not a fee. ฿1,000,000 is the most common, and only a quarter of it has to be paid in at the start."));
+        b.appendChild(chipRow([["฿1,000,000 (most common)", "1000000", r.capital === "1000000"], ["฿2,000,000", "2000000", r.capital === "2000000"], ["฿5,000,000", "5000000", r.capital === "5000000"]], function(v){ r.capital = v; if (!r.par) r.par = "100"; if (!r.paid) r.paid = "25"; redo(); }));
+        b.appendChild(g);
+        b.appendChild(el("b", "regsub", "How much is paid in now"));
+        b.appendChild(chipRow([["All of it", "all", r.par && r.paid === r.par], ["A quarter (the minimum)", "q", r.par && num(r.paid) === num(r.par) * 0.25]], function(v){ var pr = num(r.par) || 100; r.par = String(pr); r.paid = String(v === "all" ? pr : pr * 0.25); redo(); }));
+        var sh = el("p", "fhint"); sh.id = "reg-shares"; b.appendChild(sh);
+        var cap = num(r.capital), sc0 = shareCount(r);
+        if (cap > 0){
+          var sm2 = el("ul", "st-list");
+          if (sc0 && num(r.paid) > 0) sm2.appendChild(el("li", "", "The founders pay in " + baht(sc0 * num(r.paid)) + " now, into the company bank account once it is open."));
+          sm2.appendChild(el("li", "", "Government fees for this capital: about " + baht(regFees(cap)) + " (memorandum and registration). ThuraGirl's fee is separate."));
+          if (cap > 5000000) sm2.appendChild(el("li", "", "Above ฿5,000,000 DBD asks for proof the money is paid in. It is on the documents list."));
+          if (anyForeign(u)) sm2.appendChild(el("li", "", "With a foreign founder, Thais must hold more than half the shares unless you have a foreign business licence. I check this in People."));
+          b.appendChild(sm2);
+        }
       } else if (k === "people"){
-        b.appendChild(el("p", "st-p", "Add everyone involved: at least 2 founders and 1 director. One person can hold several roles."));
+        b.appendChild(el("p", "st-p", "Add everyone involved. One person can hold several roles."));
+        var rl = el("ul", "st-list"); [["Founder", "signs the memorandum and must hold at least 1 share. You need 2 or more."], ["Director", "runs the company and signs for it. You need 1 or more."], ["Shareholder", "owns shares but has no say in day-to-day running."]].forEach(function(x){ var li = el("li"); li.appendChild(el("b", "", x[0] + ": ")); li.appendChild(document.createTextNode(x[1])); rl.appendChild(li); }); b.appendChild(rl);
+        var P0 = r.people, nPro = P0.filter(function(p){ return p.roles.p; }).length, nDir = P0.filter(function(p){ return p.roles.d; }).length, sc1 = shareCount(r), held1 = P0.reduce(function(a, p){ return a + (holder(p) ? num(p.shares) || 0 : 0); }, 0);
+        var pst = el("div", "regstat");
+        [["Founders", nPro + " of 2", nPro >= 2], ["Directors", nDir + " of 1", nDir >= 1], ["Shares given out", sc1 ? money(held1) + " of " + money(sc1) : "Set capital first", sc1 && held1 === sc1]].forEach(function(x){ var d0 = el("div", x[2] ? "ok" : ""); d0.appendChild(el("span", "", x[0])); d0.appendChild(el("b", "num", x[1])); pst.appendChild(d0); });
+        b.appendChild(pst);
+        var thaiHeld = P0.filter(function(p){ return holder(p) && p.nat === "th"; }).reduce(function(a, p){ return a + (num(p.shares) || 0); }, 0);
+        if (anyForeign(u) && sc1 && held1 && thaiHeld * 2 <= held1) b.appendChild(el("p", "ferrB", "Thai shareholders hold " + Math.round(thaiHeld / held1 * 100) + "% of the shares. Without a foreign business licence they need more than 50%. Tell me if you have a licence or BOI promotion."));
         r.people.forEach(function(p){
           var pc = el("div", "person"), ph = el("div", "ph"), roles = [p.roles.p && "Founder", p.roles.d && "Director", p.roles.s && "Shareholder"].filter(Boolean).join(", ");
           ph.appendChild(el("b", "", pname(p))); ph.appendChild(el("span", "", roles || "No role yet"));
@@ -176,33 +163,44 @@ function renderRegister(){
             pc.appendChild(rc);
             var nr = el("div", "frow"); nr.appendChild(el("b", "", "Nationality")); nr.appendChild(seg(["Thai", "Foreign"], p.nat === "th" ? "Thai" : p.nat === "fo" ? "Foreign" : "", function(v){ p.nat = v === "Thai" ? "th" : "fo"; redo(); })); pc.appendChild(nr);
             var pg2 = el("div", "fgrid");
-            if (p.nat === "th") pg2.appendChild(fld("National ID (13 digits)", p.nid, { mode: "numeric", max: 13, on: function(v, inp){ inp.value = v.replace(/\D/g, ""); p.nid = inp.value; keep(); } }));
+            if (p.nat === "th") pg2.appendChild(fld("National ID (13 digits)", p.nid, { mode: "numeric", max: 13, ph: "On the front of the ID card", on: function(v, inp){ inp.value = v.replace(/\D/g, ""); p.nid = inp.value; keep(); return inp.value.length === 13 && !thaiIdOk(inp.value) ? "One digit looks wrong. Check it against the card." : ""; } }));
             if (p.nat === "fo"){ pg2.appendChild(fld("Passport number", p.passport, { on: function(v){ p.passport = v; keep(); } })); pg2.appendChild(fld("Country", p.country, { on: function(v){ p.country = v; keep(); } })); }
-            pg2.appendChild(fld("Birth date", p.dob, { type: "date", maxDate: today(), on: function(v){ p.dob = v; keep(); } }));
+            pg2.appendChild(fld("Birth date", p.dob, { type: "date", maxDate: today(), startYearsBack: 35, on: function(v){ p.dob = v; keep(); } }));
             if (p.roles.p) pg2.appendChild(fld("Occupation", p.occ, { on: function(v){ p.occ = v; keep(); } }));
             if (holder(p)) pg2.appendChild(fld("Shares held", p.shares, { mode: "numeric", on: function(v, inp){ inp.value = v.replace(/\D/g, ""); p.shares = inp.value; keep(); } }));
-            pg2.appendChild(fld("Complete address", p.addr, { wide: 1, on: function(v){ p.addr = v; keep(); } }));
+            pg2.appendChild(fld("Home address, as on the ID card or passport", p.addr, { wide: 1, ph: "House number, street, subdistrict, district, province, postcode", on: function(v){ p.addr = v; keep(); } }));
             pc.appendChild(pg2);
             var rm = el("button", "alt danger", "Remove this person"); rm.type = "button"; rm.addEventListener("click", function(){ r.people = r.people.filter(function(x){ return x !== p; }); regEdit = ""; redo(); }); pc.appendChild(rm);
           }
           b.appendChild(pc);
         });
+        var pch = el("div", "chips");
+        if (!r.people.some(function(p){ return p.me; })) pch.appendChild(btn("pill soft act", "Add me", function(){ var nm2 = (u.name || "").trim().split(/\s+/), id = "p" + Date.now().toString(36); r.people.push({ id: id, me: 1, first: nm2[0] || "", last: nm2.slice(1).join(" "), roles: { p: true, d: true, s: false }, nat: "th", country: "", dob: "", addr: "", occ: "", nid: "", passport: "", shares: "" }); regEdit = id; redo(); }, "i-plus"));
+        var hs = r.people.filter(holder);
+        if (sc1 && hs.length >= 2) pch.appendChild(btn("pill soft act", "Split shares equally", function(){ var each = Math.floor(sc1 / hs.length), rest = sc1 - each * hs.length; hs.forEach(function(p, i){ p.shares = String(each + (i === 0 ? rest : 0)); }); redo(); toast("Shares split " + hs.length + " ways"); }));
+        b.appendChild(pch);
         var addP = el("button", "pill soft act", "Add a person"); addP.type = "button"; addP.style.justifySelf = "start";
         addP.addEventListener("click", function(){ var id = "p" + Date.now().toString(36); r.people.push({ id: id, first: "", last: "", roles: { p: false, d: false, s: false }, nat: "", country: "", dob: "", addr: "", occ: "", nid: "", passport: "", shares: "" }); regEdit = id; redo(); });
         b.appendChild(addP);
       } else if (k === "office"){
         var of = r.office, og = el("div", "fgrid"), who = [["", "Choose a person"]].concat(r.people.map(function(p){ return [p.id, pname(p)]; }));
+        var both = r.people.filter(function(p){ return p.roles.p && p.roles.d; })[0];
+        if (!r.applicant && both){ r.applicant = both.id; save(); }
+        if (!r.chair && both){ r.chair = both.id; save(); }
+        b.appendChild(el("p", "st-p", "The registered office is where DBD and the Revenue Department send letters. A rented shop, an office or your home all work, with the owner's consent."));
         og.appendChild(fld("House number and street", of.no, { wide: 1, on: function(v){ of.no = v; keep(); } }));
         og.appendChild(fld("Subdistrict", of.sub, { on: function(v){ of.sub = v; keep(); } }));
         og.appendChild(fld("District", of.dist, { on: function(v){ of.dist = v; keep(); } }));
         og.appendChild(fld("Province", of.prov, { on: function(v){ of.prov = v; keep(); } }));
-        og.appendChild(fld("Postcode", of.zip, { mode: "numeric", max: 5, on: function(v, inp){ inp.value = v.replace(/\D/g, ""); of.zip = inp.value; keep(); } }));
-        og.appendChild(fld("Premises owner", r.owner, { wide: 1, ph: "Name of the owner or landlord", on: function(v){ r.owner = v; keep(); } }));
+        og.appendChild(fld("Postcode", of.zip, { mode: "numeric", max: 5, on: function(v, inp){ inp.value = v.replace(/\D/g, ""); of.zip = inp.value; keep(); if (inp.value.length === 5 && !of.prov && ZIPPROV[inp.value.slice(0, 2)]){ of.prov = ZIPPROV[inp.value.slice(0, 2)]; var pv = $$("#b-register .fld input").filter(function(x){ return x.parentNode.parentNode.firstChild.textContent === "Province"; })[0]; if (pv) pv.value = of.prov; } } }));
+        og.appendChild(fld("Who owns the place", r.owner, { wide: 1, ph: "Landlord's name, or yours if you own it", on: function(v){ r.owner = v; keep(); } }));
         og.appendChild(fld("Applicant (must be a founder and a director)", r.applicant, { options: who, on: function(v){ r.applicant = v; keep(); } }));
         og.appendChild(fld("Chair of the first meeting", r.chair, { options: who, on: function(v){ r.chair = v; keep(); } }));
-        og.appendChild(fld("First meeting date", r.meeting, { type: "date", maxDate: today(), on: function(v){ r.meeting = v; keep(); } }));
+        og.appendChild(fld("First meeting date", r.meeting, { type: "date", maxDate: today(), quick: [["Today", 0]], on: function(v){ r.meeting = v; keep(); } }));
         b.appendChild(og);
+        b.appendChild(el("p", "st-p", "The first meeting is when the founders agree the rules and appoint the directors. It can be the same day you submit. The applicant files the papers and is usually you."));
         var sr = el("div", "frow"); sr.appendChild(el("b", "", "Who can sign for the company")); sr.appendChild(seg(["Any one director", "Two directors jointly", "Named directors"], r.signing, function(v){ r.signing = v; redo(); })); b.appendChild(sr);
+        b.appendChild(el("p", "fhint", r.signing === "Two directors jointly" ? "Safer: no one can sign a contract or move money alone." : r.signing === "Named directors" ? "Only the directors you pick can sign." : "Simplest: any director can sign alone. Most small companies choose this."));
         if (r.signing === "Named directors"){
           var dc = el("div", "chips"), dirs = r.people.filter(function(p){ return p.roles.d; });
           if (!dirs.length) b.appendChild(el("p", "st-p", "Add a director in People first."));
@@ -210,9 +208,11 @@ function renderRegister(){
           b.appendChild(dc);
         }
         var sl = el("div", "frow"); sl.appendChild(el("b", "", "Company seal")); sl.appendChild(seg(["Yes", "No"], r.seal, function(v){ r.seal = v; keep(); })); b.appendChild(sl);
+        b.appendChild(el("p", "fhint", "Optional. Without a seal, the directors' signatures are enough."));
         b.appendChild(el("p", "st-p", "Auditor: ThuraGirl appoints a licensed auditor for you. Nothing to fill in here."));
       } else {
-        b.appendChild(el("p", "st-p", "One PDF or image each, up to 10 MB. The list follows the people and capital you entered."));
+        var DL = docList(u), got = DL.filter(function(d){ return r.files[d.k]; }).length;
+        b.appendChild(el("p", "st-p", got + " of " + DL.length + " added. A clear phone photo is fine; PDF or image, up to 10 MB each. The list follows the people and capital you entered."));
         var dl = el("div", "");
         docList(u).forEach(function(d){
           var row = el("div", "docrow"), tx = el("div", "tx"), f = r.files[d.k]; tx.appendChild(el("b", "", d.label));
@@ -247,8 +247,8 @@ $("#b-brief-btn").addEventListener("click", function(){ go(tab === "brief" ? "" 
 $("#b-co").addEventListener("click", function(){ go(tab === "settings" ? "" : "settings"); });
 $$('#app [data-go="money"]').forEach(function(b){ b.addEventListener("click", function(){ go("money"); }); });
 $$("#app .js-upload").forEach(function(b){ b.addEventListener("click", function(){ openUpload(); }); });
-$$("#app .js-invoice").forEach(function(b){ b.addEventListener("click", function(){ newInvoice(); }); });
-$$("#app .js-pay").forEach(function(b){ b.addEventListener("click", function(){ newBill(); }); });
+$$("#app .js-invoice").forEach(function(b){ b.addEventListener("click", function(){ startInvoiceFlow(); }); });
+$$("#app .js-pay").forEach(function(b){ b.addEventListener("click", function(){ startPayFlow(); }); });
 $$("#app .js-sample").forEach(function(b){ b.addEventListener("click", function(){ useSample(); }); });
 $("#b-setup-btn").addEventListener("click", openSetupTask);
 $("#b-wel-go").addEventListener("click", openSetupTask);

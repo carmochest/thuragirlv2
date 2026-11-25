@@ -37,14 +37,29 @@ function useSample(silent){
 }
 
 /* ── what needs the owner ── */
+function sendReq(r, after){ openKyc(r.form, r.doc + ". One PDF or image, up to 10 MB.", function(meta){ r.file = meta; r.file.at = Date.now(); r.done = Date.now(); save(); refresh(); toast("Sent to your accountant"); if (after) after(); }); }
+function openReqs(){
+  var u = me(), reqs = (u.requests || []).filter(function(r){ return !r.file; });
+  if (!reqs.length){ closeGS(); return; }
+  var b = openGS("Your accountant", reqs.length + " documents to send", "Send them one by one, whenever you can. Each goes straight to your accountant.");
+  var by = {}; reqs.forEach(function(r){ (by[r.form] = by[r.form] || []).push(r); });
+  Object.keys(by).forEach(function(f){
+    b.appendChild(el("b", "regsub", f));
+    var rows = el("div", "ob-rows");
+    by[f].forEach(function(r){ var row = el("div", "docrow"), tx = el("div", "tx"); tx.appendChild(el("b", "", r.doc)); tx.appendChild(el("span", "", "Requested " + ago(r.at, true))); row.appendChild(tx); row.appendChild(btn("pill soft act", "Upload", function(){ closeGS(); sendReq(r, openReqs); })); rows.appendChild(row); });
+    b.appendChild(rows);
+  });
+  b.appendChild(foot(btn("pill acc", "Later", closeGS)));
+}
 function tasks(u){
   var B = books(u), t = today(), out = [];
   if (!B) return out;
-  (u.requests || []).filter(function(r){ return !r.file; }).forEach(function(r){
-    out.push({ k: "req:" + r.id, ic: "i-doc", t: "Your accountant asked for a document", m: r.doc, late: { txt: "Requested " + ago(r.at, true), cls: "warn" }, btn: "Upload", rank: 1,
-      fn: function(){ openKyc(r.form, r.doc + ". One PDF or image, up to 10 MB.", function(meta){ r.file = meta; r.done = Date.now(); save(); refresh(); toast("Sent to your accountant"); }); },
-      story: { h: "Your accountant needs one more document", p: r.doc + ", for " + r.form + "." } });
-  });
+  var reqs = (u.requests || []).filter(function(r){ return !r.file; });
+  if (reqs.length === 1){ var r1 = reqs[0];
+    out.push({ k: "req:" + r1.id, ic: "i-doc", t: "Your accountant asked for a document", m: r1.doc, late: { txt: "Requested " + ago(r1.at, true), cls: "warn" }, btn: "Upload", rank: 1, fn: function(){ sendReq(r1); },
+      story: { h: "Your accountant needs one more document", p: r1.doc + ", for " + r1.form + "." } }); }
+  else if (reqs.length > 1) out.push({ k: "req:all", ic: "i-doc", t: "Your accountant asked for " + reqs.length + " documents", m: reqs.map(function(r){ return r.form; }).filter(function(v, i, a){ return a.indexOf(v) === i; }).join(", "), late: { txt: "Requested " + ago(reqs[0].at, true), cls: "warn" }, btn: "See list", rank: 1, fn: openReqs,
+      story: { h: "Your accountant needs " + reqs.length + " documents", p: "For " + reqs.map(function(r){ return r.form; }).filter(function(v, i, a){ return a.indexOf(v) === i; }).slice(0, 3).join(", ") + ". Most are a quick photo or a download from your bank." } });
   (u.invoices || []).filter(function(v){ return !v.paid && v.due < t && (!v.reminded || diffDays(t, v.reminded) >= 7); }).sort(function(a, b){ return a.due < b.due ? -1 : 1; }).forEach(function(v){
     var tot = invTotal(v);
     out.push({ k: "inv:" + v.id, ic: "i-alert", t: "Invoice #" + v.id + " is unpaid", m: v.to, amt: tot, late: { txt: lateTxt(v.due), cls: "bad" }, btn: "Remind", rank: 2, fn: function(){ openRemind(v); },
@@ -58,13 +73,14 @@ function tasks(u){
   var since = addDays(B.asOf, -30);
   u.tx.filter(function(x){ return x.a <= -10000 && x.d >= since && /Stock and supplies|Marketing|Other costs|Utilities/.test(cat(x.t, x.a)) && !(u.rcpt || {})[txid(x)]; })
     .sort(function(a, b){ return a.a - b.a; }).slice(0, 2).forEach(function(x){
-      out.push({ k: "rc:" + txid(x), ic: "i-receipt", t: "Missing receipt", m: x.t + ", " + nice(x.d), amt: -x.a, late: { txt: "Left your account on " + nice(x.d), cls: "" }, btn: "Upload", rank: 5,
+      out.push({ k: "rc:" + txid(x), ic: "i-receipt", t: "Receipt missing: " + cap(x.t.toLowerCase()), m: x.t + ", " + nice(x.d), amt: -x.a, late: { txt: "Left your account on " + nice(x.d), cls: "" }, btn: "Upload", rank: 5,
         fn: function(){ openKyc("Receipt", x.t + " · " + baht(-x.a) + ". A photo or PDF of the receipt or tax invoice.", function(meta){ u.rcpt = u.rcpt || {}; u.rcpt[txid(x)] = meta; save(); refresh(); toast("Receipt filed"); }); },
         story: { h: "A receipt is missing", p: baht(-x.a) + " to " + x.t + " on " + nice(x.d) + ". Snap the receipt and I file it." } });
     });
   (u.banks || []).filter(function(b){ return Date.now() - b.at > 7 * 864e5; }).forEach(function(b){
     out.push({ k: "bk:" + b.bank + b.acct, ic: "i-up", t: b.bank + " statement is getting old", m: "Last uploaded " + ago(b.at, true), late: { txt: "Uploaded " + ago(b.at, true), cls: "warn" }, btn: "Upload", rank: 6, fn: function(){ openUpload(b); } });
   });
+  moreTasks(u, B, out);
   return out.sort(function(a, b){ return a.rank - b.rank; });
 }
 function rowFor(x){
@@ -99,7 +115,7 @@ function paintHero(u){
   tiles.forEach(function(x){
     var b = $(x[0]); $(".n", b).textContent = baht(x[2]); b.setAttribute("aria-label", x[1] + ", " + money(x[2]) + " baht. Open Money");
     var d = $(".d", b); d.textContent = ""; if (x[3] != null){ d.insertAdjacentHTML("beforeend", '<svg class="i"' + (x[3] < 0 ? ' style="transform:scaleY(-1)"' : "") + '><use href="#i-trend"/></svg>'); d.appendChild(document.createTextNode(pctTxt(x[3]))); }
-    d.appendChild(el("em", "", x[3] == null && x[0] !== ".mini.t3" ? "this month" : x[4]));
+    d.appendChild(el("em", "", x[3] == null && x[0] !== ".mini.t3" ? "this month" : x[4])); d.classList.toggle("down", x[3] != null && x[3] < 0);
   });
   $(".snapB .sech span").textContent = MONTH[day(B.asOf).getMonth()] + " so far";
 }
@@ -144,53 +160,6 @@ function openSheet(){ var u = me(); paintPack(u); var s = $("#b-sheet"); $("#b-a
 function closeSheet(){ $("#b-sheet").hidden = true; }
 function approvePack(){ var u = me(), B = books(u); if (!B || !B.pack) return; u.done["rev:" + B.pack.key] = { at: Date.now() }; save(); closeSheet(); collapse($("#b-rev")); setTimeout(function(){ setCount(); }, 400); if (tab === "brief") renderBrief(); toast(B.pack.name + " is signed off"); }
 
-/* ── morning brief ── */
-function renderBrief(){
-  var u = me(), B = books(u), pg = $("#b-brief"); if (!B) return;
-  $$("#b-brief > :not(.emptyP)").forEach(function(n){ n.remove(); });
-  var now = new Date(), T = tasks(u), p = B.pack, F = B.fin.mtd, mName = MONTH[day(B.asOf).getMonth()];
-  var stories = [];
-  if (p && !u.done["rev:" + p.key]) stories.push({ h: "Your " + p.name + " books are ready to sign off", p: "It is all on one page: " + baht(p.inc) + " in, " + baht(p.exp) + " out, " + baht(p.kept) + " kept. Tick the box and I lock the month.", btn: "Review", acc: 1, fn: openSheet });
-  T.filter(function(x){ return x.story && x.rank <= 2; }).forEach(function(x){ stories.push({ h: x.story.h, p: x.story.p, btn: x.btn, fn: x.fn }); });
-  var top = stories.slice(0, 3), rest = T.filter(function(x){ return !top.some(function(s){ return s.fn === x.fn; }); });
-  var mast = el("div", "br-mast"); mast.appendChild(el("b", "", "The Morning Brief")); mast.appendChild(el("span", "", now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }))); mast.appendChild(el("span", "br-rt", "1 min read")); pg.appendChild(mast);
-  var hd = el("header", "br-head"), h1 = el("h1"); h1.id = "br-h1";
-  h1.appendChild(el("span", "l1", B.cashD == null ? "Cash is " + baht(B.cash) + "." : "Cash is " + (B.cashD >= 0 ? "up " : "down ") + pctTxt(B.cashD) + "."));
-  if (top.length){ h1.appendChild(el("em", "", ["", "One thing", "Two things", "Three things"][top.length])); h1.appendChild(document.createTextNode(" need" + (top.length === 1 ? "s" : "") + " your yes.")); }
-  else h1.appendChild(el("em", "", "Nothing needs you today."));
-  hd.appendChild(h1);
-  var names = u.banks.map(function(b){ return b.bank; }).filter(function(v, i, a){ return a.indexOf(v) === i; });
-  var lede = el("p", "br-lede"); lede.innerHTML = "Good morning, " + esc(first(u)) + ". You have <b class=\"num\">" + baht(B.cash) + "</b> " + (names.length ? "across " + esc(names.length > 1 ? names.slice(0, -1).join(", ") + " and " + names[names.length - 1] : names[0]) : "in the bank") + ". " +
-    esc(mName) + " has brought in <b class=\"num\">" + baht(F.rev) + "</b> so far, and you have " + (F.rev >= F.exp ? "kept <b class=\"num\">" + baht(F.rev - F.exp) + "</b> of it." : "spent <b class=\"num\">" + baht(F.exp - F.rev) + "</b> more than came in.");
-  hd.appendChild(lede); var by = el("div", "br-by"); by.appendChild(el("span", "", "By ThuraGirl, your bookkeeper")); hd.appendChild(by); pg.appendChild(hd);
-  var grid = el("div", "br-grid"), main = el("div", "br-main"), side = el("aside", "br-side");
-  main.appendChild(el("div", "br-sec", top.length ? "Needs your yes" : "All clear"));
-  if (!top.length) main.appendChild(el("p", "br-calm", "Nothing is late and nothing needs signing. I will tell you here when something does."));
-  top.forEach(function(s, i){
-    var a = el("article", "story"); a.appendChild(el("span", "no", String(i + 1))); a.appendChild(el("h3", "", s.h)); a.appendChild(el("p", "todo", s.p));
-    a.appendChild(btn("pill " + (s.acc ? "acc" : "soft act"), s.btn, s.fn)); main.appendChild(a);
-  });
-  if (rest.length){ main.appendChild(el("div", "br-sec br-gap", "Can wait")); rest.slice(0, 4).forEach(function(x){ var r = el("div", "row"), rt = el("div", "rt"); rt.appendChild(el("div", "t", x.t)); rt.appendChild(el("div", "m", x.late.txt + (x.amt ? " · " + baht(x.amt) : ""))); r.appendChild(rt); r.appendChild(btn("pill soft act", x.btn, x.fn)); main.appendChild(r); }); }
-  var old = u.banks.filter(function(b){ return isStale(b.at); })[0], br = el("div", "row"), brt = el("div", "rt");
-  brt.appendChild(el("div", "t", old ? old.bank + " statement is getting old" : "Bank statements are up to date")); brt.appendChild(el("div", "m", u.banks.map(function(b){ return b.bank + " up to " + nice(b.to || B.asOf); }).join(" · ")));
-  br.appendChild(brt); br.appendChild(btn("pill soft", "Update", function(){ openUpload(old || u.banks[0]); })); main.appendChild(br);
-  side.appendChild(el("div", "br-sec", "Done for you"));
-  var dn = el("ul", "br-done"), rc = Object.keys(u.rcpt || {}).length;
-  [B.n + " bank lines read and sorted into " + Object.keys(F.cats).length + " categories this month", (u.matched || 0) + " payments matched to invoices and bills", rc + (rc === 1 ? " receipt" : " receipts") + " filed"].forEach(function(t){ var li = el("li"); li.innerHTML = '<svg class="i"><use href="#i-check"/></svg>'; li.appendChild(document.createTextNode(t)); dn.appendChild(li); });
-  side.appendChild(dn);
-  var lk = el("div", "br-sec br-gap br-lk"); lk.appendChild(el("span", "", mName + " so far")); var sm = btn("lnk", "See money", function(){ go("money"); }); sm.insertAdjacentHTML("beforeend", '<svg class="i"><use href="#i-chevr"/></svg>'); lk.appendChild(sm); side.appendChild(lk);
-  var nums = el("ul", "br-nums");
-  [["Money in", F.rev, F.dIn, true], ["Money out", F.exp, F.dOut, false], ["Kept", F.rev - F.exp, F.d, true]].forEach(function(x){ var li = el("li"); li.appendChild(el("span", "", x[0])); li.appendChild(el("b", "num", baht(x[1]))); li.appendChild(el("em", "num" + (x[2] != null && (x[2] >= 0) === x[3] ? " up" : ""), x[2] == null ? "" : (x[2] >= 0 ? "+" : "−") + pctTxt(x[2]))); nums.appendChild(li); });
-  side.appendChild(nums);
-  var up = (u.bills || []).filter(function(v){ return !v.paid && diffDays(v.due, today()) <= 14; }).sort(function(a, b){ return a.due < b.due ? -1 : 1; });
-  if (up.length){
-    side.appendChild(el("div", "br-sec br-gap", "Coming up")); var ul = el("ul", "br-nums br-up");
-    up.slice(0, 4).forEach(function(v){ var li = el("li"), s = el("span", "", v.to); s.appendChild(el("small", v.due < today() ? "bad" : "", lateTxt(v.due))); li.appendChild(s); li.appendChild(el("b", "num", baht(v.amount))); ul.appendChild(li); });
-    side.appendChild(ul);
-  }
-  grid.appendChild(main); grid.appendChild(side); pg.appendChild(grid);
-  pg.appendChild(el("p", "br-end", "That is everything for today. Ask me anything below."));
-}
 
 /* ── invoices ── */
 function nextInvNo(u){ var y = new Date().getFullYear(), n = (u.invoices || []).reduce(function(m, v){ var x = String(v.id).match(/(\d+)$/); return x ? Math.max(m, +x[1]) : m; }, 0) + 1; return "INV-" + y + "-" + ("00" + n).slice(-3); }
@@ -290,7 +259,7 @@ function newBill(pre){
   var err = el("div", "ferrB"), g = el("div", "fgrid");
   g.appendChild(fld("Pay to", d.to, { ph: "Supplier or person", on: function(v){ d.to = v; err.textContent = ""; } }));
   g.appendChild(fld("Amount", d.amount, { prefix: "฿", mode: "decimal", ph: "0", on: function(v, inp){ inp.value = v.replace(/[^\d.]/g, ""); d.amount = inp.value; } }));
-  g.appendChild(fld("Due", d.due, { type: "date", on: function(v){ d.due = v; } }));
+  g.appendChild(fld("Due", d.due, { type: "date", required: 1, quick: [["Today", 0], ["In 7 days", 7], ["In 15 days", 15], ["In 30 days", 30]], on: function(v){ d.due = v; } }));
   g.appendChild(fld("PromptPay ID (optional)", d.pp, { mode: "numeric", max: 13, ph: "Phone or tax ID", on: function(v, inp){ inp.value = v.replace(/\D/g, ""); d.pp = inp.value; return d.pp && !(d.pp.length === 10 || d.pp.length === 13) ? "A 10-digit phone number or a 13-digit ID" : ""; } }));
   g.appendChild(fld("Note (optional)", d.note, { wide: 1, ph: "Invoice number, what it is for", on: function(v){ d.note = v; } }));
   b.appendChild(g); b.appendChild(err);
@@ -420,6 +389,7 @@ function brain(q){
 var chat = { timer: 0, rec: null, on: false };
 function ask(q){
   q = (q || "").trim(); if (!q) return;
+  if (chat.flow){ $("#b-in").value = ""; $("#b-send").disabled = true; return flowAnswer(q); }
   var inp = $("#b-in"), pop = $("#b-pop"); inp.value = ""; $("#b-send").disabled = true; $("#b-sug").hidden = true; pop.hidden = false; $("#b-me").textContent = q;
   var r = $("#b-reply"); r.innerHTML = '<span class="dotsT" aria-label="ThuraGirl is typing"><i></i><i></i><i></i></span>';
   clearTimeout(chat.timer); chat.timer = setTimeout(function(){ r.textContent = brain(q); }, calm ? 0 : 650);
@@ -441,14 +411,7 @@ function micToggle(){
   r.onend = function(){ chat.on = false; mic.classList.remove("rec"); mic.setAttribute("aria-pressed", "false"); inp.placeholder = "Ask ThuraGirl"; if (got.trim()) ask(got); };
   chat.rec = r; try { r.start(); } catch (e) { toast("Voice input could not start."); }
 }
-function chatFile(f){
-  var ext = (f.name.split(".").pop() || "").toLowerCase();
-  if (["csv", "xlsx", "xls"].indexOf(ext) >= 0){ openUpload(); takeFile(f); return; }
-  if (f.size > MAX){ say(f.name, "That file is " + size(f.size) + ". The limit is 10 MB."); return; }
-  if (!(/^image\//.test(f.type) || ext === "pdf")){ say(f.name, "I can take bank statements (CSV or Excel) and receipts (photo or PDF). That file type doesn't work here."); return; }
-  if (!me().hasData){ say(f.name, "Thanks. Upload a bank statement first, and I can match receipts like this one to your payments."); return; }
-  say(f.name, fileReceipt(f));
-}
+function chatFile(f){ anyUpload(f); }
 
 /* ── settings: your data ── */
 var dataArmed = false;

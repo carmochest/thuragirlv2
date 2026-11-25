@@ -62,6 +62,7 @@ function fld(label, val, o){
   inp.value = val == null ? "" : val; inp.autocomplete = "off";
   if (o.ph) inp.placeholder = o.ph; if (o.mode) inp.inputMode = o.mode; if (o.max) inp.maxLength = o.max; if (o.ro) inp.readOnly = true; if (o.maxDate) inp.max = o.maxDate;
   box.appendChild(inp); if (o.suffix) box.appendChild(el("i", "", o.suffix)); l.appendChild(box);
+  if (o.type === "date") dateUI(inp, o);
   var er = el("small", "ferr"); l.appendChild(er);
   var run = function(){ var m = o.on ? o.on(inp.value, inp) : ""; er.textContent = m || ""; return m; };
   inp.addEventListener("input", run);
@@ -117,7 +118,7 @@ function taxTaken(id, self){
 }
 function suGo(n){
   var u = me(); suStep = Math.max(u ? 1 : 0, suStep + n); suMoved = true;
-  if (u && suStep >= suSteps(u).length){ u.onboarded = true; u.welcome = true; save(); suStep = 0; suMoved = false; go(""); return; }
+  if (u && suStep >= suSteps(u).length){ u.onboarded = true; u.welcome = true; u.justIn = true; save(); suStep = 0; suMoved = false; go(""); return; }
   renderAuth();
 }
 function renderAuth(){
@@ -167,10 +168,12 @@ function renderAuth(){
       if (!acc){ err.textContent = "I can't find an account with that email in this browser."; return; }
       digest(acc.salt + lp.value).then(function(h){
         if (h !== acc.hash){ err.textContent = "That password doesn't match."; return; }
-        db.session = acc.email; save(); suStep = acc.onboarded ? 0 : 1; go("");
+        var inNow = function(){ db.session = acc.email; acc.justIn = true; save(); suStep = acc.onboarded ? 0 : 1; go(""); };
+        if (acc.tfa) tfaLogin(acc, inNow); else inNow();
       });
     };
     form.appendChild(nextBtn("Sign in"));
+    if (pkOk()) form.appendChild(pkButton(err));
     form.appendChild(altLink("New here? <u>Create an account</u>", function(){ go("signup"); }));
   } else if (key === "account"){
     head("Let's get you in.", "It takes about a minute. Everything else can wait until you are inside.");

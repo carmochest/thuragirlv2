@@ -25,7 +25,7 @@ app = rep(app, '<div class="co"><b>BB</b><span>Bangkok Bites</span><svg class="i
           '<button type="button" class="co" id="b-co" aria-label="Settings" title="Settings"><b id="b-co-i">BB</b><span id="b-co-n">Bangkok Bites</span><svg class="i"><use href="#i-chev"/></svg></button>')
 i = app.index('            <div class="bkwrap">'); j = app.index('            <div class="circ">', i)
 app = app[:i] + '            <div class="bkwrap"><button type="button" class="bkbar" id="b-bkbar" aria-expanded="false" aria-controls="b-bkpanel"></button><div class="bkpanel" id="b-bkpanel" hidden></div></div>\n' + app[j:]
-app = rep(app, '<button type="button" class="pri"><i>', '<button type="button" class="pri js-upload"><i>')
+app = rep(app, '<button type="button" class="pri"><i>', '<button type="button" class="pri js-anyup"><i>')
 app = rep(app, '<button type="button"><i><svg class="i"><use href="#i-doc"/></svg></i>Invoice</button>', '<button type="button" class="js-invoice"><i><svg class="i"><use href="#i-doc"/></svg></i>Invoice</button>')
 app = rep(app, '<button type="button"><i><svg class="i"><use href="#i-pay"/></svg></i>Pay</button>', '<button type="button" class="js-pay"><i><svg class="i"><use href="#i-pay"/></svg></i>Pay</button>')
 app = rep(app, '<div class="revB tk" id="b-rev">', '<div class="revB tk" id="b-rev" data-k="rev">')
@@ -36,7 +36,7 @@ app = rep(app, "<b>You're all caught up</b><span>Nothing else needs you today.</
 EMPTY = '<svg class="tg" width="64" height="67"><use href="#tg"/></svg>'
 UPBTN = '<div class="acts"><button type="button" class="pill acc js-upload"><svg class="i"><use href="#i-up"/></svg>Upload a statement</button><button type="button" class="pill soft js-sample">Try it with sample data</button></div>'
 app = rep(app, '          <div class="dB-hero">\n            <div class="lab">Cash on hand</div>',
-          '          <div class="emptyB">' + EMPTY + "<h1>Let's see your money.</h1><p>Upload a bank statement and I build your dashboard from it: your cash, money in and out, and what needs you.</p>" + UPBTN + '</div>\n          <div class="dB-hero">\n            <div class="lab">Cash on hand</div>')
+          '          <div class="emptyB">' + EMPTY + "<h1>Welcome to ThuraGirl.</h1><p>Connect your bank or upload a statement, and I build your dashboard from it: your cash, money in and out, and what needs you.</p>" + UPBTN + '</div>\n          <div class="dB-hero">\n            <div class="lab">Cash on hand</div>')
 app = rep(app, '<div class="pg brf" id="b-brief" hidden>\n', '<div class="pg brf" id="b-brief" hidden>\n            <div class="emptyP">' + EMPTY + "<h1>No brief yet.</h1><p>Your morning brief starts the day after I have a bank statement to read.</p>" + UPBTN + '</div>\n')
 app = rep(app, '<div class="pg" id="b-money" hidden>\n', '<div class="pg" id="b-money" hidden>\n            <div class="emptyP">' + EMPTY + "<h1>Nothing to show yet.</h1><p>Money fills in once you upload a bank statement.</p>" + UPBTN + '</div>\n')
 app = rep(app, 'Good morning, Nok. You have <b class="num">฿1,842,300</b> across KBank and SCB.', 'Good morning, <span id="br-name">Nok</span>. You have <b class="num">฿1,842,300</b> <span id="br-banks">in the bank</span>.')

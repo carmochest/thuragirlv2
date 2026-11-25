@@ -204,6 +204,11 @@ function sampleCsv(){
     if (wd !== 0) add("KLONG TOEY MARKET SUPPLIER", -between(3200, 6200));
     if (wd === 3 && r() < .5) add("THAI BEVERAGE CO SUPPLIER", -between(8000, 16000));
     if (dm === 25) add("PAYROLL SALARY " + mname + " 7 STAFF", -between(232000, 241000));
+    if (wd === 1) add("PTT LPG GAS DELIVERY", -between(6200, 8800));
+    if (wd === 4) add("CP FRESH MEAT SUPPLY", -between(21000, 29000));
+    if (wd === 6) add("SIAM FRESH SEAFOOD", -between(16000, 23000));
+    if (dm === 12) add("BANGKOK INSURANCE PREMIUM", -between(8500, 9500));
+    if (dm === 20) add("KITCHEN EQUIPMENT LEASE TISCO", -18500);
     if (dm === 28) add("ACCOUNT FEE", -50);
     d = addDays(d, 1);
   }
@@ -223,6 +228,9 @@ function sampleBooks(u){
     { id: "b3", to: "Makro Sukhumvit", amount: 18400, due: addDays(t, 5), pp: "", note: "Credit account", paid: "" },
     { id: "b4", to: "Thai Beverage Co", amount: 32800, due: addDays(t, 8), pp: "", note: "", paid: "" }];
   if (!u.setup.vat) u.setup.vat = "Yes";
+  if (!u.setup.sso) u.setup.sso = "Yes";
+  if (!u.team || !u.team.length) u.team = [["Somchai Saetang", "Head chef", 48000], ["Pimchanok Wongsa", "Operations manager", 55000], ["Anucha Phromsiri", "Sous chef", 32000], ["Niran Chaiyaporn", "Bookkeeper", 36000], ["Kanokwan Jaidee", "Front of house lead", 28000], ["Thanapon Rattanakul", "Marketing", 26000], ["Suwannee Tanyaluk", "Server", 18500]].map(function(p){ return { name: p[0], role: p[1], pay: p[2] }; });
+  var pd = day(addDays(t, -1)); u.done["tax:" + iso(new Date(pd.getFullYear(), pd.getMonth() - 1, 1)).slice(0, 7)] = Date.now() - 6 * 864e5;
 }
 function invTotal(v){ var s = v.items.reduce(function(a, it){ return a + (+it[1] || 0) * (+it[2] || 0); }, 0); return Math.round((v.vat ? s * 1.07 : s) * 100) / 100; }
 function lateTxt(due){ var n = diffDays(today(), due); return n > 0 ? n + (n === 1 ? " day late" : " days late") : n === 0 ? "Due today" : "Due in " + (-n) + (n === -1 ? " day" : " days"); }
