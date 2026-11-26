@@ -67,7 +67,7 @@ function tasks(u){
   });
   (u.bills || []).filter(function(v){ return !v.paid && diffDays(v.due, t) <= 7; }).sort(function(a, b){ return a.due < b.due ? -1 : 1; }).forEach(function(v){
     var late = v.due < t;
-    out.push({ k: "bill:" + v.id, ic: "i-pay", t: "Pay " + v.to, m: v.note || "Bill", amt: v.amount, late: { txt: lateTxt(v.due), cls: late ? "bad" : v.due === t ? "warn" : "" }, btn: "Pay", rank: late ? 2 : 4, fn: function(){ openBill(v); },
+    out.push({ k: "bill:" + v.id, due: v.due, ic: "i-pay", t: "Pay " + v.to, m: v.note || "Bill", amt: v.amount, late: { txt: lateTxt(v.due), cls: late ? "bad" : v.due === t ? "warn" : "" }, btn: "Pay", rank: late ? 2 : 4, fn: function(){ openBill(v); },
       story: { h: late ? "The " + v.to + " bill is overdue" : v.to + " is due " + (v.due === t ? "today" : "soon"), p: baht(v.amount) + ", " + lateTxt(v.due).toLowerCase() + ". Scan the PromptPay code or mark it paid." } });
   });
   var since = addDays(B.asOf, -30);

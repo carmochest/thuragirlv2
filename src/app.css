@@ -508,3 +508,12 @@
   .pl-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
   .pl-acts .pill{flex:1;min-width:88px;justify-content:center}
   .plB .tnote{margin-top:10px}
+  .ct-head{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;color:var(--m-ink);text-align:left;cursor:pointer;padding:2px 6px;border-radius:16px;font:inherit}
+  .ct-head:focus-visible{outline:2px solid var(--m-accent);outline-offset:2px}
+  .ct-ht{flex:1;min-width:0;display:grid;gap:4px}
+  .ct-ht .sub{font-size:13px;color:var(--m-mute);font-weight:600}
+  .ct-chev{width:22px;height:22px;flex:none;transition:transform .2s;color:var(--m-mute)}
+  .ctB.open .ct-chev{transform:rotate(180deg)}
+  .ctB.open .ct-head{margin-bottom:10px}
+  .docrow > b.num{font:800 14px var(--font-num);white-space:nowrap}
+  .docrow > b.num{margin-left:auto}

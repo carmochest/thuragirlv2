@@ -227,6 +227,10 @@ var RULES = [
   [/^(\d{1,2} [A-Z][a-z]+(?: \d{4})?) to (\d{1,2} [A-Z][a-z]+(?: \d{4})?)$/, function(m){ return dates(m[1]) + " ถึง " + dates(m[2]); }],
   [/^(-?[\d.]+)% of money in$/, "$1% ของเงินเข้า"],
   [/^Saved (\S+\.pdf)$/, "บันทึก $1 แล้ว"],
+  [/^(\d+) customers? · (\d+) suppliers?$/, "ลูกค้า $1 ราย · ซัพพลายเออร์ $2 ราย"], [/^(Customers|Suppliers) (\d+)$/, function(m){ return (m[1] === "Customers" ? "ลูกค้า " : "ซัพพลายเออร์ ") + m[2]; }],
+  [/^(\d+) (invoices?|bills?) · (฿[\d,.]+) in total$/, function(m){ return (/^i/.test(m[2]) ? "ใบแจ้งหนี้ " : "บิล ") + m[1] + " ใบ · รวม " + m[3]; }],
+  [/^Paid (\d{1,2} [A-Z][a-z]{2} \d{4})$/, function(m){ return "จ่ายแล้ว " + dates(m[1]); }],
+  [/^(\d+) customers?$/, "ลูกค้า $1 ราย"], [/^(\d+) suppliers?$/, "ซัพพลายเออร์ $1 ราย"], [/^(฿[\d,.]+) in total$/, "รวม $1"],
 ];
 var TCACHE = {};
 function T(s){

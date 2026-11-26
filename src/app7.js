@@ -41,8 +41,8 @@ function renderBrief(){
   // what needs a yes, most pressing first
   var urgent = [];
   if (p && !u.done["rev:" + p.key]) urgent.push({ ic: "i-chart", h: "Your " + p.name + " books are ready to sign off", p: "It is all on one page: " + baht(p.inc) + " in, " + baht(p.exp) + " out, " + baht(p.kept) + " kept.", btn: "Review", fn: openSheet, k: "rev" });
-  TK.filter(function(x){ return x.rank <= 3 && x.k.indexOf("rev") !== 0; }).forEach(function(x){ urgent.push({ ic: x.ic || "i-clock", h: x.story ? x.story.h : x.t, p: x.story ? x.story.p : (x.m || ""), btn: x.btn, fn: x.fn, k: x.k, amt: x.amt, late: x.late }); });
-  var top = urgent.slice(0, 5), restN = TK.filter(function(x){ return x.k.indexOf("rev") !== 0; }).length - top.filter(function(x){ return x.k !== "rev"; }).length;
+  TK.filter(function(x){ return (x.rank <= 3 || (x.due && diffDays(x.due, today()) <= 3)) && x.k.indexOf("rev") !== 0; }).forEach(function(x){ urgent.push({ ic: x.ic || "i-clock", h: x.story ? x.story.h : x.t, p: x.story ? x.story.p : (x.m || ""), btn: x.btn, fn: x.fn, k: x.k, amt: x.amt, late: x.late }); });
+  var top = urgent.slice(0, 6), restN = TK.filter(function(x){ return x.k.indexOf("rev") !== 0; }).length - top.filter(function(x){ return x.k !== "rev"; }).length;
 
   var wrap = el("div", "cf");
   var mast = el("div", "cf-mast"); mast.innerHTML = '<svg class="tg" width="30" height="31"><use href="#tg"/></svg>';
@@ -98,13 +98,6 @@ function renderBrief(){
     ns.slice(0, 4).forEach(function(s){ var r = el("div", "cf-note"); r.innerHTML = '<i><svg class="i"><use href="#i-trend"/></svg></i>'; r.appendChild(el("p", "", s)); ob.appendChild(r); });
     wrap.appendChild(ob);
   }
-
-  // 5. the week ahead
-  var ev = weekAhead(u, B).sort(function(a, b){ return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; });
-  var wk = card("Coming up", "The week ahead");
-  if (!ev.length) wk.appendChild(el("p", "cf-calm", "No bills, invoices or filings fall due in the next seven days."));
-  ev.forEach(function(e){ wk.appendChild(dayRow(e)); });
-  wrap.appendChild(wk);
 
   var end = el("div", "cf-end"); end.innerHTML = '<svg class="tg" width="26" height="27"><use href="#tg"/></svg>'; end.appendChild(el("p", "", "That is everything for today. Enjoy your coffee. Ask me anything below.")); wrap.appendChild(end);
   pg.appendChild(wrap);

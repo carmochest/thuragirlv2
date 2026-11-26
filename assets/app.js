@@ -1209,7 +1209,7 @@ function tasks(u){
   });
   (u.bills || []).filter(function(v){ return !v.paid && diffDays(v.due, t) <= 7; }).sort(function(a, b){ return a.due < b.due ? -1 : 1; }).forEach(function(v){
     var late = v.due < t;
-    out.push({ k: "bill:" + v.id, ic: "i-pay", t: "Pay " + v.to, m: v.note || "Bill", amt: v.amount, late: { txt: lateTxt(v.due), cls: late ? "bad" : v.due === t ? "warn" : "" }, btn: "Pay", rank: late ? 2 : 4, fn: function(){ openBill(v); },
+    out.push({ k: "bill:" + v.id, due: v.due, ic: "i-pay", t: "Pay " + v.to, m: v.note || "Bill", amt: v.amount, late: { txt: lateTxt(v.due), cls: late ? "bad" : v.due === t ? "warn" : "" }, btn: "Pay", rank: late ? 2 : 4, fn: function(){ openBill(v); },
       story: { h: late ? "The " + v.to + " bill is overdue" : v.to + " is due " + (v.due === t ? "today" : "soon"), p: baht(v.amount) + ", " + lateTxt(v.due).toLowerCase() + ". Scan the PromptPay code or mark it paid." } });
   });
   var since = addDays(B.asOf, -30);
@@ -2008,35 +2008,58 @@ function filesCard(u, root){
 /* ── customers and suppliers, from invoices, bills and bank lines ── */
 function paintContacts(u){
   var host = $("#m-contacts"), anchor = $$("#b-money .listB")[1];
-  if (!host && anchor){ host = el("section", "card listB"); host.id = "m-contacts"; host.setAttribute("aria-label", "Customers and suppliers"); anchor.parentNode.insertBefore(host, anchor.nextSibling); }
+  if (!host && anchor){ host = el("section", "card listB ctB"); host.id = "m-contacts"; host.setAttribute("aria-label", "Customers and suppliers"); anchor.parentNode.insertBefore(host, anchor.nextSibling); }
   if (!host) return;
-  host.textContent = "";
-  var C = {}, t = today();
-  function add(name, kind, amt, open){ var k = name.trim().toLowerCase(); var c = C[k] = C[k] || { name: name.trim(), kind: kind, n: 0, total: 0, open: 0 }; c.n++; c.total += amt; c.open += open; }
-  (u.invoices || []).forEach(function(v){ add(v.to, "Customer", invTotal(v), v.paid ? 0 : invTotal(v)); });
-  (u.bills || []).forEach(function(v){ add(v.to, "Supplier", v.amount, v.paid ? 0 : v.amount); });
+  host.textContent = ""; host.classList.add("ctB");
+  var C = {};
+  function add(name, kind, amt, open, v){ var k = kind + ":" + name.trim().toLowerCase(); var c = C[k] = C[k] || { name: name.trim(), kind: kind, n: 0, total: 0, open: 0, docs: [] }; c.n++; c.total += amt; c.open += open; c.docs.push(v); }
+  (u.invoices || []).forEach(function(v){ add(v.to, "Customer", invTotal(v), v.paid ? 0 : invTotal(v), v); });
+  (u.bills || []).forEach(function(v){ add(v.to, "Supplier", v.amount, v.paid ? 0 : v.amount, v); });
   var list = Object.keys(C).map(function(k){ return C[k]; }), tab = u.ctab || "Customer";
-  var h = el("div", "cardh"); h.appendChild(el("h2", "", "Customers and suppliers")); host.appendChild(h);
+  var nC = list.filter(function(c){ return c.kind === "Customer"; }).length, nS = list.length - nC, isOpen = !!u.cOpen;
+  var hb = el("button", "ct-head"); hb.type = "button"; hb.setAttribute("aria-expanded", String(isOpen));
+  var ht = el("div", "ct-ht"); ht.appendChild(el("h2", "", "Customers and suppliers"));
+  ht.appendChild(el("div", "sub", nC + (nC === 1 ? " customer" : " customers") + " · " + nS + (nS === 1 ? " supplier" : " suppliers")));
+  hb.appendChild(ht); hb.insertAdjacentHTML("beforeend", '<svg class="i ct-chev"><use href="#i-chev"/></svg>');
+  hb.addEventListener("click", function(){ u.cOpen = !isOpen; save(); paintContacts(u); });
+  host.appendChild(hb); host.classList.toggle("open", isOpen);
+  if (!isOpen) return;
   var ch = el("div", "chips lpad");
-  ["Customer", "Supplier"].forEach(function(k){ var x = el("button", "", k === "Customer" ? "Customers" : "Suppliers"); x.type = "button"; x.setAttribute("aria-pressed", String(tab === k)); x.addEventListener("click", function(){ u.ctab = k; save(); paintContacts(u); }); ch.appendChild(x); });
+  [["Customer", "Customers", nC], ["Supplier", "Suppliers", nS]].forEach(function(k){ var x = el("button", "", k[1] + " " + k[2]); x.type = "button"; x.setAttribute("aria-pressed", String(tab === k[0])); x.addEventListener("click", function(){ u.ctab = k[0]; save(); paintContacts(u); }); ch.appendChild(x); });
   host.appendChild(ch);
   var rows = list.filter(function(c){ return c.kind === tab; }).sort(function(a, b){ return b.total - a.total; });
   if (!rows.length) host.appendChild(el("p", "st-p lpad", tab === "Customer" ? "Customers appear here when you make an invoice." : "Suppliers appear here when you add a bill."));
-  var fk = "fold:c" + tab, open = !!FOLD[fk], cut = 5;
-  if (rows.length > 8){
+  var fk = "fold:c" + tab, open = !!FOLD[fk], cut = 5, needle = (CQ[tab] || "").trim().toLowerCase();
+  if (rows.length > cut){
     var q = el("input", "csearch"); q.type = "search"; q.placeholder = tab === "Customer" ? "Find a customer" : "Find a supplier"; q.setAttribute("aria-label", q.placeholder); q.value = CQ[tab] || "";
     q.addEventListener("input", function(){ CQ[tab] = q.value; var pos = q.selectionStart; paintContacts(u); var n = $("#m-contacts .csearch"); if (n){ n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} } });
     var qw = el("div", "lpad"); qw.appendChild(q); host.appendChild(qw);
-    var needle = (CQ[tab] || "").trim().toLowerCase(); if (needle){ rows = rows.filter(function(c){ return c.name.toLowerCase().indexOf(needle) >= 0; }); open = true; if (!rows.length) host.appendChild(el("p", "st-p lpad", "No one by that name yet.")); }
+    if (needle){ rows = rows.filter(function(c){ return c.name.toLowerCase().indexOf(needle) >= 0; }); open = true; if (!rows.length) host.appendChild(el("p", "st-p lpad", "No one by that name yet.")); }
   }
   var all = rows.length;
   if (!open) rows = rows.slice(0, cut);
   rows.forEach(function(c){
-    var r = el("div", "row"), rt = el("div", "rt"); rt.appendChild(el("div", "t", c.name));
-    var m = el("div", "m", c.n + (tab === "Customer" ? (c.n === 1 ? " invoice" : " invoices") : (c.n === 1 ? " bill" : " bills")) + (c.open ? " · " + baht(c.open) + " open" : " · all settled")); rt.appendChild(m);
+    var r = el("div", "row"), rt = el("button", "rt rtb"); rt.type = "button"; rt.addEventListener("click", function(){ openContact(c); });
+    rt.appendChild(el("div", "t", c.name));
+    rt.appendChild(el("div", "m", c.n + (tab === "Customer" ? (c.n === 1 ? " invoice" : " invoices") : (c.n === 1 ? " bill" : " bills")) + (c.open ? " · " + baht(c.open) + " open" : " · all settled")));
     r.appendChild(rt); r.appendChild(el("span", "amt num", baht(c.total))); host.appendChild(r);
   });
-  if (all > cut && !(CQ[tab] || "").trim()) host.appendChild(foldBtn(open, all, function(){ FOLD[fk] = !open; paintContacts(u); }));
+  if (all > cut && !needle) host.appendChild(foldBtn(open, all, function(){ FOLD[fk] = !open; paintContacts(u); }));
+}
+function openContact(c){
+  var cust = c.kind === "Customer", b = openGS(cust ? "Customer" : "Supplier", c.name, c.n + (cust ? (c.n === 1 ? " invoice" : " invoices") : (c.n === 1 ? " bill" : " bills")) + " · " + baht(c.total) + " in total");
+  var n = el("dl", "shB-n"); [["Total", c.total], ["Open", c.open], ["Settled", c.total - c.open]].forEach(function(x){ var w = el("div"); w.appendChild(el("dt", "", x[0])); w.appendChild(el("dd", "num", baht(x[1]))); n.appendChild(w); }); b.appendChild(n);
+  var rows = el("div", "ob-rows");
+  c.docs.slice().sort(function(a, z){ return (a.due || "") < (z.due || "") ? 1 : -1; }).forEach(function(v){
+    var amt = cust ? invTotal(v) : v.amount, r = el("div", "docrow"), tx = el("div", "tx");
+    tx.appendChild(el("b", "", cust ? "Invoice " + v.id : (v.note || "Bill")));
+    tx.appendChild(el("span", v.paid ? "" : v.due < today() ? "bad" : "", v.paid ? "Paid " + niceY(v.paid) : lateTxt(v.due)));
+    r.appendChild(tx); r.appendChild(el("b", "num", baht(amt)));
+    r.appendChild(btn("pill soft act", "View", function(){ if (cust) openInvoice(v); else openBill(v); }));
+    rows.appendChild(r);
+  });
+  b.appendChild(rows);
+  b.appendChild(foot(btn("pill soft", "Close", closeGS), btn("pill acc", cust ? "New invoice" : "New bill", function(){ closeGS(); if (cust) startInvoiceFlow(); else startPayFlow(); })));
 }
 var CQ = {};
 /* ── morning brief ── */
@@ -2082,8 +2105,8 @@ function renderBrief(){
   // what needs a yes, most pressing first
   var urgent = [];
   if (p && !u.done["rev:" + p.key]) urgent.push({ ic: "i-chart", h: "Your " + p.name + " books are ready to sign off", p: "It is all on one page: " + baht(p.inc) + " in, " + baht(p.exp) + " out, " + baht(p.kept) + " kept.", btn: "Review", fn: openSheet, k: "rev" });
-  TK.filter(function(x){ return x.rank <= 3 && x.k.indexOf("rev") !== 0; }).forEach(function(x){ urgent.push({ ic: x.ic || "i-clock", h: x.story ? x.story.h : x.t, p: x.story ? x.story.p : (x.m || ""), btn: x.btn, fn: x.fn, k: x.k, amt: x.amt, late: x.late }); });
-  var top = urgent.slice(0, 5), restN = TK.filter(function(x){ return x.k.indexOf("rev") !== 0; }).length - top.filter(function(x){ return x.k !== "rev"; }).length;
+  TK.filter(function(x){ return (x.rank <= 3 || (x.due && diffDays(x.due, today()) <= 3)) && x.k.indexOf("rev") !== 0; }).forEach(function(x){ urgent.push({ ic: x.ic || "i-clock", h: x.story ? x.story.h : x.t, p: x.story ? x.story.p : (x.m || ""), btn: x.btn, fn: x.fn, k: x.k, amt: x.amt, late: x.late }); });
+  var top = urgent.slice(0, 6), restN = TK.filter(function(x){ return x.k.indexOf("rev") !== 0; }).length - top.filter(function(x){ return x.k !== "rev"; }).length;
 
   var wrap = el("div", "cf");
   var mast = el("div", "cf-mast"); mast.innerHTML = '<svg class="tg" width="30" height="31"><use href="#tg"/></svg>';
@@ -2139,13 +2162,6 @@ function renderBrief(){
     ns.slice(0, 4).forEach(function(s){ var r = el("div", "cf-note"); r.innerHTML = '<i><svg class="i"><use href="#i-trend"/></svg></i>'; r.appendChild(el("p", "", s)); ob.appendChild(r); });
     wrap.appendChild(ob);
   }
-
-  // 5. the week ahead
-  var ev = weekAhead(u, B).sort(function(a, b){ return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; });
-  var wk = card("Coming up", "The week ahead");
-  if (!ev.length) wk.appendChild(el("p", "cf-calm", "No bills, invoices or filings fall due in the next seven days."));
-  ev.forEach(function(e){ wk.appendChild(dayRow(e)); });
-  wrap.appendChild(wk);
 
   var end = el("div", "cf-end"); end.innerHTML = '<svg class="tg" width="26" height="27"><use href="#tg"/></svg>'; end.appendChild(el("p", "", "That is everything for today. Enjoy your coffee. Ask me anything below.")); wrap.appendChild(end);
   pg.appendChild(wrap);
@@ -2753,6 +2769,7 @@ var TH = {
   "No bills, invoices or filings fall due in the next seven days.": "เจ็ดวันข้างหน้าไม่มีบิล ใบแจ้งหนี้ หรือแบบภาษีที่ครบกำหนด",
   "PDF": "PDF", "Share": "แชร์", "Print": "พิมพ์", "A statement in the standard TFRS for NPAEs layout: revenue, cost of sales, gross profit, expenses, tax and net profit.": "งบตามรูปแบบมาตรฐาน TFRS for NPAEs: รายได้ ต้นทุนขาย กำไรขั้นต้น ค่าใช้จ่าย ภาษี และกำไรสุทธิ",
   "Sharing isn't available here, so I saved the PDF instead": "อุปกรณ์นี้แชร์ไม่ได้ หนูเลยบันทึกเป็น PDF ให้แทน",
+  "Customer": "ลูกค้า", "Supplier": "ซัพพลายเออร์", "Open": "ค้างอยู่", "Settled": "ชำระแล้ว", "New invoice": "ออกใบแจ้งหนี้ใหม่", "New bill": "เพิ่มบิลใหม่",
 };
 
 /* ── several companies under one sign-in ── */
@@ -2983,6 +3000,10 @@ var RULES = [
   [/^(\d{1,2} [A-Z][a-z]+(?: \d{4})?) to (\d{1,2} [A-Z][a-z]+(?: \d{4})?)$/, function(m){ return dates(m[1]) + " ถึง " + dates(m[2]); }],
   [/^(-?[\d.]+)% of money in$/, "$1% ของเงินเข้า"],
   [/^Saved (\S+\.pdf)$/, "บันทึก $1 แล้ว"],
+  [/^(\d+) customers? · (\d+) suppliers?$/, "ลูกค้า $1 ราย · ซัพพลายเออร์ $2 ราย"], [/^(Customers|Suppliers) (\d+)$/, function(m){ return (m[1] === "Customers" ? "ลูกค้า " : "ซัพพลายเออร์ ") + m[2]; }],
+  [/^(\d+) (invoices?|bills?) · (฿[\d,.]+) in total$/, function(m){ return (/^i/.test(m[2]) ? "ใบแจ้งหนี้ " : "บิล ") + m[1] + " ใบ · รวม " + m[3]; }],
+  [/^Paid (\d{1,2} [A-Z][a-z]{2} \d{4})$/, function(m){ return "จ่ายแล้ว " + dates(m[1]); }],
+  [/^(\d+) customers?$/, "ลูกค้า $1 ราย"], [/^(\d+) suppliers?$/, "ซัพพลายเออร์ $1 ราย"], [/^(฿[\d,.]+) in total$/, "รวม $1"],
 ];
 var TCACHE = {};
 function T(s){
