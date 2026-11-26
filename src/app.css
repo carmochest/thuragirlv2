@@ -463,11 +463,6 @@
   .pl-tv small{font:600 12px var(--font-display);color:var(--m-mute)}
   .pl-t.neg .pl-tv b{color:var(--m-bad)}
   @media (max-width:600px){ .plB{padding:14px;border-radius:24px} .pl-r{padding-left:21px} }
-  /* home: the week ahead */
-  .weekB{padding:20px;border-radius:28px;gap:0}
-  .weekB[hidden]{display:none}
-  .weekB .cardh{margin-bottom:6px}
-  @media (max-width:600px){ .weekB{padding:14px;border-radius:24px} }
   /* the morning brief, a calm read */
   .cf{display:grid;gap:16px;max-width:640px;width:100%;margin:0 auto;padding:8px 0 18px}
   .cf-mast{display:flex;align-items:center;gap:12px;padding:6px 4px 0}

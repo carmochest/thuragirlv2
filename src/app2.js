@@ -115,7 +115,7 @@ function paintSetup(){
 function paintHome(){
   var u = me();
   if (u.hasData && !(u.tx && u.tx.length)){ u.hasData = false; save(); $("#app").classList.add("nodata"); }
-  autoRecords(u); paintSetup(); paintBanks(); paintHero(u); paintNeeds(u); paintWeek(u); setCount(); paintEmpty(u);
+  autoRecords(u); paintSetup(); paintBanks(); paintHero(u); paintNeeds(u); setCount(); paintEmpty(u);
 }
 function openSetupTask(){ var u = me(); if (u.path === "new") go("register"); else openSetup(); }
 

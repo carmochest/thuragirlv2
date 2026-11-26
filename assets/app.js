@@ -391,7 +391,7 @@ function paintSetup(){
 function paintHome(){
   var u = me();
   if (u.hasData && !(u.tx && u.tx.length)){ u.hasData = false; save(); $("#app").classList.add("nodata"); }
-  autoRecords(u); paintSetup(); paintBanks(); paintHero(u); paintNeeds(u); paintWeek(u); setCount(); paintEmpty(u);
+  autoRecords(u); paintSetup(); paintBanks(); paintHero(u); paintNeeds(u); setCount(); paintEmpty(u);
 }
 function openSetupTask(){ var u = me(); if (u.path === "new") go("register"); else openSetup(); }
 
@@ -2155,19 +2155,6 @@ function dayRow(e){
   var dd = day(e[0]), r = el("div", "pb-row"), dy = el("span", "pb-day");
   dy.appendChild(el("small", "", e[0] === today() ? "Today" : dd.toLocaleDateString("en-GB", { weekday: "short" }))); dy.appendChild(el("b", "num", String(dd.getDate()))); r.appendChild(dy);
   r.appendChild(el("span", "pb-rt", e[1])); r.appendChild(el("b", "num pb-v " + e[3], (e[3] === "in" ? "+" : "−") + e[2])); return r;
-}
-/* home borrows the week ahead from the brief */
-function paintWeek(u){
-  var B = books(u), host = $("#b-week"), needs = $(".needB");
-  if (!host && needs){ host = el("section", "card weekB"); host.id = "b-week"; host.setAttribute("aria-label", "The week ahead"); needs.parentNode.insertBefore(host, needs.nextSibling); }
-  if (!host) return; host.textContent = "";
-  if (!B){ host.hidden = true; return; }
-  var ev = weekAhead(u, B).sort(function(a, b){ return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; });
-  host.hidden = !ev.length; if (!ev.length) return;
-  var h = el("div", "cardh"); h.appendChild(el("h2", "", "The week ahead"));
-  var tin = 0, tout = 0; ev.forEach(function(e){ var v = +String(e[2]).replace(/[^\d.]/g, ""); if (e[3] === "in") tin += v; else tout += v; });
-  h.appendChild(el("div", "sub", (tin ? "+" + baht(tin) + " in" : "") + (tin && tout ? " · " : "") + (tout ? "−" + baht(tout) + " out" : ""))); host.appendChild(h);
-  ev.slice(0, 5).forEach(function(e){ host.appendChild(dayRow(e)); });
 }
 /* ── guided chat: ThuraGirl asks, the owner answers by typing, talking or tapping ── */
 function popOpts(list){
