@@ -191,6 +191,10 @@
   .codes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .codes code{font:700 14px var(--num);background:var(--soft);border-radius:10px;padding:8px;text-align:center}
   @media (max-width:900px){ .per select{padding:8px 30px 8px 12px} .gf.row{grid-template-columns:1fr} .gf.row .btn{width:100%} .assign select{max-width:none;flex:1} }
+  /* EN / ไทย switch */
+  .lng{position:fixed;left:14px;bottom:14px;z-index:70;display:inline-flex;background:var(--surface);border-radius:99px;padding:3px;box-shadow:0 0 0 1px var(--line),0 6px 18px -8px rgba(0,0,0,.2)}
+  .lng button{border:0;background:none;color:var(--mute);font:700 12px var(--font);height:28px;padding:0 11px;border-radius:99px;cursor:pointer}
+  .lng button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">

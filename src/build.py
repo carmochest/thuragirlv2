@@ -96,6 +96,7 @@ shutil.copy(os.path.join(HERE, "sample-kbank-statement.csv"), os.path.join(ROOT,
 write("signup/index.html", page("signup", "Sign up · ThuraGirl"))
 write("dashboard/index.html", page("dashboard", "Dashboard · ThuraGirl"))
 aud = read("auditor.html")
+aud = aud.rstrip() + "\n<script>\n" + read("aud-th.js") + "</script>\n"
 aud_title = re.search(r"<title>(.*?)</title>", aud).group(1)
 aud = re.sub(r"<title>.*?</title>\s*<meta name=\"claude:viewport-fit-sides\"[^>]*>\s*<link rel=\"stylesheet\" href=\"([^\"]+)\">", "", aud, count=1, flags=re.S)
 aud_fonts = re.search(r'family=DM\+Sans[^"]+', read("auditor.html")).group(0)
