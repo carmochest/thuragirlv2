@@ -52,10 +52,19 @@ function renderBrief(){
   var tr = el("div", "mb-top"), dt = el("div", "mb-dt");
   dt.appendChild(NI(el("small", "", th ? now.toLocaleDateString("th-TH", { weekday: "short" }) : now.toLocaleDateString("en-GB", { weekday: "short" }).toUpperCase())));
   dt.appendChild(el("b", "num", String(now.getDate()))); tr.appendChild(dt);
-  var tt = el("div", "mb-tt"); tt.appendChild(el("span", "mb-name", "The Morning Brief")); tt.appendChild(NI(el("span", "mb-meta", (th ? mth(MONTH[now.getMonth()]) + " " + (now.getFullYear() + 543) : MONTH[now.getMonth()] + " " + now.getFullYear()) + L(" · 5 min read", " · อ่าน 5 นาที")))); tr.appendChild(tt);
+  var tt = el("div", "mb-tt"); tt.appendChild(el("span", "mb-name", "The Morning Brief")); tt.appendChild(NI(el("span", "mb-meta", (th ? mth(MONTH[now.getMonth()]) + " " + (now.getFullYear() + 543) : MONTH[now.getMonth()] + " " + now.getFullYear()) + L(" · 2 min read", " · อ่าน 2 นาที")))); tr.appendChild(tt);
   tr.insertAdjacentHTML("beforeend", '<svg class="tg mb-logo" width="40" height="42"><use href="#tg"/></svg>');
   hero.appendChild(tr);
-  hero.appendChild(NI(el("p", "mb-hi", (hr < 12 ? L("Good morning, ", "อรุณสวัสดิ์ คุณ ") : hr < 18 ? L("Good afternoon, ", "สวัสดีตอนบ่าย คุณ ") : L("Good evening, ", "สวัสดีตอนเย็น คุณ ")) + nm)));
+  // one greeting and one sign-off per day, picked from a pool, so it isn't the same line every morning
+  var seed = 0, dk = iso(now); for (var si = 0; si < dk.length; si++) seed = (seed * 31 + dk.charCodeAt(si)) >>> 0;
+  function pick(a, o){ return a[(seed + (o || 0)) % a.length]; }
+  var wd = now.getDay(), part = hr < 12 ? 0 : hr < 18 ? 1 : 2;
+  var GREET = [
+    [["Good morning, ", "อรุณสวัสดิ์ คุณ "], ["Morning, ", "สวัสดีตอนเช้า คุณ "], ["Hello again, ", "สวัสดีอีกครั้ง คุณ "], ["Rise and shine, ", "ตื่นมาสดใสนะคะ คุณ "], ["Hi there, ", "สวัสดีค่ะ คุณ "]],
+    [["Good afternoon, ", "สวัสดีตอนบ่าย คุณ "], ["Hello, ", "สวัสดีค่ะ คุณ "], ["Afternoon, ", "บ่ายนี้เป็นไงบ้างคะ คุณ "], ["Welcome back, ", "ยินดีต้อนรับกลับมา คุณ "]],
+    [["Good evening, ", "สวัสดีตอนเย็น คุณ "], ["Evening, ", "เย็นนี้เป็นไงบ้างคะ คุณ "], ["Hello, ", "สวัสดีค่ะ คุณ "], ["Still at it, ", "ยังทำงานอยู่เลยนะคะ คุณ "]]][part];
+  var gr = wd === 1 && part === 0 && seed % 2 ? ["Happy Monday, ", "สุขสันต์วันจันทร์ คุณ "] : wd === 5 && seed % 2 ? ["Happy Friday, ", "สุขสันต์วันศุกร์ คุณ "] : pick(GREET);
+  hero.appendChild(NI(el("p", "mb-hi", L(gr[0], gr[1]) + nm)));
   var hl = NI(el("h1", "mb-hl"));
   hl.innerHTML = L("You have <em>" + esc(shortB(B.cash)) + "</em> in the bank" + (top.length ? ", and <em>" + top.length + (top.length === 1 ? " thing" : " things") + "</em> need" + (top.length === 1 ? "s" : "") + " you today." : ", and nothing needs you today."),
     "มีเงินในบัญชี <em>" + esc(shortB(B.cash)) + "</em> " + (top.length ? "และวันนี้มี <em>" + top.length + " เรื่อง</em>รอคุณอยู่" : "และวันนี้ไม่มีอะไรรอคุณ"));
@@ -139,7 +148,22 @@ function renderBrief(){
 
   // ── sign-off
   var end = el("div", "mb-end"); end.innerHTML = '<svg class="tg" width="44" height="46"><use href="#tg"/></svg>';
-  end.appendChild(NI(el("p", "mb-sign", L("That's all for today. Enjoy your coffee, " + nm + ".", "วันนี้มีแค่นี้ ดื่มกาแฟให้อร่อยนะคะ คุณ " + nm))));
+  var BYE = [
+    ["That's all for today. Enjoy your coffee, {n}.", "วันนี้มีแค่นี้ ดื่มกาแฟให้อร่อยนะคะ คุณ {n}"],
+    ["That's everything. Go get them, {n}.", "ครบแล้วค่ะ ลุยเลยนะคะ คุณ {n}"],
+    ["All caught up. Have a lovely day, {n}.", "ตามทันหมดแล้ว ขอให้เป็นวันที่ดีนะคะ คุณ {n}"],
+    ["The books are in good hands. Off you go, {n}.", "บัญชีอยู่ในมือหนูแล้ว ไปทำงานได้เลยค่ะ คุณ {n}"],
+    ["That's the lot. I'll keep an eye on things, {n}.", "หมดแล้วค่ะ เดี๋ยวหนูคอยดูให้นะคะ คุณ {n}"],
+    ["Done for now. Take a breath, {n}.", "เท่านี้ก่อนค่ะ พักหายใจสักนิดนะคะ คุณ {n}"],
+    ["You're all set. Make it a good one, {n}.", "พร้อมแล้วค่ะ ขอให้วันนี้ดีนะคะ คุณ {n}"]];
+  var bye = wd === 1 ? ["That's your week started. Have a good one, {n}.", "เริ่มต้นสัปดาห์เรียบร้อย ขอให้เป็นสัปดาห์ที่ดีนะคะ คุณ {n}"]
+    : wd === 5 ? ["That's all for today. Have a lovely weekend, {n}.", "วันนี้มีแค่นี้ ขอให้สุดสัปดาห์นี้สบาย ๆ นะคะ คุณ {n}"]
+    : wd === 0 || wd === 6 ? ["That's all. Enjoy the rest of your weekend, {n}.", "เท่านี้ค่ะ พักผ่อนสุดสัปดาห์ให้เต็มที่นะคะ คุณ {n}"]
+    : part === 2 ? ["That's all for today. Get some rest, {n}.", "วันนี้มีแค่นี้ พักผ่อนเยอะ ๆ นะคะ คุณ {n}"]
+    : !top.length ? ["Nothing needs you today. Enjoy the quiet, {n}.", "วันนี้ไม่มีอะไรต้องทำ สบาย ๆ นะคะ คุณ {n}"]
+    : F.d != null && F.d > 10 && K > 0 && seed % 2 ? ["A strong month so far. Keep it going, {n}.", "เดือนนี้ไปได้สวย ไปต่อเลยค่ะ คุณ {n}"]
+    : pick(BYE, 3);
+  end.appendChild(NI(el("p", "mb-sign", L(bye[0], bye[1]).replace("{n}", nm))));
   end.appendChild(el("p", "mb-by", "ThuraGirl, your bookkeeper. Ask me anything below."));
   wrap.appendChild(end);
   pg.appendChild(wrap);
