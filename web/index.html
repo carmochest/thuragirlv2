@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ThuraGirl · The AI bookkeeper for Thai small business</title>
-<meta name="description" content="ThuraGirl reads your bank statements, keeps your books, prepares VAT, withholding tax and social security, and tells you each morning what needs you.">
+<title>ThuraGirl · The AI bookkeeper for Thai small businesses</title>
+<meta name="description" content="ThuraGirl reads your bank statements, keeps your books and prepares VAT, withholding tax and social security. Each morning she tells you what needs your yes.">
 <meta property="og:title" content="ThuraGirl · Your books, done. You just say yes.">
-<meta property="og:description" content="The AI bookkeeper for Thai small business. Cash at a glance, a morning brief, and month-end on one page.">
+<meta property="og:description" content="The AI bookkeeper for Thai small businesses: a five-minute Morning Brief, invoices by chat, and month-end on one page.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="img/home-desk-day.webp">
 <meta name="theme-color" content="#F4F5F5" media="(prefers-color-scheme: light)">
@@ -168,9 +168,6 @@
   .feat-vis{position:relative;display:grid;place-items:center;padding:56px 24px;border-radius:40px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
   .feat-vis::before{content:"";position:absolute;inset:auto -20% -40%;height:70%;background:radial-gradient(50% 50% at 50% 50%,color-mix(in srgb,var(--accent) 18%,transparent),transparent 70%)}
   .feat-vis .phone{width:min(76%,300px)}
-  .pts{list-style:none;padding:0;margin-top:28px;display:grid;gap:14px}
-  .pts li{display:flex;gap:12px;align-items:flex-start;font-weight:600}
-  .pts .i{width:22px;height:22px;padding:3px;border-radius:50%;background:var(--tint);color:var(--hint);stroke-width:2;margin-top:1px}
   @media (max-width:860px){
     .sec{padding:80px 0}
     .feat{grid-template-columns:1fr;gap:36px}
@@ -180,69 +177,28 @@
   }
 
   /* ── bento ── */
-  .bento{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-top:56px}
+  .bento{display:grid;grid-template-columns:1.15fr 1fr 1fr;grid-auto-rows:auto;gap:16px;margin-top:56px}
+  .bento .tallc{grid-row:span 2}
+  @media (max-width:960px){ .bento{grid-template-columns:1fr 1fr} .bento .tallc{grid-row:auto;grid-column:span 2} }
+  @media (max-width:640px){ .bento{grid-template-columns:1fr} .bento .tallc{grid-column:auto} .card{padding:26px} }
+  .step{display:inline-flex;align-items:center;gap:10px;font:700 12.5px var(--num);letter-spacing:.14em;text-transform:uppercase;color:var(--hint)}
+  .step b{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--tint);color:var(--hint);font:700 13px var(--num);letter-spacing:0}
+  html[lang="th"] .step{letter-spacing:.02em;font-size:14px}
+  .head-c+.feat{margin-top:72px}
   .card{position:relative;background:var(--surface);border-radius:var(--r);box-shadow:inset 0 0 0 1px var(--line);padding:30px;overflow:hidden;display:flex;flex-direction:column}
   .card h3{font-size:22px;font-weight:800;letter-spacing:-.035em;line-height:1.15}
   .card p{color:var(--mute);margin-top:8px;font-size:15.5px}
   .card .ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--tint);color:var(--hint);margin-bottom:18px}
   .card .ic .i{width:22px;height:22px}
-  .s3{grid-column:span 3} .s2{grid-column:span 2} .s4{grid-column:span 4}
-  .card .shot{margin:28px auto -30px;width:min(82%,300px);border-radius:30px 30px 0 0;overflow:hidden;box-shadow:0 0 0 8px var(--frame),var(--shadow)}
+  .card .shot{margin:auto auto -30px;width:min(82%,300px);border-radius:30px 30px 0 0;overflow:hidden;box-shadow:0 0 0 8px var(--frame),var(--shadow)}
   .card .shot img{aspect-ratio:390/600;object-fit:cover;object-position:top;width:100%}
-  .card .shot.mid img{object-position:50% 100%}
-  .tall{min-height:100%}
   .art{margin-top:auto}
   .card>p{margin-bottom:26px}
-  @media (max-width:960px){ .bento{grid-template-columns:1fr 1fr} .s3,.s2,.s4{grid-column:span 1} .wide-m{grid-column:span 2} }
-  @media (max-width:640px){ .bento{grid-template-columns:1fr} .wide-m{grid-column:span 1} .card{padding:26px} }
 
-  /* little illustrations, drawn in markup */
-  .inv{background:var(--soft);border-radius:20px;padding:18px;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}
-  .inv .l b{display:block;font-size:13px;color:var(--mute);font-weight:700}
-  .inv .l strong{display:block;font:700 26px var(--num);letter-spacing:-.02em;margin-top:2px}
-  .inv .l span{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:12.5px;font-weight:700;color:var(--hint);background:var(--tint);padding:4px 10px;border-radius:999px}
-  .inv .l span .i{width:14px;height:14px;stroke-width:2}
-  .qr{width:92px;height:92px;padding:8px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px var(--line)}
-  .qr svg{width:100%;height:100%;display:block}
-  .tax{display:grid;gap:8px}
-  .tax div{display:flex;align-items:center;gap:12px;background:var(--soft);border-radius:16px;padding:12px 14px}
-  .tax b{font-size:14.5px;font-weight:700;letter-spacing:-.01em}
-  .tax small{display:block;font-size:12.5px;color:var(--mute);font-weight:600}
-  .tax em{margin-left:auto;font-style:normal;font-size:12px;font-weight:800;padding:5px 10px;border-radius:999px;background:var(--surface);color:var(--mute);white-space:nowrap}
-  .tax em.ok{background:var(--tint);color:var(--hint)}
-  .tax .d{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:var(--surface);color:var(--hint);flex:none}
-  .tax .d .i{width:18px;height:18px}
-  .steps{display:grid;gap:0;position:relative}
-  .steps div{display:flex;align-items:center;gap:12px;padding:9px 0;font-weight:700;font-size:14.5px}
-  .steps i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--soft);color:var(--mute);font:700 12px var(--num);font-style:normal;position:relative;z-index:1}
-  .steps i.on{background:var(--accent);color:var(--accent-ink)}
-  .steps i .i{width:15px;height:15px;stroke-width:2.2}
-  .steps::before{content:"";position:absolute;left:12.5px;top:20px;bottom:20px;width:1.5px;background:var(--line)}
-  .steps span.muted{color:var(--mute)}
-  .aud{display:flex;align-items:center;gap:14px;background:var(--soft);border-radius:20px;padding:16px}
-  .aud .av{width:48px;height:48px;border-radius:50%;background:var(--surface);display:grid;place-items:center;color:var(--hint);flex:none}
-  .aud b{display:block;font-size:15px;font-weight:800;letter-spacing:-.01em}
-  .aud small{display:block;color:var(--mute);font-size:13px;font-weight:600}
-  .aud em{margin-left:auto;font-style:normal;font-size:12px;font-weight:800;padding:5px 10px;border-radius:999px;background:var(--tint);color:var(--hint)}
 
-  /* ── day / night compare ── */
-  .dn{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
-  .cmp{position:relative;width:min(100%,340px);margin:0 auto;border-radius:46px;padding:9px;background:var(--frame);box-shadow:var(--shadow);user-select:none;-webkit-user-select:none;touch-action:pan-y}
-  .cmp .vp{position:relative;border-radius:37px;overflow:hidden;aspect-ratio:390/844}
-  .cmp .vp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
-  .cmp .vp img.top{clip-path:inset(0 calc(100% - var(--x,50%)) 0 0)}
-  .cmp .line{position:absolute;top:0;bottom:0;left:var(--x,50%);width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.15);pointer-events:none}
-  .cmp .knob{position:absolute;top:50%;left:var(--x,50%);width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:#fff;color:#0F1514;display:grid;place-items:center;box-shadow:0 6px 20px rgba(0,0,0,.25);pointer-events:none}
-  .cmp .knob .i{width:22px;height:22px}
-  .cmp input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0}
-  .cmp input:focus-visible+.knob{outline:3px solid var(--accent);outline-offset:3px}
-  .cmp .tag{position:absolute;top:58px;font:700 11px var(--num);letter-spacing:.12em;text-transform:uppercase;padding:5px 10px;border-radius:999px;pointer-events:none}
-  .cmp .tag.l{left:22px;background:rgba(255,255,255,.9);color:#0F1514}
-  .cmp .tag.r{right:22px;background:rgba(15,21,20,.85);color:#F1F4F3}
-  @media (max-width:860px){ .dn{grid-template-columns:1fr;gap:40px} }
 
   /* ── how it works ── */
-  .how{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:56px;counter-reset:s}
+  .how{padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:56px;counter-reset:s}
   .how li{list-style:none;background:var(--surface);border-radius:var(--r);box-shadow:inset 0 0 0 1px var(--line);padding:30px}
   .how .n{font:400 64px/1 var(--serif);color:var(--hint);display:block}
   .how h3{font-size:21px;font-weight:800;letter-spacing:-.03em;margin-top:22px}
@@ -250,13 +206,6 @@
   .how ol{padding:0}
   @media (max-width:860px){ .how{grid-template-columns:1fr} }
 
-  /* ── trust strip ── */
-  .trust{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:64px;padding-top:40px;border-top:1px solid var(--line)}
-  .trust div{display:flex;gap:14px}
-  .trust .i{width:24px;height:24px;color:var(--hint);margin-top:2px}
-  .trust b{display:block;font-weight:800;letter-spacing:-.02em}
-  .trust p{color:var(--mute);font-size:15px;margin-top:4px}
-  @media (max-width:860px){ .trust{grid-template-columns:1fr;gap:24px} }
 
   /* ── pricing ── */
   .plans{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:900px;margin:56px auto 0}
@@ -269,7 +218,6 @@
   .price{display:flex;align-items:baseline;gap:6px;margin-top:26px}
   .price strong{font:700 52px/1 var(--num);letter-spacing:-.04em}
   .price span{color:var(--mute);font-weight:600}
-  .tbd{display:inline-block;margin-top:8px;font-size:13px;font-weight:700;color:var(--mute);background:var(--soft);padding:4px 10px;border-radius:999px}
   .plan ul{list-style:none;padding:0;margin:26px 0 30px;display:grid;gap:12px}
   .plan li{display:flex;gap:11px;font-weight:600;font-size:15.5px}
   .plan li .i{width:20px;height:20px;color:var(--hint);stroke-width:2;margin-top:2px}
@@ -360,6 +308,8 @@
 <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2.5"/><path d="M8.5 10.500v-3a3.500 3.500 0 0 1 7 0v3"/></symbol>
 <symbol id="i-chart" viewBox="0 0 24 24"><path d="M5 19.5v-7m7 7v-15m7 15v-10"/></symbol>
 <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M6.5 3.5h11v17l-2.75-1.6L12 20.5l-2.75-1.6L6.5 20.5z"/><path d="M9.5 8.5h5m-5 3.5h5"/></symbol>
+<symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m11 12 8.500-8.500M16 6.500l2.500 2.500M14 8.500l2 2"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16.500V11a6 6 0 0 1 12 0v5.500l1.500 2h-15z"/><path d="M10 20.500a2 2 0 0 0 4 0"/></symbol>
 <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2m0 15v2M4.6 4.6l1.4 1.4m12 12 1.4 1.4M2.5 12h2m15 0h2M4.6 19.4 6 18m12-12 1.4-1.4"/></symbol>
 <symbol id="i-moon" viewBox="0 0 24 24"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/></symbol>
 <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4.5 8h15M4.5 16h15"/></symbol>
@@ -377,8 +327,7 @@
   <div class="wrap nav-in">
     <a class="logo" href="#top" aria-label="ThuraGirl home"><svg class="tg" width="32" height="33" aria-hidden="true"><use href="#tg"/></svg><span>thuragirl<i>.</i></span></a>
     <nav class="links" aria-label="Main">
-      <a href="#features" data-i18n="n.f">Features</a>
-      <a href="#how" data-i18n="n.h">How it works</a>
+      <a href="#features" data-i18n="n.h">How it works</a>
       <a href="#pricing" data-i18n="n.p">Pricing</a>
       <a href="#faq" data-i18n="n.q">FAQ</a>
     </nav>
@@ -396,8 +345,7 @@
     </div>
   </div>
   <div class="drawer" id="drawer">
-    <a href="#features" data-i18n="n.f">Features</a>
-    <a href="#how" data-i18n="n.h">How it works</a>
+    <a href="#features" data-i18n="n.h">How it works</a>
     <a href="#pricing" data-i18n="n.p">Pricing</a>
     <a href="#faq" data-i18n="n.q">FAQ</a>
     <a href="../signup/#/login" data-i18n="n.in">Sign in</a>
@@ -408,27 +356,27 @@
 <main id="main">
   <section class="hero" id="top">
     <div class="wrap">
-      <span class="kicker rv"><b data-i18n="h.new">NEW</b><span data-i18n="h.kicker">The AI bookkeeper for Thai small business</span></span>
+      <span class="kicker rv"><b data-i18n="h.new">NEW</b><span data-i18n="h.kicker">The AI bookkeeper for Thai small businesses</span></span>
       <h1 class="rv" data-i18n="h.t">Your books, done. <em>You just say yes.</em></h1>
-      <p class="lede rv" data-i18n="h.sub">ThuraGirl reads your bank statements, keeps your books and gets your taxes ready. Each morning she tells you what needs you, and nothing else.</p>
+      <p class="lede rv" data-i18n="h.sub">ThuraGirl reads your bank statements, keeps your books and prepares your taxes. You step in only when something needs your yes.</p>
       <div class="ctas rv">
         <a class="btn btn-acc" href="../signup/"><span data-i18n="h.cta1">Get started</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-        <a class="btn btn-soft" href="#how" data-i18n="h.cta2">See how it works</a>
+        <a class="btn btn-soft" href="#features" data-i18n="h.cta2">See how it works</a>
       </div>
-      <p class="fine rv"><span data-i18n="h.f1">Sign up in under a minute</span><span data-i18n="h.f2">Phone or computer</span></p>
+      <p class="fine rv"><span data-i18n="h.f1">Sign up in a minute</span><span data-i18n="h.f2">Thai or English</span><span data-i18n="h.f3">Phone or computer</span></p>
 
       <div class="stage rv">
         <div class="browser">
           <div class="bar" aria-hidden="true"><i></i><i></i><i></i><span><svg class="i"><use href="#i-lock"/></svg>thuragirl</span></div>
-          <img class="sd" src="img/home-desk-day.webp" width="1600" height="1000" alt="The ThuraGirl home screen on a computer: cash on hand, a 30-day cash line, and this month's revenue, expenses and profit." fetchpriority="high">
-          <img class="sn" src="img/home-desk-night.webp" width="1600" height="1000" alt="The ThuraGirl home screen on a computer, in night mode." loading="lazy">
+          <img class="sd" src="img/home-desk-day.webp" width="1600" height="1000" alt="ThuraGirl Home on a computer: cash on hand, a 30-day cash line, and this month's revenue, expenses and profit." fetchpriority="high">
+          <img class="sn" src="img/home-desk-night.webp" width="1600" height="1000" alt="ThuraGirl Home on a computer, in night mode." loading="lazy">
         </div>
         <div class="phone">
-          <img class="sd" src="img/money-phone-day.webp" width="780" height="1688" alt="Money on a phone: profit this month and money in and out by week.">
-          <img class="sn" src="img/money-phone-night.webp" width="780" height="1688" alt="Money on a phone, in night mode." loading="lazy">
+          <img class="sd" src="img/brief-phone-day.webp" width="780" height="1688" alt="The Morning Brief on a phone: Good morning, Nok, with a short summary of the business.">
+          <img class="sn" src="img/brief-phone-night.webp" width="780" height="1688" alt="The Morning Brief on a phone, in night mode." loading="lazy">
         </div>
-        <div class="chip c1" aria-hidden="true"><span class="ic"><svg class="i"><use href="#i-check"/></svg></span><div><b data-i18n="c1.b">607 bank lines sorted</b><small data-i18n="c1.s">Done for you overnight</small></div></div>
-        <div class="chip c2" aria-hidden="true"><span class="ic"><svg class="i"><use href="#i-receipt"/></svg></span><div><b data-i18n="c2.b">VAT return ready</b><small data-i18n="c2.s">Waiting for your yes</small></div></div>
+        <div class="chip c1" aria-hidden="true"><span class="ic"><svg class="i"><use href="#i-check"/></svg></span><div><b data-i18n="c1.b">686 bank lines sorted</b><small data-i18n="c1.s">Done while you were busy</small></div></div>
+        <div class="chip c2" aria-hidden="true"><span class="ic"><svg class="i"><use href="#i-receipt"/></svg></span><div><b data-i18n="c2.b">October books are ready</b><small data-i18n="c2.s">Waiting for your yes</small></div></div>
       </div>
     </div>
   </section>
@@ -448,57 +396,62 @@
 
   <section class="sec" id="features">
     <div class="wrap">
-      <div class="feat">
+      <div class="head-c rv">
+        <span class="eyebrow" data-i18n="s.k">A day with ThuraGirl</span>
+        <h2 data-i18n="s.h">Less paperwork. <em>More business.</em></h2>
+      </div>
+
+      <div class="feat story">
         <div class="feat-tx rv">
-          <span class="eyebrow"><svg class="i" aria-hidden="true"><use href="#i-chart"/></svg><span data-i18n="f1.k">Home</span></span>
-          <h2 data-i18n="f1.h">Every baht, <em>at a glance.</em></h2>
-          <p class="sub" data-i18n="f1.p">Cash on hand, the last 30 days as one clean line, and this month's revenue, expenses and profit. Upload a bank statement and it all fills itself in.</p>
-          <ul class="pts">
-            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f1.1">Statements from any Thai bank, as CSV or Excel</span></li>
-            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f1.2">Upload, invoice and pay from the same screen</span></li>
-            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f1.3">A short list of what needs you, and nothing else</span></li>
-          </ul>
+          <span class="step"><b>1</b><span data-i18n="f1.k">Morning</span></span>
+          <h2 data-i18n="f1.h">Start the day with coffee, <em>not spreadsheets.</em></h2>
+          <p class="sub" data-i18n="f1.p">Your Morning Brief is a five-minute read: where your money stands, what needs your yes, and what ThuraGirl has already taken care of.</p>
         </div>
         <div class="feat-vis rv">
           <div class="phone">
-            <img class="sd" src="img/home-phone-day.webp" width="780" height="1688" alt="Home on a phone: cash on hand of 2,591,140 baht, up 19 percent this month." loading="lazy">
-            <img class="sn" src="img/home-phone-night.webp" width="780" height="1688" alt="Home on a phone, in night mode." loading="lazy">
+            <img class="sd" src="img/brief-phone-day.webp" width="780" height="1688" alt="The Morning Brief: Good morning, Nok. Here's the gist." loading="lazy">
+            <img class="sn" src="img/brief-phone-night.webp" width="780" height="1688" alt="The Morning Brief, in night mode." loading="lazy">
           </div>
         </div>
       </div>
 
       <div class="feat flip">
         <div class="feat-tx rv">
-          <span class="eyebrow"><svg class="i" aria-hidden="true"><use href="#i-news"/></svg><span data-i18n="f2.k">Morning Brief</span></span>
-          <h2 data-i18n="f2.h">A morning paper about <em>your</em> business.</h2>
-          <p class="sub" data-i18n="f2.p">Each morning ThuraGirl writes you a one-minute front page: how your cash moved, what needs your yes, and what she already took care of.</p>
-          <ul class="pts">
-            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f2.1">Tasks written as short stories, with one clear button each</span></li>
-            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f2.2">Late invoices come with a polite reminder ready to send</span></li>
-            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f2.3">What can wait stays out of your way</span></li>
-          </ul>
+          <span class="step"><b>2</b><span data-i18n="f2.k">During the day</span></span>
+          <h2 data-i18n="f2.h">Invoice or pay <em>by typing a name.</em></h2>
+          <p class="sub" data-i18n="f2.p">Tap Invoice or Pay and answer a few short questions in chat: who, what and how much. ThuraGirl adds the VAT and the due date, and turns a supplier's PromptPay ID into a QR code you can scan.</p>
         </div>
         <div class="feat-vis rv">
           <div class="phone">
-            <img class="sd" src="img/brief-phone-day.webp" width="780" height="1688" alt="The Morning Brief headline: Cash is up 19 percent. Three things need your yes." loading="lazy">
-            <img class="sn" src="img/brief-phone-night.webp" width="780" height="1688" alt="The Morning Brief, in night mode." loading="lazy">
+            <img class="sd" src="img/invoice-phone-day.webp" width="780" height="1688" alt="Making an invoice in chat: Sukhumvit Catering, catering for 80 guests, 48,150 baht with VAT. Shall I create it?" loading="lazy">
+            <img class="sn" src="img/invoice-phone-night.webp" width="780" height="1688" alt="Making an invoice in chat, in night mode." loading="lazy">
           </div>
         </div>
       </div>
 
       <div class="feat">
         <div class="feat-tx rv">
-          <span class="eyebrow"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f3.k">Month-end</span></span>
-          <h2 data-i18n="f3.h">Close the month <em>in one tick.</em></h2>
-          <p class="sub" data-i18n="f3.p">When a month ends, it lands on one page: money in, money out, profit, tax to set aside and anything still missing. Look it over, tick the box, approve.</p>
-          <ul class="pts">
-            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f3.1">No sub-tabs, no jargon, no spreadsheets</span></li>
-            <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="f3.2">Not sure about a number? Ask ThuraGirl right there</span></li>
-          </ul>
+          <span class="step"><b>3</b><span data-i18n="f3.k">Any time</span></span>
+          <h2 data-i18n="f3.h">Know where you stand, <em>in plain words.</em></h2>
+          <p class="sub" data-i18n="f3.p">Finance shows your profit, money in and out, who owes you and who you owe. Export your profit and loss as a PDF in the standard TFRS for NPAEs layout, then share or print it.</p>
         </div>
         <div class="feat-vis rv">
           <div class="phone">
-            <img class="sd" src="img/review-phone-day.webp" width="780" height="1688" alt="The monthly Review Pack: October on one page, with money in, money out, profit and an Approve button." loading="lazy">
+            <img class="sd" src="img/pl-phone-day.webp" width="780" height="1688" alt="A profit and loss card: money in, money out and profit, with PDF, Share and Print buttons." loading="lazy">
+            <img class="sn" src="img/pl-phone-night.webp" width="780" height="1688" alt="The profit and loss card, in night mode." loading="lazy">
+          </div>
+        </div>
+      </div>
+
+      <div class="feat flip">
+        <div class="feat-tx rv">
+          <span class="step"><b>4</b><span data-i18n="f4.k">Month-end</span></span>
+          <h2 data-i18n="f4.h">Close the month <em>in one tick.</em></h2>
+          <p class="sub" data-i18n="f4.p">The whole month lands on one page. Check it, tick the box and approve. Nothing is filed until you say yes.</p>
+        </div>
+        <div class="feat-vis rv">
+          <div class="phone">
+            <img class="sd" src="img/review-phone-day.webp" width="780" height="1688" alt="The monthly Review Pack: October on one page, with an Approve button." loading="lazy">
             <img class="sn" src="img/review-phone-night.webp" width="780" height="1688" alt="The monthly Review Pack, in night mode." loading="lazy">
           </div>
         </div>
@@ -509,122 +462,60 @@
   <section class="sec" style="padding-top:0" aria-labelledby="more-h">
     <div class="wrap">
       <div class="head-c rv">
-        <span class="eyebrow" data-i18n="b.k">Everything else</span>
-        <h2 id="more-h" data-i18n="b.h">The whole back office, <em>handled.</em></h2>
-        <p class="sub" data-i18n="b.sub">Everything you used to chase an accounting firm for, in one calm app.</p>
+        <span class="eyebrow" data-i18n="b.k">Built around you</span>
+        <h2 id="more-h" data-i18n="b.h">Works the way <em>you work.</em></h2>
       </div>
       <div class="bento">
-        <article class="card s3 wide-m rv">
-          <span class="ic"><svg class="i" aria-hidden="true"><use href="#i-mic"/></svg></span>
-          <h3 data-i18n="b1.h">Ask like you'd ask a colleague.</h3>
-          <p data-i18n="b1.p">“What's overdue?” “Where did the money go?” Type it or say it, and get a straight answer from your own books.</p>
-          <div class="shot mid"><img class="sd" src="img/chat-phone-day.webp" width="780" height="1688" alt="ThuraGirl answering “What's overdue?” with three late items and amounts." loading="lazy"><img class="sn" src="img/chat-phone-night.webp" width="780" height="1688" alt="ThuraGirl chat answer, in night mode." loading="lazy"></div>
-        </article>
-        <article class="card s3 wide-m rv">
-          <span class="ic"><svg class="i" aria-hidden="true"><use href="#i-chart"/></svg></span>
-          <h3 data-i18n="b2.h">See where it comes from, and where it goes.</h3>
-          <p data-i18n="b2.p">Money in and out by month, quarter or year. Who owes you, and who you owe.</p>
-          <div class="shot"><img class="sd" src="img/money-phone-day.webp" width="780" height="1688" alt="Money: profit this month and a bar chart of money in and out by week." loading="lazy"><img class="sn" src="img/money-phone-night.webp" width="780" height="1688" alt="Money, in night mode." loading="lazy"></div>
-        </article>
-        <article class="card s2 rv">
-          <span class="ic"><svg class="i" aria-hidden="true"><use href="#i-doc"/></svg></span>
-          <h3 data-i18n="b3.h">Invoices out. Bills paid.</h3>
-          <p data-i18n="b3.p">Send an invoice in seconds. Pay suppliers with a PromptPay QR.</p>
-          <div class="art" aria-hidden="true">
-            <div class="inv">
-              <div class="l"><b data-i18n="b3.a">Invoice INV-041</b><strong class="num">฿48,500</strong><span><svg class="i"><use href="#i-check"/></svg><span data-i18n="b3.b">Paid</span></span></div>
-              <div class="qr"><svg viewBox="0 0 21 21" shape-rendering="crispEdges"><path fill="#0F1514" d="M0 0h7v7H0zM14 0h7v7h-7zM0 14h7v7H0z"/><path fill="#fff" d="M1 1h5v5H1zM15 1h5v5h-5zM1 15h5v5H1z"/><path fill="#0F1514" d="M2 2h3v3H2zM16 2h3v3h-3zM2 16h3v3H2zM8 0h1v2H8zM10 1h2v1h-2zM9 3h2v2H9zM12 4h1v3h-1zM8 6h2v2H8zM0 8h2v1H0zM3 8h3v1H3zM2 10h2v2H2zM5 10h2v1H5zM8 9h1v3H8zM10 8h3v1h-3zM11 10h2v2h-2zM14 8h2v2h-2zM17 8h4v1h-4zM15 11h3v1h-3zM19 10h2v3h-2zM9 13h2v1H9zM8 15h3v1H8zM12 13h1v4h-1zM14 14h2v2h-2zM17 13h1v2h-1zM8 18h2v3H8zM11 19h3v1h-3zM15 17h2v2h-2zM18 16h3v1h-3zM19 18h2v3h-2zM16 20h2v1h-2z"/></svg></div>
-            </div>
-          </div>
-        </article>
-        <article class="card s2 rv">
-          <span class="ic"><svg class="i" aria-hidden="true"><use href="#i-receipt"/></svg></span>
-          <h3 data-i18n="b4.h">Tax deadlines, never missed.</h3>
-          <p data-i18n="b4.p">VAT, withholding tax and social security prepared every month. Nothing is filed until you approve.</p>
-          <div class="art tax" aria-hidden="true">
-            <div><span class="d"><svg class="i"><use href="#i-doc"/></svg></span><span><b>ภ.พ.30</b><small data-i18n="b4.a">VAT return</small></span><em class="ok" data-i18n="b4.ok">Ready</em></div>
-            <div><span class="d"><svg class="i"><use href="#i-doc"/></svg></span><span><b>ภ.ง.ด.53</b><small data-i18n="b4.b">Withholding tax</small></span><em class="ok" data-i18n="b4.ok2">Ready</em></div>
-            <div><span class="d"><svg class="i"><use href="#i-doc"/></svg></span><span><b>สปส.1-10</b><small data-i18n="b4.c">Social security</small></span><em data-i18n="b4.wait">Next week</em></div>
-          </div>
-        </article>
-        <article class="card s2 wide-m rv">
+        <article class="card tallc rv">
           <span class="ic"><svg class="i" aria-hidden="true"><use href="#i-building"/></svg></span>
-          <h3 data-i18n="b5.h">No company yet? Start one here.</h3>
-          <p data-i18n="b5.p">Reserve a name, prepare the papers and file with DBD. Your books open the day you're registered.</p>
-          <div class="art steps" aria-hidden="true">
-            <div><i class="on"><svg class="i"><use href="#i-check"/></svg></i><span data-i18n="b5.1">Company name reserved</span></div>
-            <div><i class="on"><svg class="i"><use href="#i-check"/></svg></i><span data-i18n="b5.2">Memorandum drafted</span></div>
-            <div><i>3</i><span class="muted" data-i18n="b5.3">Filed with DBD</span></div>
-          </div>
+          <h3 data-i18n="b1.h">Several companies, one sign-in.</h3>
+          <p data-i18n="b1.p">Switch companies in two taps. Each one keeps its own books, statements, team and tasks.</p>
+          <div class="shot"><img class="sd" src="img/companies-phone-day.webp" width="780" height="1688" alt="The company menu with two companies, plus language and theme switches." loading="lazy"><img class="sn" src="img/companies-phone-night.webp" width="780" height="1688" alt="The company menu, in night mode." loading="lazy"></div>
         </article>
-        <article class="card s4 wide-m rv">
+        <article class="card rv">
+          <span class="ic"><svg class="i" aria-hidden="true"><use href="#i-globe"/></svg></span>
+          <h3 data-i18n="b2.h">Thai or English. Day or night.</h3>
+          <p data-i18n="b2.p">Switch the language and theme any time. ThuraGirl answers in the language you write in.</p>
+        </article>
+        <article class="card rv">
+          <span class="ic"><svg class="i" aria-hidden="true"><use href="#i-key"/></svg></span>
+          <h3 data-i18n="b3.h">Face ID and passkeys.</h3>
+          <p data-i18n="b3.p">Sign in with your face or fingerprint, and add two-step sign-in for extra safety.</p>
+        </article>
+        <article class="card rv">
+          <span class="ic"><svg class="i" aria-hidden="true"><use href="#i-bell"/></svg></span>
+          <h3 data-i18n="b4.h">Reminders where you'll see them.</h3>
+          <p data-i18n="b4.p">Tax deadlines, payroll and late invoices arrive in the app, with a copy on LINE or by email if you like.</p>
+        </article>
+        <article class="card rv">
           <span class="ic"><svg class="i" aria-hidden="true"><use href="#i-shield"/></svg></span>
-          <h3 data-i18n="b6.h">A licensed auditor, arranged for you.</h3>
-          <p data-i18n="b6.p">For the yearly close, ThuraGirl assigns a licensed auditor to your company. Nothing to find, nothing to chase.</p>
-          <div class="art aud" aria-hidden="true">
-            <span class="av"><svg class="i"><use href="#i-person"/></svg></span>
-            <span><b data-i18n="b6.a">Your auditor is assigned</b><small data-i18n="b6.b">Year-end close · FY2026</small></span>
-            <em data-i18n="b6.c">Handled</em>
-          </div>
-        </article>
-        <article class="card s2 wide-m rv">
-          <span class="ic"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg></span>
-          <h3 data-i18n="b7.h">You stay in charge.</h3>
-          <p data-i18n="b7.p">ThuraGirl prepares, you decide. Every filing and every month-end waits for your yes.</p>
+          <h3 data-i18n="b5.h">Registration and audit, handled.</h3>
+          <p data-i18n="b5.p">No company yet? ThuraGirl files with DBD for you. At year-end, she assigns a licensed auditor.</p>
         </article>
       </div>
     </div>
   </section>
 
-  <section class="sec" style="padding-top:20px" aria-labelledby="dn-h">
-    <div class="wrap dn">
-      <div class="rv">
-        <span class="eyebrow"><svg class="i" aria-hidden="true"><use href="#i-moon"/></svg><span data-i18n="d.k">Day and night</span></span>
-        <h2 id="dn-h" data-i18n="d.h">Easy on the eyes, <em>day or night.</em></h2>
-        <p class="sub" data-i18n="d.p">Quiet greys, one teal accent and clear numbers. ThuraGirl follows your phone's light or dark setting, so late-night checks don't glare.</p>
-        <p class="sub" style="font-weight:700;color:var(--ink);font-size:15px" data-i18n="d.try">Drag the handle to compare.</p>
-      </div>
-      <div class="rv">
-        <div class="cmp" id="cmp">
-          <div class="vp">
-            <img src="img/home-phone-night.webp" width="780" height="1688" alt="Home in night mode." loading="lazy">
-            <img class="top" src="img/home-phone-day.webp" width="780" height="1688" alt="Home in day mode." loading="lazy">
-            <span class="tag l" data-i18n="d.day">Day</span><span class="tag r" data-i18n="d.night">Night</span>
-            <span class="line"></span>
-          </div>
-          <input type="range" min="0" max="100" value="50" aria-label="Compare day and night mode" id="cmp-r">
-          <span class="knob"><svg class="i" aria-hidden="true"><use href="#i-drag"/></svg></span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="sec" id="how" style="padding-top:40px">
+  <section class="sec" id="how" style="padding-top:20px">
     <div class="wrap">
       <div class="head-c rv">
-        <span class="eyebrow" data-i18n="w.k">How it works</span>
+        <span class="eyebrow" data-i18n="w.k">Getting started</span>
         <h2 data-i18n="w.h">Up and running <em>before your coffee cools.</em></h2>
-        <p class="sub" data-i18n="w.sub">No migration project, no training, no meetings.</p>
       </div>
       <ol class="how">
-        <li class="rv"><span class="n">1</span><h3 data-i18n="w1.h">Create your account</h3><p data-i18n="w1.p">Your name, email and a password. That's it.</p></li>
+        <li class="rv"><span class="n">1</span><h3 data-i18n="w1.h">Create your account</h3><p data-i18n="w1.p">Your name, email and a password. That's all.</p></li>
         <li class="rv"><span class="n">2</span><h3 data-i18n="w2.h">Add your company</h3><p data-i18n="w2.p">Enter your 13-digit tax ID and ThuraGirl pulls your records from DBD for you to confirm. No company yet? Register one in the app.</p></li>
-        <li class="rv"><span class="n">3</span><h3 data-i18n="w3.h">Upload a statement</h3><p data-i18n="w3.p">Drop in a bank statement and your dashboard builds itself. From then on, ThuraGirl keeps the books.</p></li>
+        <li class="rv"><span class="n">3</span><h3 data-i18n="w3.h">Upload a statement</h3><p data-i18n="w3.p">Add a bank statement and your dashboard builds itself. From then on, ThuraGirl keeps the books.</p></li>
       </ol>
-      <div class="trust rv">
-        <div><svg class="i" aria-hidden="true"><use href="#i-flag"/></svg><div><b data-i18n="tr1.h">Built for Thai rules</b><p data-i18n="tr1.p">VAT, withholding tax, social security and DBD filings, in the forms Thai offices expect.</p></div></div>
-        <div><svg class="i" aria-hidden="true"><use href="#i-globe"/></svg><div><b data-i18n="tr2.h">Thai and English</b><p data-i18n="tr2.p">Read this page in either language. Thai is coming to the app next.</p></div></div>
-        <div><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg><div><b data-i18n="tr3.h">Phone or computer</b><p data-i18n="tr3.p">Nothing to install. Open it in your browser and pick up where you left off.</p></div></div>
-      </div>
     </div>
   </section>
 
-  <section class="sec" id="pricing" style="padding-top:40px">
+  <section class="sec" id="pricing" style="padding-top:20px">
     <div class="wrap">
       <div class="head-c rv">
         <span class="eyebrow" data-i18n="p.k">Pricing</span>
         <h2 data-i18n="p.h">Two plans. <em>No surprises.</em></h2>
-        <p class="sub" data-i18n="p.sub">One monthly price, less than an accounting firm, and no three-day wait for answers.</p>
+        <p class="sub" data-i18n="p.sub">One monthly price per company. Less than an accounting firm, and no three-day wait for answers.</p>
       </div>
       <div class="plans">
         <div class="plan rv">
@@ -640,8 +531,8 @@
           <a class="btn btn-soft" href="../signup/" data-i18n="p1.cta">Start with Standard</a>
         </div>
         <div class="plan pro rv">
-          <div class="plan-h"><h3 data-i18n="p2.h">Pro</h3><span class="badge" data-i18n="p2.tag">Most complete</span></div>
-          <p class="for" data-i18n="p2.for">For growing teams and several companies</p>
+          <div class="plan-h"><h3 data-i18n="p2.h">Pro</h3><span class="badge" data-i18n="p2.tag">Most popular</span></div>
+          <p class="for" data-i18n="p2.for">For growing teams</p>
           <div class="price"><strong class="num">฿3,999</strong><span data-i18n="p.mo2">/ month</span></div>
           <ul>
             <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="p2.1">Everything in Standard, unlimited documents</span></li>
@@ -652,23 +543,22 @@
           <a class="btn btn-ink" href="../signup/" data-i18n="p2.cta">Go Pro</a>
         </div>
       </div>
-      <p class="pnote rv" data-i18n="p.note">Company registration with DBD is included in both plans. Payments are handled securely by <b>Beam</b>.</p>
+      <p class="pnote rv" data-i18n="p.note">Prices include VAT. Payments are handled securely by <b>Beam</b>.</p>
     </div>
   </section>
 
-  <section class="sec" id="faq" style="padding-top:40px">
+  <section class="sec" id="faq" style="padding-top:20px">
     <div class="wrap">
       <div class="head-c rv">
         <span class="eyebrow" data-i18n="q.k">FAQ</span>
         <h2 data-i18n="q.h">Questions, <em>answered.</em></h2>
       </div>
       <div class="faq">
-        <details class="rv"><summary><span data-i18n="q1.q">How is this different from an accounting firm?</span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><p data-i18n="q1.a">The same monthly work, but you see your numbers every day instead of weeks later, and answers take seconds instead of days. Work the law says needs a licensed auditor is done by one, arranged by ThuraGirl.</p></details>
-        <details class="rv"><summary><span data-i18n="q2.q">I already have a company. Can I use it?</span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><p data-i18n="q2.a">Yes. Enter your 13-digit tax ID when you sign up. ThuraGirl pulls your company's records from DBD and you confirm them.</p></details>
-        <details class="rv"><summary><span data-i18n="q3.q">What do I need to register a new company?</span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><p data-i18n="q3.a">Three name choices, details of the founders and shareholders, a registered address and your capital. You fill it in inside the app, and ThuraGirl prepares the documents.</p></details>
-        <details class="rv"><summary><span data-i18n="q4.q">Which banks work?</span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><p data-i18n="q4.a">Any Thai bank that lets you download a statement as a CSV or Excel file. Download it from your bank's app or website and upload it to ThuraGirl.</p></details>
-        <details class="rv"><summary><span data-i18n="q5.q">Does anything get filed without me?</span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><p data-i18n="q5.a">No. ThuraGirl prepares each filing and each month-end, and waits for you to approve it.</p></details>
-        <details class="rv"><summary><span data-i18n="q6.q">Is there a mobile app?</span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><p data-i18n="q6.a">ThuraGirl works in the browser on any phone or computer, in day or night mode. Native iPhone and Android apps are planned.</p></details>
+        <details class="rv"><summary><span data-i18n="q1.q">How is this different from an accounting firm?</span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><p data-i18n="q1.a">It's the same monthly work, but you see your numbers every day instead of weeks later, and answers take seconds, not days. Anything the law says needs a licensed auditor is done by one, assigned by ThuraGirl.</p></details>
+        <details class="rv"><summary><span data-i18n="q2.q">I already have a company. Can I use it?</span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><p data-i18n="q2.a">Yes. Enter your 13-digit tax ID when you sign up. ThuraGirl pulls your company's records from DBD, and you confirm them.</p></details>
+        <details class="rv"><summary><span data-i18n="q3.q">Which banks work?</span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><p data-i18n="q3.a">Any Thai bank that lets you download a statement as a CSV or Excel file. Download it from your bank's app or website, then upload it to ThuraGirl.</p></details>
+        <details class="rv"><summary><span data-i18n="q4.q">Does anything get filed without me?</span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><p data-i18n="q4.a">No. ThuraGirl prepares every filing and every month-end, then waits for your approval.</p></details>
+        <details class="rv"><summary><span data-i18n="q5.q">Is there a mobile app?</span><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></summary><p data-i18n="q5.a">ThuraGirl works in the browser on any phone or computer, with nothing to install. iPhone and Android apps are planned.</p></details>
       </div>
     </div>
   </section>
@@ -678,7 +568,7 @@
       <div class="final-in rv">
         <svg class="tg" width="76" height="79" aria-hidden="true"><use href="#tg"/></svg>
         <h2 data-i18n="c.h">Hand the books <em>to ThuraGirl.</em></h2>
-        <p class="sub" style="margin-inline:auto" data-i18n="c.p">Sign up in under a minute and see your money the same day.</p>
+        <p class="sub" style="margin-inline:auto" data-i18n="c.p">Sign up in a minute and see your money the same day.</p>
         <div class="ctas">
           <a class="btn btn-acc" href="../signup/"><span data-i18n="c.cta">Get started</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
           <a class="btn btn-soft" href="../signup/#/login" data-i18n="c.in">Sign in</a>
@@ -693,11 +583,11 @@
     <div class="ft">
       <div>
         <a class="logo" href="#top"><svg class="tg" width="30" height="31" aria-hidden="true"><use href="#tg"/></svg><span>thuragirl<i>.</i></span></a>
-        <p data-i18n="ft.about">The AI bookkeeper for small businesses in Thailand. Bookkeeping, VAT, withholding tax, social security and company registration with DBD, in one place.</p>
+        <p data-i18n="ft.about">The AI bookkeeper for small businesses in Thailand: bookkeeping, VAT, withholding tax, social security and company registration with DBD, all in one place.</p>
       </div>
       <div>
         <h4 data-i18n="ft.p">Product</h4>
-        <ul><li><a href="#features" data-i18n="n.f">Features</a></li><li><a href="#how" data-i18n="n.h">How it works</a></li><li><a href="#pricing" data-i18n="n.p">Pricing</a></li><li><a href="#faq" data-i18n="n.q">FAQ</a></li></ul>
+        <ul><li><a href="#features" data-i18n="n.h">How it works</a></li><li><a href="#how" data-i18n="n.s">Getting started</a></li><li><a href="#pricing" data-i18n="n.p">Pricing</a></li><li><a href="#faq" data-i18n="n.q">FAQ</a></li></ul>
       </div>
       <div>
         <h4 data-i18n="ft.a">Account</h4>
@@ -734,62 +624,51 @@
     $$(".rv").forEach(function(el){ io.observe(el); });
   } else $$(".rv").forEach(function(el){ el.classList.add("in"); });
 
-  /* day / night compare */
-  var cmp = $("#cmp"), rng = $("#cmp-r");
-  function setX(){ cmp.style.setProperty("--x", rng.value + "%"); }
-  rng.addEventListener("input", setX); setX();
 
   /* language */
   var TH = {
     "skip":"ข้ามไปยังเนื้อหา",
-    "n.f":"ฟีเจอร์","n.h":"วิธีใช้งาน","n.p":"ราคา","n.q":"คำถาม","n.in":"เข้าสู่ระบบ","n.cta":"เริ่มใช้เลย",
-    "h.new":"ใหม่","h.kicker":"นักบัญชี AI สำหรับธุรกิจไทย",
+    "n.h":"วิธีทำงาน","n.s":"เริ่มต้นใช้งาน","n.p":"ราคา","n.q":"คำถาม","n.in":"เข้าสู่ระบบ","n.cta":"เริ่มใช้เลย",
+    "h.new":"ใหม่","h.kicker":"นักบัญชี AI สำหรับธุรกิจขนาดเล็กในไทย",
     "h.t":"บัญชีเสร็จเรียบร้อย <em>คุณแค่กดยืนยัน</em>",
-    "h.sub":"ThuraGirl อ่านรายการเดินบัญชีธนาคาร ทำบัญชี และเตรียมภาษีให้ ทุกเช้าหนูจะบอกว่ามีอะไรรอคุณอยู่ แค่นั้นจริง ๆ",
-    "h.cta1":"เริ่มใช้เลย","h.cta2":"ดูวิธีใช้งาน","h.f1":"สมัครได้ในไม่ถึงนาที","h.f2":"ใช้ได้ทั้งมือถือและคอมพิวเตอร์",
-    "c1.b":"จัดหมวด 607 รายการแล้ว","c1.s":"ทำให้เสร็จตั้งแต่เมื่อคืน","c2.b":"แบบ VAT พร้อมยื่น","c2.s":"รอคุณกดอนุมัติ",
+    "h.sub":"ThuraGirl อ่านรายการเดินบัญชีธนาคาร ทำบัญชี และเตรียมภาษีให้ คุณเข้ามาเฉพาะตอนที่มีเรื่องรอคุณอนุมัติ",
+    "h.cta1":"เริ่มใช้เลย","h.cta2":"ดูว่าทำงานอย่างไร","h.f1":"สมัครได้ในหนึ่งนาที","h.f2":"ไทยหรืออังกฤษ","h.f3":"มือถือหรือคอมพิวเตอร์",
+    "c1.b":"จัดหมวด 686 รายการแล้ว","c1.s":"ทำเสร็จระหว่างที่คุณยุ่ง","c2.b":"บัญชีเดือนตุลาคมพร้อมแล้ว","c2.s":"รอคุณกดอนุมัติ",
     "t.h":"สร้างมาเพื่อธุรกิจที่ขับเคลื่อนเมืองไทย",
     "t.1":"ร้านอาหาร","t.2":"คาเฟ่และเบเกอรี่","t.3":"ร้านค้า","t.4":"ร้านค้าออนไลน์","t.5":"ซาลอน","t.6":"เอเจนซี่และงานบริการ","t.7":"ผู้ผลิต",
-    "f1.k":"หน้าหลัก","f1.h":"ทุกบาท <em>เห็นในแวบเดียว</em>",
-    "f1.p":"เงินสดคงเหลือ เส้นกราฟ 30 วันล่าสุด และรายรับ รายจ่าย กำไรของเดือนนี้ แค่อัปโหลดรายการเดินบัญชี ทุกอย่างก็ขึ้นมาเอง",
-    "f1.1":"รองรับรายการเดินบัญชีจากทุกธนาคารไทย แบบ CSV หรือ Excel","f1.2":"อัปโหลด ออกใบแจ้งหนี้ และจ่ายบิล ได้จากหน้าเดียว","f1.3":"รายการสั้น ๆ ของเรื่องที่รอคุณ ไม่มีอะไรเกิน",
-    "f2.k":"สรุปยามเช้า","f2.h":"หนังสือพิมพ์ยามเช้า <em>ที่เขียนถึงธุรกิจของคุณ</em>",
-    "f2.p":"ทุกเช้า ThuraGirl เขียนหน้าหนึ่งให้อ่านจบในนาทีเดียว เงินสดเปลี่ยนไปอย่างไร เรื่องไหนรอคุณอนุมัติ และงานไหนหนูจัดการให้แล้ว",
-    "f2.1":"งานที่ต้องทำเขียนเป็นเรื่องสั้น พร้อมปุ่มเดียวที่ชัดเจน","f2.2":"ใบแจ้งหนี้ที่เลยกำหนด มีข้อความทวงอย่างสุภาพเตรียมไว้ให้","f2.3":"เรื่องที่รอได้ จะไม่มากวนใจคุณ",
-    "f3.k":"ปิดเดือน","f3.h":"ปิดเดือน <em>ในคลิกเดียว</em>",
-    "f3.p":"พอจบเดือน ทุกอย่างอยู่ในหน้าเดียว เงินเข้า เงินออก กำไร ภาษีที่ควรกันไว้ และเอกสารที่ยังขาด ตรวจดู ติ๊กช่อง แล้วกดอนุมัติ",
-    "f3.1":"ไม่มีแท็บย่อย ไม่มีศัพท์ยาก ไม่มีสเปรดชีต","f3.2":"สงสัยตัวเลขไหน ถาม ThuraGirl ได้ตรงนั้นเลย",
-    "b.k":"และอีกมากมาย","b.h":"งานหลังบ้านทั้งหมด <em>มีคนดูแลให้แล้ว</em>","b.sub":"ทุกอย่างที่เคยต้องตามสำนักงานบัญชี อยู่ในแอปเดียวที่ใช้ง่าย",
-    "b1.h":"ถามได้เหมือนถามเพื่อนร่วมงาน","b1.p":"“มีอะไรเลยกำหนดบ้าง” “เงินไปไหนหมด” จะพิมพ์หรือพูดก็ได้ ได้คำตอบตรง ๆ จากบัญชีของคุณเอง",
-    "b2.h":"รู้ว่าเงินมาจากไหน และไปไหน","b2.p":"เงินเข้าออกรายเดือน รายไตรมาส หรือรายปี ใครค้างจ่ายคุณ และคุณค้างจ่ายใคร",
-    "b3.h":"ออกใบแจ้งหนี้ จ่ายบิล","b3.p":"ส่งใบแจ้งหนี้ได้ในไม่กี่วินาที จ่ายซัพพลายเออร์ด้วย QR พร้อมเพย์","b3.a":"ใบแจ้งหนี้ INV-041","b3.b":"ชำระแล้ว",
-    "b4.h":"ไม่พลาดกำหนดยื่นภาษี","b4.p":"เตรียม VAT ภาษีหัก ณ ที่จ่าย และประกันสังคมให้ทุกเดือน ไม่มีอะไรถูกยื่นก่อนคุณอนุมัติ","b4.a":"ภาษีมูลค่าเพิ่ม","b4.b":"ภาษีหัก ณ ที่จ่าย","b4.c":"ประกันสังคม","b4.ok":"พร้อม","b4.ok2":"พร้อม","b4.wait":"สัปดาห์หน้า",
-    "b5.h":"ยังไม่มีบริษัท? เริ่มที่นี่ได้เลย","b5.p":"จองชื่อ เตรียมเอกสาร และยื่นจดทะเบียนกับ DBD บัญชีของคุณเปิดใช้ได้ทันทีในวันที่จดเสร็จ","b5.1":"จองชื่อบริษัทแล้ว","b5.2":"ร่างหนังสือบริคณห์สนธิแล้ว","b5.3":"ยื่นจดทะเบียนกับ DBD",
-    "b6.h":"มีผู้สอบบัญชีรับอนุญาตจัดไว้ให้","b6.p":"ตอนปิดงบประจำปี ThuraGirl จัดผู้สอบบัญชีรับอนุญาตให้บริษัทของคุณ ไม่ต้องหาเอง ไม่ต้องตามเอง","b6.a":"จัดผู้สอบบัญชีให้แล้ว","b6.b":"ปิดงบประจำปี · FY2026","b6.c":"เรียบร้อย",
-    "b7.h":"คุณเป็นคนตัดสินใจเสมอ","b7.p":"ThuraGirl เตรียมให้ คุณเป็นคนตัดสินใจ ทุกการยื่นภาษีและการปิดเดือนรอคุณกดอนุมัติก่อน",
-    "d.k":"กลางวันและกลางคืน","d.h":"สบายตา <em>ทั้งกลางวันและกลางคืน</em>","d.p":"โทนเทาเรียบ ๆ สีเขียวอมฟ้าเพียงสีเดียว และตัวเลขที่อ่านง่าย ThuraGirl ปรับตามโหมดสว่างหรือมืดของเครื่องคุณ เช็กตอนดึกก็ไม่แสบตา","d.try":"ลากปุ่มเพื่อเปรียบเทียบ","d.day":"กลางวัน","d.night":"กลางคืน",
-    "w.k":"วิธีใช้งาน","w.h":"เริ่มใช้ได้ <em>ก่อนกาแฟจะเย็น</em>","w.sub":"ไม่ต้องย้ายระบบ ไม่ต้องอบรม ไม่ต้องประชุม",
+    "s.k":"หนึ่งวันกับ ThuraGirl","s.h":"งานเอกสารน้อยลง <em>มีเวลาทำธุรกิจมากขึ้น</em>",
+    "f1.k":"ตอนเช้า","f1.h":"เริ่มวันด้วยกาแฟ <em>ไม่ใช่สเปรดชีต</em>",
+    "f1.p":"สรุปยามเช้าอ่านจบในห้านาที เงินของคุณอยู่ตรงไหน เรื่องไหนรอคุณอนุมัติ และงานไหน ThuraGirl จัดการให้แล้ว",
+    "f2.k":"ระหว่างวัน","f2.h":"ออกใบแจ้งหนี้หรือจ่ายเงิน <em>แค่พิมพ์ชื่อ</em>",
+    "f2.p":"กด ใบแจ้งหนี้ หรือ จ่ายเงิน แล้วตอบคำถามสั้น ๆ ในแชท ใคร อะไร เท่าไหร่ ThuraGirl ใส่ VAT และวันครบกำหนดให้ และเปลี่ยนพร้อมเพย์ของซัพพลายเออร์เป็น QR ให้สแกนจ่ายได้เลย",
+    "f3.k":"ทุกเวลา","f3.h":"รู้สถานะธุรกิจ <em>ด้วยภาษาที่เข้าใจง่าย</em>",
+    "f3.p":"หน้าการเงินบอกกำไร เงินเข้าออก ใครค้างจ่ายคุณ และคุณค้างจ่ายใคร ส่งออกงบกำไรขาดทุนเป็น PDF ตามรูปแบบมาตรฐาน TFRS for NPAEs แล้วแชร์หรือพิมพ์ได้ทันที",
+    "f4.k":"สิ้นเดือน","f4.h":"ปิดเดือน <em>ในคลิกเดียว</em>",
+    "f4.p":"ทั้งเดือนอยู่ในหน้าเดียว ตรวจดู ติ๊กช่อง แล้วกดอนุมัติ ไม่มีอะไรถูกยื่นจนกว่าคุณจะยืนยัน",
+    "b.k":"ออกแบบมาเพื่อคุณ","b.h":"ทำงาน <em>ในแบบของคุณ</em>",
+    "b1.h":"หลายบริษัท ในบัญชีเดียว","b1.p":"สลับบริษัทได้ในสองแตะ แต่ละบริษัทแยกบัญชี รายการเดินบัญชี ทีม และงานของตัวเอง",
+    "b2.h":"ไทยหรืออังกฤษ กลางวันหรือกลางคืน","b2.p":"เปลี่ยนภาษาและธีมได้ทุกเมื่อ ThuraGirl ตอบในภาษาที่คุณพิมพ์มา",
+    "b3.h":"Face ID และพาสคีย์","b3.p":"เข้าสู่ระบบด้วยใบหน้าหรือลายนิ้วมือ และเปิดการยืนยันสองขั้นตอนเพื่อความปลอดภัยยิ่งขึ้น",
+    "b4.h":"แจ้งเตือนในที่ที่คุณเห็น","b4.p":"กำหนดยื่นภาษี เงินเดือน และใบแจ้งหนี้ที่เลยกำหนด แจ้งในแอป และส่งสำเนาทาง LINE หรืออีเมลได้ถ้าต้องการ",
+    "b5.h":"จดทะเบียนและสอบบัญชี มีคนดูแล","b5.p":"ยังไม่มีบริษัท? ThuraGirl ยื่นจดทะเบียนกับ DBD ให้ และตอนปิดงบประจำปี จะจัดผู้สอบบัญชีรับอนุญาตให้",
+    "w.k":"เริ่มต้นใช้งาน","w.h":"เริ่มใช้ได้ <em>ก่อนกาแฟจะเย็น</em>",
     "w1.h":"สร้างบัญชี","w1.p":"ชื่อ อีเมล และรหัสผ่าน แค่นั้นเอง",
     "w2.h":"เพิ่มบริษัทของคุณ","w2.p":"ใส่เลขประจำตัวผู้เสียภาษี 13 หลัก ThuraGirl จะดึงข้อมูลจาก DBD มาให้คุณตรวจยืนยัน ยังไม่มีบริษัท? จดทะเบียนในแอปได้เลย",
-    "w3.h":"อัปโหลดรายการเดินบัญชี","w3.p":"ใส่ไฟล์รายการเดินบัญชีธนาคาร แดชบอร์ดของคุณจะสร้างขึ้นเอง จากนั้น ThuraGirl ดูแลบัญชีต่อให้",
-    "tr1.h":"ทำมาเพื่อกฎหมายไทย","tr1.p":"VAT ภาษีหัก ณ ที่จ่าย ประกันสังคม และงานยื่น DBD ในแบบที่หน่วยงานไทยใช้",
-    "tr2.h":"ไทยและอังกฤษ","tr2.p":"อ่านหน้านี้ได้ทั้งสองภาษา และภาษาไทยในแอปกำลังจะตามมา",
-    "tr3.h":"มือถือหรือคอมพิวเตอร์","tr3.p":"ไม่ต้องติดตั้งอะไร เปิดในเบราว์เซอร์แล้วใช้งานต่อจากที่ค้างไว้ได้เลย",
-    "p.k":"ราคา","p.h":"สองแพ็กเกจ <em>ไม่มีเซอร์ไพรส์</em>","p.sub":"ราคาเดียวต่อเดือน ถูกกว่าจ้างสำนักงานบัญชี และไม่ต้องรอสามวันกว่าจะได้คำตอบ",
+    "w3.h":"อัปโหลดรายการเดินบัญชี","w3.p":"ใส่รายการเดินบัญชีธนาคาร แดชบอร์ดของคุณจะสร้างขึ้นเอง จากนั้น ThuraGirl ดูแลบัญชีต่อให้",
+    "p.k":"ราคา","p.h":"สองแพ็กเกจ <em>ไม่มีเซอร์ไพรส์</em>","p.sub":"ราคาเดียวต่อเดือนต่อบริษัท ถูกกว่าจ้างสำนักงานบัญชี และไม่ต้องรอสามวันกว่าจะได้คำตอบ",
     "p.mo":"/ เดือน","p.mo2":"/ เดือน",
-    "p1.h":"สแตนดาร์ด","p1.for":"สำหรับธุรกิจที่เจ้าของดูแลเอง",
-    "p1.1":"ทำบัญชี สูงสุด 150 เอกสารต่อเดือน","p1.2":"เตรียม VAT ภาษีหัก ณ ที่จ่าย และประกันสังคมทุกเดือน","p1.3":"แชทและ LINE ไม่จำกัด","p1.4":"รวมจดทะเบียนบริษัท","p1.cta":"เริ่มแพ็กสแตนดาร์ด",
-    "p2.h":"โปร","p2.tag":"ครบที่สุด","p2.for":"สำหรับทีมที่กำลังโต และผู้ที่มีหลายบริษัท",
-    "p2.1":"ทุกอย่างในสแตนดาร์ด เอกสารไม่จำกัด","p2.2":"ยื่นแบบให้คุณ","p2.3":"ปิดงบประจำปีกับผู้สอบบัญชี","p2.4":"ระบบเงินเดือน และมีได้มากกว่าหนึ่งบริษัท","p2.cta":"เริ่มใช้โปร",
-    "p.note":"ทั้งสองแพ็กเกจรวมจดทะเบียนบริษัทกับ DBD การชำระเงินดำเนินการอย่างปลอดภัยผ่าน <b>Beam</b>",
+    "p1.h":"Standard","p1.for":"สำหรับธุรกิจที่เจ้าของดูแลเอง",
+    "p1.1":"ทำบัญชี สูงสุด 150 เอกสารต่อเดือน","p1.2":"เตรียม VAT ภาษีหัก ณ ที่จ่าย และประกันสังคมทุกเดือน","p1.3":"แชทและ LINE ไม่จำกัด","p1.4":"รวมจดทะเบียนบริษัท","p1.cta":"เริ่มใช้ Standard",
+    "p2.h":"Pro","p2.tag":"ยอดนิยม","p2.for":"สำหรับทีมที่กำลังเติบโต",
+    "p2.1":"ทุกอย่างใน Standard เอกสารไม่จำกัด","p2.2":"ยื่นแบบให้คุณ","p2.3":"ปิดงบประจำปีกับผู้สอบบัญชี","p2.4":"ระบบเงินเดือน และมีได้มากกว่าหนึ่งบริษัท","p2.cta":"เริ่มใช้ Pro",
+    "p.note":"ราคารวม VAT แล้ว การชำระเงินดำเนินการอย่างปลอดภัยผ่าน <b>Beam</b>",
     "q.k":"คำถามที่พบบ่อย","q.h":"มีคำถาม? <em>เรามีคำตอบ</em>",
     "q1.q":"ต่างจากจ้างสำนักงานบัญชีอย่างไร?","q1.a":"งานรายเดือนแบบเดียวกัน แต่คุณเห็นตัวเลขทุกวันแทนที่จะรอหลายสัปดาห์ และได้คำตอบในไม่กี่วินาทีแทนที่จะรอหลายวัน งานที่กฎหมายกำหนดให้ใช้ผู้สอบบัญชีรับอนุญาต จะมีผู้สอบบัญชีที่ ThuraGirl จัดไว้ให้เป็นผู้ทำ",
     "q2.q":"มีบริษัทอยู่แล้ว ใช้ได้ไหม?","q2.a":"ได้เลย ใส่เลขประจำตัวผู้เสียภาษี 13 หลักตอนสมัคร ThuraGirl จะดึงข้อมูลบริษัทจาก DBD มาให้คุณตรวจยืนยัน",
-    "q3.q":"จดบริษัทใหม่ต้องเตรียมอะไรบ้าง?","q3.a":"ชื่อบริษัท 3 ชื่อ ข้อมูลผู้ก่อตั้งและผู้ถือหุ้น ที่อยู่จดทะเบียน และทุนจดทะเบียน กรอกในแอปได้เลย แล้ว ThuraGirl จะเตรียมเอกสารให้",
-    "q4.q":"ใช้กับธนาคารไหนได้บ้าง?","q4.a":"ทุกธนาคารไทยที่ดาวน์โหลดรายการเดินบัญชีเป็นไฟล์ CSV หรือ Excel ได้ ดาวน์โหลดจากแอปหรือเว็บไซต์ของธนาคาร แล้วอัปโหลดเข้า ThuraGirl",
-    "q5.q":"มีอะไรถูกยื่นโดยที่ฉันไม่รู้ไหม?","q5.a":"ไม่มี ThuraGirl เตรียมการยื่นแบบและการปิดเดือนทุกครั้ง แล้วรอให้คุณอนุมัติก่อน",
-    "q6.q":"มีแอปมือถือไหม?","q6.a":"ThuraGirl ใช้งานผ่านเบราว์เซอร์ได้บนทุกมือถือและคอมพิวเตอร์ ทั้งโหมดกลางวันและกลางคืน แอป iPhone และ Android อยู่ในแผน",
-    "c.h":"ยกงานบัญชี <em>ให้ ThuraGirl ดูแล</em>","c.p":"สมัครไม่ถึงนาที แล้วเห็นภาพการเงินของคุณได้ในวันเดียวกัน","c.cta":"เริ่มใช้เลย","c.in":"เข้าสู่ระบบ",
+    "q3.q":"ใช้กับธนาคารไหนได้บ้าง?","q3.a":"ทุกธนาคารไทยที่ดาวน์โหลดรายการเดินบัญชีเป็นไฟล์ CSV หรือ Excel ได้ ดาวน์โหลดจากแอปหรือเว็บไซต์ของธนาคาร แล้วอัปโหลดเข้า ThuraGirl",
+    "q4.q":"มีอะไรถูกยื่นโดยที่ฉันไม่รู้ไหม?","q4.a":"ไม่มี ThuraGirl เตรียมการยื่นแบบและการปิดเดือนทุกครั้ง แล้วรอให้คุณอนุมัติก่อน",
+    "q5.q":"มีแอปมือถือไหม?","q5.a":"ThuraGirl ใช้งานผ่านเบราว์เซอร์ได้บนทุกมือถือและคอมพิวเตอร์ ไม่ต้องติดตั้งอะไร แอป iPhone และ Android อยู่ในแผน",
+    "c.h":"ยกงานบัญชี <em>ให้ ThuraGirl ดูแล</em>","c.p":"สมัครได้ในหนึ่งนาที แล้วเห็นภาพการเงินของคุณได้ในวันเดียวกัน","c.cta":"เริ่มใช้เลย","c.in":"เข้าสู่ระบบ",
     "ft.about":"นักบัญชี AI สำหรับธุรกิจขนาดเล็กในประเทศไทย ทำบัญชี VAT ภาษีหัก ณ ที่จ่าย ประกันสังคม และจดทะเบียนบริษัทกับ DBD ครบในที่เดียว",
     "ft.p":"ผลิตภัณฑ์","ft.a":"บัญชีผู้ใช้","ft.su":"สมัครใช้งาน","ft.app":"เปิดแอป","ft.note":"หน้าจอในหน้านี้ใช้ข้อมูลตัวอย่าง","ft.made":"ทำที่กรุงเทพฯ"
   };
@@ -798,7 +677,7 @@
   function setLang(l){
     $$("[data-i18n]").forEach(function(el){ var k = el.getAttribute("data-i18n"), v = l === "th" ? TH[k] : EN[k]; if (v !== undefined) el.innerHTML = v; });
     root.lang = l; $("#l-en").setAttribute("aria-pressed", String(l === "en")); $("#l-th").setAttribute("aria-pressed", String(l === "th"));
-    document.title = l === "th" ? "ThuraGirl · นักบัญชี AI สำหรับธุรกิจไทย" : "ThuraGirl · The AI bookkeeper for Thai small business";
+    document.title = l === "th" ? "ThuraGirl · นักบัญชี AI สำหรับธุรกิจขนาดเล็กในไทย" : "ThuraGirl · The AI bookkeeper for Thai small businesses";
     store("tg.web.lang", l);
   }
   $("#l-en").addEventListener("click", function(){ setLang("en"); });
