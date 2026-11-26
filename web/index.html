@@ -112,6 +112,7 @@
   .hero::before{content:"";position:absolute;inset:-120px 0 auto;height:720px;background:radial-gradient(60% 55% at 50% 30%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%);pointer-events:none;z-index:-1}
   .kicker{display:inline-flex;align-items:center;gap:8px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);padding:6px 14px 6px 8px;border-radius:999px;font-weight:700;font-size:13.5px;color:var(--mute)}
   .kicker b{display:inline-grid;place-items:center;height:22px;padding:0 9px;border-radius:999px;background:var(--tint);color:var(--hint);font-size:12px;letter-spacing:.02em}
+  @media (max-width:430px){ .kicker{font-size:12px;padding:5px 12px 5px 6px} .kicker span{white-space:nowrap} }
   h1{font-size:clamp(44px,8.4vw,104px);font-weight:800;letter-spacing:-.055em;line-height:.98;margin:26px auto 0;max-width:12ch}
   h1 em,h2 em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--hint);letter-spacing:-.02em}
   h1 em{display:block;font-size:1.06em;line-height:1}
