@@ -679,6 +679,7 @@
     $$("[data-i18n]").forEach(function(el){ var k = el.getAttribute("data-i18n"), v = l === "th" ? TH[k] : EN[k]; if (v !== undefined) el.innerHTML = v; });
     root.lang = l; $("#l-en").setAttribute("aria-pressed", String(l === "en")); $("#l-th").setAttribute("aria-pressed", String(l === "th"));
     document.title = l === "th" ? "ThuraGirl · นักบัญชี AI สำหรับธุรกิจขนาดเล็กในไทย" : "ThuraGirl · The AI bookkeeper for Thai small businesses";
+    $$("img[src^='img/']").forEach(function(im){ var s = im.getAttribute("src").replace(/-th-(day|night)\.webp$/, "-$1.webp"); im.setAttribute("src", l === "th" ? s.replace(/-(day|night)\.webp$/, "-th-$1.webp") : s); });
     store("tg.web.lang", l);
   }
   $("#l-en").addEventListener("click", function(){ setLang("en"); });

@@ -27,6 +27,10 @@ Live test build: https://carmochest.github.io/thuragirlv2/ (GitHub Pages, `main`
 - **Sample data.** "Try it with sample data" (or "Use the sample" in the upload sheet) loads a sample restaurant statement, so every screen fills in.
 - **Morning Brief.** A short summary in icon rows, up to three urgent items with details behind a tap, things worth knowing, what was handled, and time saved (with "How I work this out"). The greeting and sign-off rotate daily.
 - **Charts.** Finance has a "Sales by channel" donut with a Month/Year toggle. Tap any P&L line (for example Stock and supplies or Wages) to open a breakdown with a donut and the top payees. In chat, ask "Compare GrabFood vs LINE MAN for 3 months" or "sales by channel this year" to get a bar chart, and "Pin to Finance" keeps it on the Finance page (pins are stored in `u.pins`, up to 4).
+- **Demo, no sign-up.** "Try the demo" on the landing page opens `/dashboard/#/demo` (or `?demo`): a ready-made restaurant, Bangkok Bites, with sample books, under a "Demo with a sample restaurant" strip with a "Create my account" button. The demo account is `demo@thuragirl.test`.
+- **Forgot password.** On sign-in, "Forgot your password?" asks for the email and shows "Check your email". In this test build no email is sent; "Open the reset link" goes straight to the new-password step.
+- **Delete my account.** Settings → Security → Delete my account lists what is removed and asks you to type DELETE (ลบ in Thai). It clears the account from this browser and returns to sign-up.
+- **Thai everywhere.** The owner app, the landing page (with Thai screenshots) and both auditor pages switch between English and Thai. The auditor pages have an EN/ไทย switch at the bottom left (stored in `tg.aud.lang`).
 - **Auditor.** Create the first auditor at `/auditorlogin/` (that account becomes the lead), then open `/auditor/`. Companies signed up in the same browser appear with a "Signed up" badge. You can switch on sample companies.
 
 ## Build and run
@@ -63,11 +67,13 @@ src/                 Source. Edit only here.
                        app86 PDF export (Review Pack, P&L)
                        app87 "Get started" sync card (bank, books, sales apps) and daily reminder
                        app88 Sales by channel donut (Finance), chat charts with "Pin to Finance", P&L drill-down
+                       app89 Forgot password, delete my account, demo mode (#/demo)
                        app9  boot
   auditor.html       Auditor desk and auditor sign-in (one standalone page).
+  aud-th.js          Thai for the auditor pages (dictionary plus rules, EN/ไทย switch). build.py appends it to auditor.html.
   vendor/            qrcode.js (2FA QR), SheetJS xlsx (statement upload).
   sample-kbank-statement.csv  Example statement for testing upload.
-web/                 Landing page and its images (hand-written, not built).
+web/                 Landing page and its images (hand-written, not built). img/*-th-* are the Thai screenshots, swapped in by setLang.
 signup/ dashboard/ auditor/ auditorlogin/ assets/ index.html   Built output. Do not hand-edit.
 docs/                Handover notes: BACKEND-TODO.md, DECISIONS.md.
 ```

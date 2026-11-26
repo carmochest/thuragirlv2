@@ -15,6 +15,9 @@ General rules for the real build:
 - Server-side hashing (argon2id or bcrypt), rate limiting, email verification, HTTP-only session cookies or short-lived tokens with refresh.
 - `GET /me` returns the user profile (name, nickname, email, phone, language, theme, notification settings) and their companies.
 - `PATCH /me` for profile and preferences (`u.name u.nick u.phone u.lang u.theme u.notif`).
+- **Password reset** (`openForgot`, `newPass` in `src/app89.js`): `POST /auth/password/reset { email }` always answers the same way, whether or not the account exists, and emails a one-time link valid for 30 minutes. `POST /auth/password/reset/confirm { token, password }` sets the new password and signs out other sessions. Today the test build skips the email and opens the link in place.
+- **Delete my account** (PDPA right to erasure; `openDelete` in `src/app89.js`): `DELETE /me` after re-authentication. It ends the plan in Beam with no further charge, deletes the sign-in, passkeys, TOTP, bank lines, invoices, files and team, keeps filed tax records for 5 years as the law requires, and emails a confirmation. Today it only removes the user from `localStorage`.
+- **Demo** (`startDemo` in `src/app89.js`): `/dashboard/#/demo` creates a local demo user. The real app should serve a read-only shared demo company that resets nightly and never writes to the real database.
 
 ## 2. Passkeys (owner and auditor)
 **Today:** real WebAuthn ceremonies run in the browser (`src/app6.js` `pkCreate`/`pkSignIn`; auditor side in `src/auditor.html`), but the challenge is random client-side and the result is only stored locally. Nothing verifies the signature.
@@ -107,6 +110,7 @@ General rules for the real build:
 - `GET /auditor/companies/:id/filings?period=`, `PATCH .../filings/:formId { filed, filedAt, receiptFileId }`, `PATCH .../checklist/:itemId { done }`, `POST .../periods/:period/close`.
 - Deadline calculation (`dueOf`, `fyEnd` in `src/auditor.html`) should move server-side so reminders and the auditor desk agree. Add Thai public holidays (today only weekends roll forward).
 - Audit trail of every auditor action.
+- Language: `src/aud-th.js` translates the auditor pages on the client from a dictionary. Once data comes from the server, send Thai labels for forms and statuses from the API rather than translating English strings.
 
 ## 13. Real PDF data
 **Today:** the Review Pack and P&L PDFs are drawn in the browser (`src/app86.js`) from the local figures, so their numbers are demo numbers whenever the sample is used.
