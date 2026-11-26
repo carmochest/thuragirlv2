@@ -187,6 +187,7 @@ function plCard(F){
   block("Money in", F.revMix, F.rev, "in"); block("Money out", F.expMix, F.exp, "out");
   var k = F.rev - F.exp, t = el("div", "pl-t" + (k < 0 ? " neg" : "")); t.appendChild(el("span", "", k < 0 ? "Loss" : "Kept (profit)"));
   var v = el("div", "pl-tv"); v.appendChild(el("b", "num", (k < 0 ? "−" : "") + baht(Math.abs(k)))); if (F.rev) v.appendChild(el("small", "num", (k / F.rev * 100).toFixed(1) + "% of money in")); t.appendChild(v); root.appendChild(t);
+  plActions(root, F);
 }
 var per = "mtd";
 function tickL(n){ return n === 0 ? "0" : n >= 1e6 ? (n / 1e6) + "M" : (n / 1e3) + "K"; }

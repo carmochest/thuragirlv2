@@ -226,6 +226,7 @@ var RULES = [
   [/^(฿[\d,.]+) to (\d+) people on (.+), after SSO and tax\.$/, function(m){ return m[1] + " ให้ " + m[2] + " คน วันที่ " + dates(m[3]) + " หลังหักประกันสังคมและภาษี"; }],
   [/^(\d{1,2} [A-Z][a-z]+(?: \d{4})?) to (\d{1,2} [A-Z][a-z]+(?: \d{4})?)$/, function(m){ return dates(m[1]) + " ถึง " + dates(m[2]); }],
   [/^(-?[\d.]+)% of money in$/, "$1% ของเงินเข้า"],
+  [/^Saved (\S+\.pdf)$/, "บันทึก $1 แล้ว"],
 ];
 var TCACHE = {};
 function T(s){

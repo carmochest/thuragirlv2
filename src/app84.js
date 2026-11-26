@@ -233,4 +233,6 @@ var TH = {
   "Worth a look": "ควรดูสักหน่อย", "Coming up": "ใกล้ถึง", "That is everything for today. Enjoy your coffee. Ask me anything below.": "วันนี้มีแค่นี้ ดื่มกาแฟให้อร่อยนะคะ ถามหนูได้ทุกเรื่องด้านล่างเลย",
   "Nothing is late and nothing needs signing. I will tell you here when something does.": "ไม่มีอะไรเลยกำหนดและไม่มีอะไรต้องเซ็น ถ้ามีหนูจะบอกตรงนี้",
   "No bills, invoices or filings fall due in the next seven days.": "เจ็ดวันข้างหน้าไม่มีบิล ใบแจ้งหนี้ หรือแบบภาษีที่ครบกำหนด",
+  "PDF": "PDF", "Share": "แชร์", "Print": "พิมพ์", "A statement in the standard TFRS for NPAEs layout: revenue, cost of sales, gross profit, expenses, tax and net profit.": "งบตามรูปแบบมาตรฐาน TFRS for NPAEs: รายได้ ต้นทุนขาย กำไรขั้นต้น ค่าใช้จ่าย ภาษี และกำไรสุทธิ",
+  "Sharing isn't available here, so I saved the PDF instead": "อุปกรณ์นี้แชร์ไม่ได้ หนูเลยบันทึกเป็น PDF ให้แทน",
 };

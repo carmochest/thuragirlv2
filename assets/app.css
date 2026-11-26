@@ -1243,5 +1243,8 @@
   @media (max-width:600px){ .cf-card{padding:18px 16px 16px;border-radius:22px} .cf-hi{font-size:26px} .cf-card.lead p.cf-big{font-size:19px} }
   .toast{--tst-bg:#0F1514;--tst-fg:#F4F5F5;z-index:90}
   html.night .toast{--tst-bg:#1E2625;--tst-fg:#F1F4F3}
+  .pl-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .pl-acts .pill{flex:1;min-width:88px;justify-content:center}
+  .plB .tnote{margin-top:10px}
 
   .dockB[hidden],.toast[hidden],.alt[hidden]{display:none}
