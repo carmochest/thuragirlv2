@@ -2106,8 +2106,8 @@ function renderBrief(){
   // what needs a yes, most pressing first
   var urgent = [];
   if (p && !u.done["rev:" + p.key]) urgent.push({ ic: "i-chart", h: "Your " + p.name + " books are ready to sign off", p: "It is all on one page: " + baht(p.inc) + " in, " + baht(p.exp) + " out, " + baht(p.kept) + " kept.", btn: "Review", fn: openSheet, k: "rev" });
-  TK.filter(function(x){ return (x.rank <= 3 || (x.due && diffDays(x.due, today()) <= 3)) && x.k.indexOf("rev") !== 0; }).forEach(function(x){ urgent.push({ ic: x.ic || "i-clock", h: x.story ? x.story.h : x.t, p: x.story ? x.story.p : (x.m || ""), btn: x.btn, fn: x.fn, k: x.k, amt: x.amt, late: x.late }); });
-  var top = urgent.slice(0, 6), restN = TK.filter(function(x){ return x.k.indexOf("rev") !== 0; }).length - top.filter(function(x){ return x.k !== "rev"; }).length;
+  TK.filter(function(x){ return x.k.indexOf("rev") !== 0 && ((x.late && x.late.cls === "bad") || (x.due && diffDays(x.due, today()) <= 1) || x.rank <= 1); }).forEach(function(x){ urgent.push({ ic: x.ic || "i-clock", h: x.story ? x.story.h : x.t, p: x.story ? x.story.p : (x.m || ""), btn: x.btn, fn: x.fn, k: x.k, amt: x.amt, late: x.late }); });
+  var top = urgent.slice(0, 3), allN = TK.filter(function(x){ return x.k.indexOf("rev") !== 0; }).length + (p && !u.done["rev:" + p.key] ? 1 : 0), restN = allN - top.length;
 
   var wrap = el("div", "mb");
 
@@ -2124,22 +2124,31 @@ function renderBrief(){
   hl.innerHTML = L("You have <em>" + esc(shortB(B.cash)) + "</em> in the bank" + (top.length ? ", and <em>" + top.length + (top.length === 1 ? " thing" : " things") + "</em> need" + (top.length === 1 ? "s" : "") + " you today." : ", and nothing needs you today."),
     "มีเงินในบัญชี <em>" + esc(shortB(B.cash)) + "</em> " + (top.length ? "และวันนี้มี <em>" + top.length + " เรื่อง</em>รอคุณอยู่" : "และวันนี้ไม่มีอะไรรอคุณ"));
   hero.appendChild(hl);
+  var mgP = F.rev ? K / F.rev * 100 : 0, nb = (u.bills || []).filter(function(v){ return !v.paid && v.due >= today() && diffDays(v.due, today()) <= 7 && !top.some(function(t){ return t.k === "bill:" + v.id; }); }).sort(function(a, z){ return a.due < z.due ? -1 : 1; })[0];
+  function bb(v){ return "<b>" + esc(v) + "</b>"; }
+  function dTH(s2){ var d2 = day(s2); return d2.getDate() + " " + mth(MONTH[d2.getMonth()]); }
+  var blurb = L(esc(mName) + " so far: " + bb(baht(F.rev)) + " in and " + bb(baht(F.exp)) + " out, so you have " + (K >= 0 ? "kept " + bb(baht(K)) + " (" + bb(mgP.toFixed(1) + "%") + " of sales)" : "spent " + bb(baht(-K)) + " more than came in") + (F.d != null && Math.abs(F.d) < 200 && K > 0 ? ", " + bb((F.d >= 0 ? "+" : "−") + pctTxt(F.d)) + " on last month" : "") + ". ",
+    esc(mT) + " ถึงวันนี้ เงินเข้า " + bb(baht(F.rev)) + " เงินออก " + bb(baht(F.exp)) + (K >= 0 ? " เหลือเก็บ " + bb(baht(K)) + " (" + bb(mgP.toFixed(1) + "%") + " ของยอดขาย)" : " ใช้เกินรายรับ " + bb(baht(-K))) + (F.d != null && Math.abs(F.d) < 200 && K > 0 ? " " + bb((F.d >= 0 ? "+" : "−") + pctTxt(F.d)) + " เทียบเดือนก่อน" : "") + " ");
+  if (top.length) blurb += L("First up: " + esc(top[0].h.charAt(0).toLowerCase() + top[0].h.slice(1)) + ". ", "เรื่องแรก: " + esc(T_(top[0].h)) + " ");
+  else blurb += L("Nothing needs you today. ", "วันนี้ไม่มีอะไรต้องทำ ");
+  if (nb) blurb += L("Next bill: " + esc(nb.to) + ", " + bb(baht(nb.amount)) + " on " + bb(nice(nb.due)) + ".", "บิลถัดไป: " + esc(T_(nb.to)) + " " + bb(baht(nb.amount)) + " วันที่ " + bb(dTH(nb.due)));
+  var bl = NI(el("p", "mb-blurb")); bl.innerHTML = blurb; hero.appendChild(bl);
   var st = el("div", "mb-stats");
   [[L("Cash", "เงินสด"), baht(B.cash), B.cashD == null ? "" : (B.cashD >= 0 ? "↑ " : "↓ ") + pctTxt(B.cashD)],
-   [L("Kept", "เหลือเก็บ"), (K < 0 ? "−" : "") + baht(Math.abs(K)), L("of ", "จาก ") + shortB(F.rev)],
-   [L("Needs you", "รอคุณ"), String(top.length), restN > 0 ? L("+" + restN + " later", "+" + restN + " รอได้") : L("then all clear", "แล้วก็ว่าง")]].forEach(function(x){
+   [L("Money in", "เงินเข้า"), baht(F.rev), F.dIn == null ? mT : (F.dIn >= 0 ? "↑ " : "↓ ") + pctTxt(F.dIn)],
+   [L("Money out", "เงินออก"), baht(F.exp), F.dOut == null ? mT : (F.dOut >= 0 ? "↑ " : "↓ ") + pctTxt(F.dOut)],
+   [L("Kept in ", "เหลือเก็บเดือน") + mT, (K < 0 ? "−" : "") + baht(Math.abs(K)), mgP.toFixed(1) + L("% margin", "% อัตรากำไร")]].forEach(function(x){
     var t = NI(el("div", "mb-stat")); t.appendChild(el("span", "", x[0])); t.appendChild(el("b", "num", x[1])); if (x[2]) t.appendChild(el("small", "num", x[2])); st.appendChild(t);
   });
   var tiles = $$(".mb-stat", st), mg = F.rev ? Math.max(0, Math.min(100, K / F.rev * 100)) : 0;
   tiles[0].insertAdjacentHTML("beforeend", sparkSvg(B.series.map(function(z){ return z[1]; }), 120, 26).replace("br-spk", "br-spk mb-spk"));
-  var ring = el("i", "mb-ring"); ring.style.setProperty("--p", mg.toFixed(1)); ring.appendChild(el("em", "num", Math.round(mg) + "%")); tiles[1].appendChild(ring);
-  var dots = el("div", "mb-dots"); for (var di = 0; di < Math.min(8, top.length + Math.max(0, restN)); di++) dots.appendChild(el("i", di < top.length ? "on" : "")); tiles[2].appendChild(dots);
+  var ring = el("i", "mb-ring"); ring.style.setProperty("--p", mg.toFixed(1)); ring.appendChild(el("em", "num", Math.round(mg) + "%")); tiles[3].appendChild(ring);
   hero.appendChild(st); wrap.appendChild(hero);
 
   // ── today's list
-  var ls = sec(top.length ? "Today's list" : "Nothing on today's list", top.length ? L(top.length + (top.length === 1 ? " thing" : " things") + ", most pressing first", top.length + " เรื่อง เรียงจากด่วนที่สุด") : "");
+  var ls = sec(top.length ? "Needs you today" : "Nothing urgent today", top.length ? L("Only what is late or due today", "เฉพาะเรื่องที่เลยกำหนดหรือครบกำหนดวันนี้") : "");
   NI($(".mb-kick", ls) || el("i"));
-  if (!top.length) ls.appendChild(el("p", "mb-calm", "Nothing is late and nothing needs signing. I will tell you here when something does."));
+  if (!top.length) ls.appendChild(el("p", "mb-calm", "Nothing is late and nothing is due today."));
   top.forEach(function(s, i){
     var c = el("article", "mb-task" + (i === 0 ? " lead" : ""));
     if (i === 0) c.appendChild(el("span", "mb-rib", "Start here"));
@@ -2149,27 +2158,8 @@ function renderBrief(){
     var ft = el("div", "mb-tf"); ft.appendChild(el("b", "num mb-amt", s.amt ? baht(s.amt) : "")); ft.appendChild(btn("pill soft act", s.btn, s.fn)); c.appendChild(ft);
     ls.appendChild(c);
   });
-  if (restN > 0){ var lk = btn("mb-more", restN + (restN === 1 ? " smaller thing can wait" : " smaller things can wait"), function(){ go(""); }); lk.insertAdjacentHTML("beforeend", '<svg class="i"><use href="#i-chevr"/></svg>'); ls.appendChild(lk); }
+  if (restN > 0){ var lk = btn("mb-more", L(restN + (restN === 1 ? " more thing" : " more things") + " can wait. See all on Home", "อีก " + restN + " เรื่องรอได้ ดูทั้งหมดที่หน้าหลัก"), function(){ go(""); }); NI(lk); lk.insertAdjacentHTML("beforeend", '<svg class="i"><use href="#i-chevr"/></svg>'); ls.appendChild(lk); }
   wrap.appendChild(ls);
-
-  // ── this month at a glance
-  var gl = sec("This month at a glance", NIS(L("1 to " + day(B.asOf).getDate() + " " + mName, "1 ถึง " + day(B.asOf).getDate() + " " + mT)));
-  var gc = el("div", "mb-glance"), mx = Math.max(F.rev, F.exp, 1);
-  [["in", L("Money in", "เงินเข้า"), F.rev], ["out", L("Money out", "เงินออก"), F.exp]].forEach(function(r){
-    var row = NI(el("div", "mb-bar " + r[0])), lab = el("div", "mb-bl"); lab.appendChild(el("span", "", r[1])); lab.appendChild(el("b", "num", baht(r[2]))); row.appendChild(lab);
-    var tr2 = el("div", "mb-track"), fl = el("i"); fl.style.width = Math.max(3, r[2] / mx * 100) + "%"; tr2.appendChild(fl); row.appendChild(tr2); gc.appendChild(row);
-  });
-  var kp = NI(el("div", "mb-kept" + (K < 0 ? " neg" : ""))); kp.appendChild(el("span", "", K < 0 ? L("Spent more than came in", "ใช้เกินรายรับ") : L("Kept", "เหลือเก็บ")));
-  kp.appendChild(el("b", "num", (K < 0 ? "−" : "") + baht(Math.abs(K)))); if (F.rev) kp.appendChild(el("small", "num", (K / F.rev * 100).toFixed(1) + L("% margin", "% อัตรากำไร"))); gc.appendChild(kp);
-  var cm = F.expMix.slice(0, 4), other = F.exp - cm.reduce(function(a, r){ return a + r[1]; }, 0); if (other > 0) cm = cm.concat([["Everything else", other]]);
-  if (cm.length && F.exp){
-    gc.appendChild(el("span", "mb-gk", "Where the money went"));
-    var stk = el("div", "mb-stack"), lg = el("div", "mb-lg");
-    cm.forEach(function(r, ci){ var seg = el("i", "s" + ci); seg.style.width = (r[1] / F.exp * 100) + "%"; stk.appendChild(seg);
-      var li = el("div", "mb-li"); li.appendChild(el("i", "s" + ci)); li.appendChild(el("span", "", cap(r[0]))); var v = NI(el("b", "num", baht(r[1]))); li.appendChild(v); li.appendChild(NI(el("em", "num", Math.round(r[1] / F.exp * 100) + "%"))); lg.appendChild(li); });
-    gc.appendChild(stk); gc.appendChild(lg);
-  }
-  gl.appendChild(gc); wrap.appendChild(gl);
 
   // ── insights, a swipeable rail
   var ns = noticed(u, B), big = F.expMix[0];
@@ -2191,19 +2181,24 @@ function renderBrief(){
   // ── today's receipt: what ThuraGirl did
   var rs = sec("What I took care of", L("While you were busy", "ระหว่างที่คุณยุ่งอยู่")); NI($(".mb-kick", rs));
   var rc = Object.keys(u.rcpt || {}).length, items = [], mins = 0;
-  function did(t, m){ items.push(t); mins += m; }
-  did(B.n + " bank lines read and sorted into " + F.expMix.length + " kinds of cost", B.n / 6);
-  if (u.matched) did(u.matched + " payments matched to invoices and bills", u.matched * 2);
-  if (rc) did(rc + (rc === 1 ? " receipt" : " receipts") + " filed", rc * 2);
-  var rem = (u.invoices || []).filter(function(v){ return v.reminded && diffDays(today(), v.reminded) <= 7; }).length; if (rem) did(rem + (rem === 1 ? " payment reminder" : " payment reminders") + " sent this week", rem * 5);
-  var pf = (u.invoices || []).concat(u.bills || []).filter(function(v){ return v.proof; }).length; if (pf) did(pf + (pf === 1 ? " payment slip" : " payment slips") + " filed", pf * 2);
-  var TP = taxPack(u, B); if (TP && u.done["tax:" + TP.key]) did(TP.name + " tax forms approved", 45); else if (TP) did(TP.name + " tax forms prepared and checked", 45);
-  if (p && u.done["rev:" + p.key]) did(p.name + " books signed off", 30);
-  did("Cash, costs and profit brought up to date for " + mName, 15);
+  var basis = [];
+  function did(t, m, why){ items.push(t); mins += m; if (why) basis.push([why, m]); }
+  did(B.n + " bank lines read and sorted into " + F.expMix.length + " kinds of cost", B.n / 6, L(B.n + " bank lines × 10 sec to sort by hand", B.n + " รายการ × 10 วินาที ถ้าแยกเอง"));
+  if (u.matched) did(u.matched + " payments matched to invoices and bills", u.matched * 2, L(u.matched + (u.matched === 1 ? " payment" : " payments") + " × 2 min to match", u.matched + " รายการ × 2 นาที ในการจับคู่"));
+  if (rc) did(rc + (rc === 1 ? " receipt" : " receipts") + " filed", rc * 2, L(rc + (rc === 1 ? " receipt" : " receipts") + " × 2 min to file", rc + " ใบ × 2 นาที ในการเก็บ"));
+  var rem = (u.invoices || []).filter(function(v){ return v.reminded && diffDays(today(), v.reminded) <= 7; }).length; if (rem) did(rem + (rem === 1 ? " payment reminder" : " payment reminders") + " sent this week", rem * 5, L(rem + (rem === 1 ? " reminder" : " reminders") + " × 5 min to write", rem + " ข้อความ × 5 นาที ในการเขียน"));
+  var pf = (u.invoices || []).concat(u.bills || []).filter(function(v){ return v.proof; }).length; if (pf) did(pf + (pf === 1 ? " payment slip" : " payment slips") + " filed", pf * 2, L(pf + (pf === 1 ? " slip" : " slips") + " × 2 min to file", pf + " ใบ × 2 นาที ในการเก็บ"));
+  var TP = taxPack(u, B); if (TP && u.done["tax:" + TP.key]) did(TP.name + " tax forms approved", 45, L("Tax forms: 45 min to prepare", "แบบภาษี: 45 นาที ในการเตรียม")); else if (TP) did(TP.name + " tax forms prepared and checked", 45, L("Tax forms: 45 min to prepare", "แบบภาษี: 45 นาที ในการเตรียม"));
+  if (p && u.done["rev:" + p.key]) did(p.name + " books signed off", 30, L("Month-end pack: 30 min", "สรุปสิ้นเดือน: 30 นาที"));
+  did("Cash, costs and profit brought up to date for " + mName, 15, L("Updating the month's numbers: 15 min", "อัปเดตตัวเลขประจำเดือน: 15 นาที"));
   var rp = el("div", "mb-rcpt"), rh = el("div", "mb-rh"); rh.appendChild(el("b", "", "ThuraGirl")); rh.appendChild(NI(el("span", "num", th ? now.toLocaleDateString("th-TH") : now.toLocaleDateString("en-GB")))); rp.appendChild(rh);
   items.forEach(function(t){ var r = el("div", "mb-rl"); r.innerHTML = '<svg class="i"><use href="#i-check"/></svg>'; r.appendChild(el("span", "", t)); rp.appendChild(r); });
   var mr = Math.max(5, Math.round(mins / 5) * 5), h = Math.floor(mr / 60), mm = mr % 60, tot = el("div", "mb-rt"); tot.appendChild(el("span", "", "Time saved, about"));
   tot.appendChild(NI(el("b", "num", L(((h ? h + " h " : "") + (mm ? mm + " min" : "")).trim(), ((h ? h + " ชม. " : "") + (mm ? mm + " นาที" : "")).trim())))); rp.appendChild(tot);
+  var how = el("details", "mb-how"), hs = el("summary", "", "How I work this out"); how.appendChild(hs);
+  var hl2 = NI(el("ul"));
+  basis.forEach(function(x){ var li = el("li"); li.appendChild(el("span", "", x[0])); var mn = Math.round(x[1]); li.appendChild(el("b", "num", mn >= 60 ? Math.floor(mn / 60) + L(" h ", " ชม. ") + (mn % 60 ? mn % 60 + L(" min", " นาที") : "") : mn + L(" min", " นาที"))); hl2.appendChild(li); });
+  how.appendChild(hl2); how.appendChild(el("p", "", "Typical times for a small business doing this by hand. An estimate, not a measurement.")); rp.appendChild(how);
   rs.appendChild(rp); wrap.appendChild(rs);
 
   // ── sign-off
@@ -2843,6 +2838,8 @@ var TH = {
   "Today's list": "เรื่องที่ต้องทำวันนี้", "Nothing on today's list": "วันนี้ไม่มีเรื่องต้องทำ", "Start here": "เริ่มตรงนี้", "Worth knowing": "เรื่องน่ารู้",
   "Time saved, about": "ช่วยประหยัดเวลาไปราว",
   "This month at a glance": "ภาพรวมเดือนนี้", "Where the money went": "เงินไปไหนบ้าง",
+  "Needs you today": "วันนี้ต้องทำ", "Nothing urgent today": "วันนี้ไม่มีเรื่องด่วน", "Nothing is late and nothing is due today.": "ไม่มีอะไรเลยกำหนดหรือครบกำหนดวันนี้",
+  "How I work this out": "หนูคำนวณอย่างไร", "Typical times for a small business doing this by hand. An estimate, not a measurement.": "เวลาโดยประมาณที่ธุรกิจเล็ก ๆ ใช้ทำเองด้วยมือ เป็นค่าประมาณ ไม่ใช่การวัดจริง",
 };
 
 /* ── several companies under one sign-in ── */
