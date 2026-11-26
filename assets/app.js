@@ -2098,9 +2098,9 @@ function renderBrief(){
   $$("#b-brief > :not(.emptyP)").forEach(function(n){ n.remove(); });
   var th = lang() === "th", now = new Date(), TK = tasks(u), p = B.pack, F = B.fin.mtd, mName = MONTH[day(B.asOf).getMonth()], hr = now.getHours(), nm = first(u);
   var mT = th ? mth(mName) : mName, K = F.rev - F.exp;
-  function P(cls, html){ var x = el("p", cls); x.innerHTML = html; x.setAttribute("data-noi18n", ""); return x; }
-  function n(v){ return '<b class="num">' + esc(v) + "</b>"; }
-  function card(ic, title, sub, cls){ var c = el("section", "cf-card " + (cls || "")), h = el("div", "cf-h"); h.innerHTML = '<i class="cf-bub"><svg class="i"><use href="#' + ic + '"/></svg></i>'; var tt = el("div", "cf-tt"); tt.appendChild(el("h2", "", title)); if (sub) tt.appendChild(el("span", "cf-sub", sub)); h.appendChild(tt); c.appendChild(h); return c; }
+  function NI(e){ e.setAttribute("data-noi18n", ""); return e; }
+  function shortB(v){ var a = Math.abs(v), s = a >= 1e6 ? (a / 1e6).toFixed(2).replace(/\.?0+$/, "") + L("M", " ล้าน") : a >= 1e4 ? Math.round(a / 1e3) + L("K", " พัน") : money(a); return (v < 0 ? "−" : "") + "฿" + s; }
+  function sec(title, kick){ var s = el("section", "mb-sec"), h = el("div", "mb-sh"); if (kick) h.appendChild(el("span", "mb-kick", kick)); h.appendChild(el("h2", "", title)); s.appendChild(h); return s; }
 
   // what needs a yes, most pressing first
   var urgent = [];
@@ -2108,64 +2108,85 @@ function renderBrief(){
   TK.filter(function(x){ return (x.rank <= 3 || (x.due && diffDays(x.due, today()) <= 3)) && x.k.indexOf("rev") !== 0; }).forEach(function(x){ urgent.push({ ic: x.ic || "i-clock", h: x.story ? x.story.h : x.t, p: x.story ? x.story.p : (x.m || ""), btn: x.btn, fn: x.fn, k: x.k, amt: x.amt, late: x.late }); });
   var top = urgent.slice(0, 6), restN = TK.filter(function(x){ return x.k.indexOf("rev") !== 0; }).length - top.filter(function(x){ return x.k !== "rev"; }).length;
 
-  var wrap = el("div", "cf");
-  var hello = el("header", "cf-hello");
-  hello.innerHTML = '<svg class="cf-cup" viewBox="0 0 120 110" aria-hidden="true"><path class="st" d="M44 30c-6-7 6-11 0-19M60 30c-6-7 6-11 0-19M76 30c-6-7 6-11 0-19"/><path d="M26 44h68v18a30 30 0 0 1-30 30h-8a30 30 0 0 1-30-30z"/><path d="M94 50h6a11 11 0 0 1 0 22h-8"/><path d="M14 98h92"/></svg>';
-  var hd = el("span", "cf-date", (th ? now.toLocaleDateString("th-TH", { weekday: "long", day: "numeric", month: "long" }) : now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })));
-  hd.setAttribute("data-noi18n", ""); hello.appendChild(hd);
-  var hi = el("h1", "cf-hi", (hr < 12 ? L("Good morning, ", "อรุณสวัสดิ์ คุณ ") : hr < 18 ? L("Good afternoon, ", "สวัสดีตอนบ่าย คุณ ") : L("Good evening, ", "สวัสดีตอนเย็น คุณ ")) + nm); hi.setAttribute("data-noi18n", ""); hello.appendChild(hi);
-  hello.appendChild(el("p", "cf-intro", "Pour yourself a coffee. Here is your business this morning, in about five minutes."));
-  wrap.appendChild(hello);
-  // 1. the short version
-  var sv = card("i-chat", "Here's the gist", "", "lead");
-  var cashS = B.cashD == null ? "" : B.cashD >= 0 ? L(", up " + pctTxt(B.cashD) + " since 1 " + mName, " เพิ่มขึ้น " + pctTxt(B.cashD) + " ตั้งแต่ 1 " + mT) : L(", down " + pctTxt(B.cashD) + " since 1 " + mName, " ลดลง " + pctTxt(B.cashD) + " ตั้งแต่ 1 " + mT);
-  sv.appendChild(P("cf-big", L((B.cashD == null || B.cashD >= 0 ? "Good news first: you have " : "A quick heads-up: you have ") + n(baht(B.cash)) + " in the bank" + cashS + ".", (B.cashD == null || B.cashD >= 0 ? "ข่าวดีก่อนเลย ตอนนี้มีเงินในบัญชี " : "แจ้งไว้ก่อนนะคะ ตอนนี้มีเงินในบัญชี ") + n(baht(B.cash)) + cashS)));
-  var mS = L(mName + " has brought in " + n(baht(F.rev)) + " so far. After " + n(baht(F.exp)) + " of costs, you have " + (K >= 0 ? "kept " + n(baht(K)) : "spent " + n(baht(-K)) + " more than came in") + ".",
-    mT + " มีเงินเข้าแล้ว " + n(baht(F.rev)) + " หักค่าใช้จ่าย " + n(baht(F.exp)) + (K >= 0 ? " เหลือเก็บ " + n(baht(K)) : " ใช้เกินรายรับ " + n(baht(-K))));
-  if (F.d != null && K > 0 && Math.abs(F.d) >= 200) mS += L(" That is well " + (F.d >= 0 ? "ahead of" : "behind") + " this point last month.", " " + (F.d >= 0 ? "ดีกว่า" : "น้อยกว่า") + "ช่วงเดียวกันของเดือนก่อนมาก");
-  else if (F.d != null && K > 0) mS += L(" That is " + pctTxt(F.d) + (F.d >= 0 ? " more" : " less") + " than at this point last month.", " " + (F.d >= 0 ? "มากกว่า" : "น้อยกว่า") + "ช่วงเดียวกันของเดือนก่อน " + pctTxt(F.d));
-  sv.appendChild(P("", mS));
-  sv.appendChild(P("", !top.length ? L("Nothing is late and nothing needs signing today. A quiet morning.", "วันนี้ไม่มีอะไรค้างและไม่มีอะไรต้องอนุมัติ เช้าที่สบาย ๆ")
-    : top.length === 1 ? L("One thing needs you today: " + esc(top[0].h.charAt(0).toLowerCase() + top[0].h.slice(1)) + ".", "วันนี้มีหนึ่งเรื่องที่รอคุณ: " + esc(T_(top[0].h)))
-    : L(top.length + " things need you today. The most pressing: " + esc(top[0].h.charAt(0).toLowerCase() + top[0].h.slice(1)) + ".", "วันนี้มี " + top.length + " เรื่องที่รอคุณ เรื่องแรกคือ " + esc(T_(top[0].h)))));
-  wrap.appendChild(sv);
+  var wrap = el("div", "mb");
 
-  // 2. what's urgent
-  var ur = card("i-alert", top.length ? "First, the bits that need you" : "Nothing needs you today", top.length ? (top.length === 1 ? "Just one thing" : top.length + " things, most pressing first") : "");
-  if (!top.length) ur.appendChild(el("p", "cf-calm", "Nothing is late and nothing needs signing. I will tell you here when something does."));
-  top.forEach(function(s, i){
-    var it = el("div", "cf-item"); it.appendChild(el("span", "cf-no num", String(i + 1)));
-    var bd = el("div", "cf-bd"); bd.appendChild(el("h3", "", s.h)); bd.appendChild(el("p", "", s.p));
-    var ft = el("div", "cf-ft"); if (s.late && s.late.txt) ft.appendChild(el("span", "cf-tag " + (s.late.cls || ""), s.late.txt)); if (s.amt) ft.appendChild(el("b", "num cf-amt", baht(s.amt)));
-    ft.appendChild(btn("pill " + (i === 0 ? "acc" : "soft act"), s.btn, s.fn)); bd.appendChild(ft); it.appendChild(bd); ur.appendChild(it);
+  // ── hero
+  var hero = el("header", "mb-hero");
+  var tr = el("div", "mb-top"), dt = el("div", "mb-dt");
+  dt.appendChild(NI(el("small", "", th ? now.toLocaleDateString("th-TH", { weekday: "short" }) : now.toLocaleDateString("en-GB", { weekday: "short" }).toUpperCase())));
+  dt.appendChild(el("b", "num", String(now.getDate()))); tr.appendChild(dt);
+  var tt = el("div", "mb-tt"); tt.appendChild(el("span", "mb-name", "The Morning Brief")); tt.appendChild(NI(el("span", "mb-meta", (th ? mth(MONTH[now.getMonth()]) + " " + (now.getFullYear() + 543) : MONTH[now.getMonth()] + " " + now.getFullYear()) + L(" · 5 min read", " · อ่าน 5 นาที")))); tr.appendChild(tt);
+  tr.insertAdjacentHTML("beforeend", '<svg class="tg mb-logo" width="40" height="42"><use href="#tg"/></svg>');
+  hero.appendChild(tr);
+  hero.appendChild(NI(el("p", "mb-hi", (hr < 12 ? L("Good morning, ", "อรุณสวัสดิ์ คุณ ") : hr < 18 ? L("Good afternoon, ", "สวัสดีตอนบ่าย คุณ ") : L("Good evening, ", "สวัสดีตอนเย็น คุณ ")) + nm)));
+  var hl = NI(el("h1", "mb-hl"));
+  hl.innerHTML = L("You have <em>" + esc(shortB(B.cash)) + "</em> in the bank" + (top.length ? ", and <em>" + top.length + (top.length === 1 ? " thing" : " things") + "</em> need" + (top.length === 1 ? "s" : "") + " you today." : ", and nothing needs you today."),
+    "มีเงินในบัญชี <em>" + esc(shortB(B.cash)) + "</em> " + (top.length ? "และวันนี้มี <em>" + top.length + " เรื่อง</em>รอคุณอยู่" : "และวันนี้ไม่มีอะไรรอคุณ"));
+  hero.appendChild(hl);
+  var st = el("div", "mb-stats");
+  [[L("Cash", "เงินสด"), baht(B.cash), B.cashD == null ? "" : (B.cashD >= 0 ? "↑ " : "↓ ") + pctTxt(B.cashD)],
+   [L("Kept", "เหลือเก็บ"), (K < 0 ? "−" : "") + baht(Math.abs(K)), L("of ", "จาก ") + shortB(F.rev)],
+   [L("Needs you", "รอคุณ"), String(top.length), restN > 0 ? L("+" + restN + " later", "+" + restN + " รอได้") : L("then all clear", "แล้วก็ว่าง")]].forEach(function(x){
+    var t = NI(el("div", "mb-stat")); t.appendChild(el("span", "", x[0])); t.appendChild(el("b", "num", x[1])); if (x[2]) t.appendChild(el("small", "num", x[2])); st.appendChild(t);
   });
-  if (restN > 0){ var lk = btn("lnk cf-more", restN + (restN === 1 ? " smaller thing can wait" : " smaller things can wait"), function(){ go(""); }); lk.insertAdjacentHTML("beforeend", '<svg class="i"><use href="#i-chevr"/></svg>'); ur.appendChild(lk); }
-  wrap.appendChild(ur);
+  hero.appendChild(st); wrap.appendChild(hero);
 
-  // 3. what I did for you
-  var dn = card("i-check", "What I took care of", "While you were busy"), ul = el("ul", "cf-done");
-  var rc = Object.keys(u.rcpt || {}).length, items = [B.n + " bank lines read and sorted into " + F.expMix.length + " kinds of cost"];
-  if (u.matched) items.push(u.matched + " payments matched to invoices and bills");
-  if (rc) items.push(rc + (rc === 1 ? " receipt" : " receipts") + " filed");
-  var rem = (u.invoices || []).filter(function(v){ return v.reminded && diffDays(today(), v.reminded) <= 7; }).length; if (rem) items.push(rem + (rem === 1 ? " payment reminder" : " payment reminders") + " sent this week");
-  var pf = (u.invoices || []).concat(u.bills || []).filter(function(v){ return v.proof; }).length; if (pf) items.push(pf + (pf === 1 ? " payment slip" : " payment slips") + " filed");
-  var TP = taxPack(u, B); if (TP && u.done["tax:" + TP.key]) items.push(TP.name + " tax forms approved");
-  else if (TP) items.push(TP.name + " tax forms prepared and checked");
-  if (p && u.done["rev:" + p.key]) items.push(p.name + " books signed off");
-  items.push("Cash, costs and profit brought up to date for " + mName);
-  items.forEach(function(tx){ var li = el("li"); li.innerHTML = '<i><svg class="i"><use href="#i-check"/></svg></i>'; li.appendChild(el("span", "", tx)); ul.appendChild(li); });
-  dn.appendChild(ul); wrap.appendChild(dn);
+  // ── today's list
+  var ls = sec(top.length ? "Today's list" : "Nothing on today's list", top.length ? L(top.length + (top.length === 1 ? " thing" : " things") + ", most pressing first", top.length + " เรื่อง เรียงจากด่วนที่สุด") : "");
+  NI($(".mb-kick", ls) || el("i"));
+  if (!top.length) ls.appendChild(el("p", "mb-calm", "Nothing is late and nothing needs signing. I will tell you here when something does."));
+  top.forEach(function(s, i){
+    var c = el("article", "mb-task" + (i === 0 ? " lead" : ""));
+    if (i === 0) c.appendChild(el("span", "mb-rib", "Start here"));
+    var hd = el("div", "mb-th"); hd.innerHTML = '<i class="mb-ic"><svg class="i"><use href="#' + s.ic + '"/></svg></i>';
+    var tx = el("div", "mb-tx"); tx.appendChild(el("h3", "", s.h)); if (s.late && s.late.txt) tx.appendChild(el("span", "mb-tag " + (s.late.cls || ""), s.late.txt)); hd.appendChild(tx); c.appendChild(hd);
+    c.appendChild(el("p", "mb-p", s.p));
+    var ft = el("div", "mb-tf"); ft.appendChild(el("b", "num mb-amt", s.amt ? baht(s.amt) : "")); ft.appendChild(btn("pill soft act", s.btn, s.fn)); c.appendChild(ft);
+    ls.appendChild(c);
+  });
+  if (restN > 0){ var lk = btn("mb-more", restN + (restN === 1 ? " smaller thing can wait" : " smaller things can wait"), function(){ go(""); }); lk.insertAdjacentHTML("beforeend", '<svg class="i"><use href="#i-chevr"/></svg>'); ls.appendChild(lk); }
+  wrap.appendChild(ls);
 
-  // 4. worth a look
+  // ── insights, a swipeable rail
   var ns = noticed(u, B), big = F.expMix[0];
-  if (big && F.exp) ns.unshift(L("Your biggest cost this month is " + big[0].toLowerCase() + ": " + baht(big[1]) + ", or " + Math.round(big[1] / F.exp * 100) + "% of everything that went out.", "ค่าใช้จ่ายก้อนใหญ่สุดเดือนนี้คือ" + T(cap(big[0])) + " " + baht(big[1]) + " หรือ " + Math.round(big[1] / F.exp * 100) + "% ของเงินออกทั้งหมด"));
+  if (big && F.exp) ns.unshift("Your biggest cost this month is " + big[0].toLowerCase() + ": " + baht(big[1]) + ", or " + Math.round(big[1] / F.exp * 100) + "% of everything that went out.");
   if (ns.length){
-    var ob = card("i-trend", "A few things I noticed", "Nothing to do, just good to know");
-    ns.slice(0, 4).forEach(function(s){ var r = el("div", "cf-note"); r.innerHTML = '<i><svg class="i"><use href="#i-trend"/></svg></i>'; r.appendChild(el("p", "", s)); ob.appendChild(r); });
-    wrap.appendChild(ob);
+    var is = sec("Worth knowing", L("Nothing to do, just good to know", "ไม่ต้องทำอะไร แค่น่ารู้ไว้")); NI($(".mb-kick", is));
+    var rail = el("div", "mb-rail");
+    ns.slice(0, 4).forEach(function(s, i){
+      var m = s.match(/covers about ([\d.]+) months?/), fig, unit = "";
+      if (m){ fig = m[1]; unit = L("months of cash", "เดือน ที่เงินสดพอใช้"); }
+      else { var q = s.match(/(\d[\d.]*)%/) || s.match(/฿[\d,]+/); fig = q ? (q[1] ? q[1] + "%" : q[0]) : ""; if (/ down /.test(s) && q && q[1]) fig = "−" + fig; else if (/ up /.test(s) && q && q[1]) fig = "+" + fig; }
+      var c = el("article", "mb-ins t" + (i % 3)); c.innerHTML = '<i class="mb-ic sm"><svg class="i"><use href="#i-trend"/></svg></i>';
+      if (fig){ var f = NI(el("b", "num mb-fig", fig)); c.appendChild(f); if (unit) c.appendChild(NI(el("span", "mb-unit", unit))); }
+      c.appendChild(el("p", "", s)); rail.appendChild(c);
+    });
+    is.appendChild(rail); wrap.appendChild(is);
   }
 
-  var end = el("div", "cf-end"); end.innerHTML = '<svg class="tg" width="40" height="42"><use href="#tg"/></svg>'; var et = el("div", "cf-et"); var es = el("p", "cf-sign", L("That's all for today. Enjoy your coffee, " + nm + ".", "วันนี้มีแค่นี้ ดื่มกาแฟให้อร่อยนะคะ คุณ " + nm)); es.setAttribute("data-noi18n", ""); et.appendChild(es); et.appendChild(el("p", "", "ThuraGirl, your bookkeeper. Ask me anything below.")); end.appendChild(et); wrap.appendChild(end);
+  // ── today's receipt: what ThuraGirl did
+  var rs = sec("What I took care of", L("While you were busy", "ระหว่างที่คุณยุ่งอยู่")); NI($(".mb-kick", rs));
+  var rc = Object.keys(u.rcpt || {}).length, items = [], mins = 0;
+  function did(t, m){ items.push(t); mins += m; }
+  did(B.n + " bank lines read and sorted into " + F.expMix.length + " kinds of cost", B.n / 6);
+  if (u.matched) did(u.matched + " payments matched to invoices and bills", u.matched * 2);
+  if (rc) did(rc + (rc === 1 ? " receipt" : " receipts") + " filed", rc * 2);
+  var rem = (u.invoices || []).filter(function(v){ return v.reminded && diffDays(today(), v.reminded) <= 7; }).length; if (rem) did(rem + (rem === 1 ? " payment reminder" : " payment reminders") + " sent this week", rem * 5);
+  var pf = (u.invoices || []).concat(u.bills || []).filter(function(v){ return v.proof; }).length; if (pf) did(pf + (pf === 1 ? " payment slip" : " payment slips") + " filed", pf * 2);
+  var TP = taxPack(u, B); if (TP && u.done["tax:" + TP.key]) did(TP.name + " tax forms approved", 45); else if (TP) did(TP.name + " tax forms prepared and checked", 45);
+  if (p && u.done["rev:" + p.key]) did(p.name + " books signed off", 30);
+  did("Cash, costs and profit brought up to date for " + mName, 15);
+  var rp = el("div", "mb-rcpt"), rh = el("div", "mb-rh"); rh.appendChild(el("b", "", "ThuraGirl")); rh.appendChild(NI(el("span", "num", th ? now.toLocaleDateString("th-TH") : now.toLocaleDateString("en-GB")))); rp.appendChild(rh);
+  items.forEach(function(t){ var r = el("div", "mb-rl"); r.innerHTML = '<svg class="i"><use href="#i-check"/></svg>'; r.appendChild(el("span", "", t)); rp.appendChild(r); });
+  var mr = Math.max(5, Math.round(mins / 5) * 5), h = Math.floor(mr / 60), mm = mr % 60, tot = el("div", "mb-rt"); tot.appendChild(el("span", "", "Time saved, about"));
+  tot.appendChild(NI(el("b", "num", L(((h ? h + " h " : "") + (mm ? mm + " min" : "")).trim(), ((h ? h + " ชม. " : "") + (mm ? mm + " นาที" : "")).trim())))); rp.appendChild(tot);
+  rs.appendChild(rp); wrap.appendChild(rs);
+
+  // ── sign-off
+  var end = el("div", "mb-end"); end.innerHTML = '<svg class="tg" width="44" height="46"><use href="#tg"/></svg>';
+  end.appendChild(NI(el("p", "mb-sign", L("That's all for today. Enjoy your coffee, " + nm + ".", "วันนี้มีแค่นี้ ดื่มกาแฟให้อร่อยนะคะ คุณ " + nm))));
+  end.appendChild(el("p", "mb-by", "ThuraGirl, your bookkeeper. Ask me anything below."));
+  wrap.appendChild(end);
   pg.appendChild(wrap);
 }
 function T_(s){ return lang() === "th" ? T(s) : s; }
@@ -2776,6 +2797,8 @@ var TH = {
   "Here's the gist": "สรุปสั้น ๆ", "First, the bits that need you": "เรื่องแรก ๆ ที่รอคุณอยู่", "Nothing needs you today": "วันนี้ไม่มีอะไรรอคุณ", "Just one thing": "มีแค่เรื่องเดียว",
   "What I took care of": "สิ่งที่หนูจัดการให้แล้ว", "While you were busy": "ระหว่างที่คุณยุ่งอยู่", "A few things I noticed": "สิ่งที่หนูสังเกตเห็น", "Nothing to do, just good to know": "ไม่ต้องทำอะไร แค่น่ารู้ไว้",
   "ThuraGirl, your bookkeeper. Ask me anything below.": "ThuraGirl ผู้ช่วยทำบัญชีของคุณ ถามหนูได้ทุกเรื่องด้านล่างเลย",
+  "Today's list": "เรื่องที่ต้องทำวันนี้", "Nothing on today's list": "วันนี้ไม่มีเรื่องต้องทำ", "Start here": "เริ่มตรงนี้", "Worth knowing": "เรื่องน่ารู้",
+  "Time saved, about": "ช่วยประหยัดเวลาไปราว",
 };
 
 /* ── several companies under one sign-in ── */

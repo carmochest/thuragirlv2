@@ -240,4 +240,6 @@ var TH = {
   "Here's the gist": "สรุปสั้น ๆ", "First, the bits that need you": "เรื่องแรก ๆ ที่รอคุณอยู่", "Nothing needs you today": "วันนี้ไม่มีอะไรรอคุณ", "Just one thing": "มีแค่เรื่องเดียว",
   "What I took care of": "สิ่งที่หนูจัดการให้แล้ว", "While you were busy": "ระหว่างที่คุณยุ่งอยู่", "A few things I noticed": "สิ่งที่หนูสังเกตเห็น", "Nothing to do, just good to know": "ไม่ต้องทำอะไร แค่น่ารู้ไว้",
   "ThuraGirl, your bookkeeper. Ask me anything below.": "ThuraGirl ผู้ช่วยทำบัญชีของคุณ ถามหนูได้ทุกเรื่องด้านล่างเลย",
+  "Today's list": "เรื่องที่ต้องทำวันนี้", "Nothing on today's list": "วันนี้ไม่มีเรื่องต้องทำ", "Start here": "เริ่มตรงนี้", "Worth knowing": "เรื่องน่ารู้",
+  "Time saved, about": "ช่วยประหยัดเวลาไปราว",
 };
