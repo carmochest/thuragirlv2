@@ -1526,5 +1526,28 @@
   .app.tgb .ob-av{background:color-mix(in srgb,var(--m-accent) 16%,transparent);color:var(--m-hint)}
   .app.tgb .ob-av .i{width:16px;height:16px}
   .app.tgb b,.app.tgb small{white-space:normal}
+  /* get started: the sync nudge for new users, on Home, Brief and Finance until bank and books are in */
+  .gsB{background:var(--m-surface);border-radius:22px;padding:16px;margin:0 0 14px;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--m-accent) 55%,transparent),0 6px 18px -10px rgba(15,21,20,.12);display:grid;gap:12px}
+  .gsB-h .tx{display:grid;gap:3px}
+  .gsB-k{font:800 11px var(--font-display);letter-spacing:.08em;text-transform:uppercase;color:var(--m-hint)}
+  html.night .gsB-k{color:#8ED9D0}
+  .gsB-h b{font:700 18px/1.25 var(--font-display);color:var(--m-ink);letter-spacing:-.01em}
+  .gsB-m{font-size:13.5px;color:var(--m-mute)}
+  .gsB-bar{height:6px;border-radius:6px;background:var(--m-soft);overflow:hidden}
+  .gsB-bar i{display:block;height:100%;background:var(--m-accent);border-radius:6px;transition:width .3s}
+  .gsB-l{display:grid}
+  .gsB-r{display:flex;align-items:center;gap:12px;padding:10px 0}
+  .gsB-r + .gsB-r{border-top:1px solid var(--m-line)}
+  .gsB-r .tx{flex:1;min-width:0;display:grid;gap:1px}
+  .gsB-r .tx b{font-size:14.5px;color:var(--m-ink)}
+  .gsB-r .tx span{font-size:12.5px;color:var(--m-mute)}
+  .gsB-n{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--m-soft);color:var(--m-mute)}
+  .gsB-n .i{width:16px;height:16px}
+  .gsB-r.on .gsB-n{background:color-mix(in srgb,var(--m-accent) 16%,transparent);color:var(--m-hint)}
+  html.night .gsB-r.on .gsB-n{color:#8ED9D0}
+  .gsB-r.on .tx b{color:var(--m-mute);text-decoration:line-through;text-decoration-color:var(--m-line)}
+  .gsB-r .pill{flex:none}
+  .pg.brf > .gsB,#b-money > .gsB{margin:4px 0 16px}
+  .gsB{text-align:left} .emptyP > .gsB{width:100%;max-width:520px;margin:18px auto 6px}
 
   .dockB[hidden],.toast[hidden],.alt[hidden]{display:none}

@@ -172,7 +172,7 @@ function connList(u, again, compact){
       if (on) b.insertAdjacentHTML("beforeend", '<svg class="i ck"><use href="#i-check"/></svg>');
       b.addEventListener("click", function(){
         if (bank){ closeGS(); var have = (u.banks || []).filter(function(x){ return x.bank === BANKMAP[a[0]]; })[0]; openUpload(have || { bank: BANKMAP[a[0]], acct: "" }); return; }
-        if (on) delete u.setup.conn[a[0]]; else { u.setup.conn[a[0]] = Date.now(); if (gi === 1) delete u.setup.conn.tgbooks; } save(); if (again) again();
+        if (on) delete u.setup.conn[a[0]]; else { u.setup.conn[a[0]] = Date.now(); if (gi === 1) delete u.setup.conn.tgbooks; } save(); if (again) again(); var gsd = $("#gs"); if (gsd && !gsd.hidden) gsd.setAttribute("data-dirty", "1"); paintSync(u);
         if (!on) toast(a[2] + " connected (test). I start reading it once the live link is on.");
       });
       list.appendChild(b);
@@ -185,7 +185,7 @@ function connList(u, again, compact){
       if (tgOn) tb.insertAdjacentHTML("beforeend", '<svg class="i ck"><use href="#i-check"/></svg>');
       tb.addEventListener("click", function(){
         if (tgOn) delete u.setup.conn.tgbooks; else { u.setup.conn.tgbooks = Date.now(); ["flow", "peak", "xero"].forEach(function(k){ delete u.setup.conn[k]; }); }
-        save(); if (again) again();
+        save(); if (again) again(); var gsd2 = $("#gs"); if (gsd2 && !gsd2.hidden) gsd2.setAttribute("data-dirty", "1"); paintSync(u);
         if (!tgOn) toast(L("Done. I keep your books, so there is nothing to sync.", "เรียบร้อย หนูดูแลบัญชีให้เอง ไม่ต้องเชื่อมต่อโปรแกรมใด"));
       });
       list.appendChild(tb);

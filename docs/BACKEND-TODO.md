@@ -83,6 +83,7 @@ General rules for the real build:
 **Needs:**
 - LINE Official Account + Messaging API; LINE Login to link a user (`POST /me/line/link`).
 - Transactional email (e.g. SES, Postmark) for sign-up, password reset, deadlines, weekly summary, Review Pack.
+- Sync nudge: a new user sees a "Get started · n of 3" card (bank, books, sales apps) on Home, Finance and the Brief until the bank and the books (an accounting app or "Let ThuraGirl keep your books") are connected (`src/app87.js`). From the day after sign-up the app also shows a once-a-day in-app reminder. In production, send the same reminder by LINE or email 24 hours after sign-up if nothing is connected, then on day 3 and day 7, and stop once the bank and books are in.
 - A scheduler that sends deadline reminders from the filings calendar, and the daily Morning Brief summary.
 - Chat ("Ask ThuraGirl") answers today come from canned logic in `src/app5.js`. The real app needs the AI service behind `POST /companies/:id/chat`.
 

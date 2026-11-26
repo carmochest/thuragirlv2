@@ -19,6 +19,7 @@ function showTab(){
   if (tab === "brief") renderBrief();
   if (tab === "settings") renderSettings();
   if (tab === "register") renderRegister();
+  paintSync(u);
   var cs = chips(); $$("#b-sug button").forEach(function(b, i){ b.textContent = cs[i]; });
   var key = db.session + ":" + tab + ":" + (u.hasData ? 1 : 0);
   if (key !== lastKey){ closeAll(); play(); window.scrollTo(0, 0); }
