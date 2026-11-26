@@ -854,3 +854,14 @@
   .pl-r.tap:hover{background:color-mix(in srgb,var(--m-soft) 70%,transparent)}
   .pl-go{position:absolute;right:0;top:50%;transform:translateY(-50%);color:var(--m-mute);display:grid}
   .pl-go .i{width:14px;height:14px}
+  /* forgot password and delete account */
+  .fp-ok{display:flex;gap:12px;align-items:flex-start;margin:4px 0 10px}
+  .fp-ok b{font:700 16px var(--font-display);color:var(--m-ink)}
+  .del-l{margin:4px 0 12px;padding-left:18px;display:grid;gap:6px;font-size:14px;color:var(--m-ink)}
+  .pill.inkb{background:var(--m-ink);color:var(--m-surface)}
+  .pill.inkb:disabled{opacity:.35}
+  .pill.danger-out{box-shadow:inset 0 0 0 1.5px var(--m-line)}
+  .demo-bar{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:center;gap:12px;background:var(--m-ink,#0F1514);color:#fff;padding:7px 12px;font:600 13px var(--font-display,system-ui);text-align:center}
+  .demo-bar a{background:var(--m-accent,#14B8A6);color:#05201C;border-radius:99px;padding:5px 12px;text-decoration:none;white-space:nowrap;font-weight:800;font-size:12.5px}
+  html.night .demo-bar{background:#E6ECEB;color:#0B0E0E}
+  @media (max-width:460px){ .demo-bar{font-size:12px;gap:8px;padding:6px 10px} }

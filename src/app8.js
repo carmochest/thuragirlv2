@@ -161,7 +161,7 @@ function renderSettings(){
   else if (T === "team"){ teamCard(u, root); accessCard(u, root); }
   else if (T === "apps"){ var cn = card("Connected apps"); cn.appendChild(connList(u, function(){ renderSettings(); })); root.appendChild(cn); if (!gated(u)) banksCard(u, root); }
   else if (T === "files"){ filesCard(u, root); if (!gated(u)) dataCard(u, root); }
-  else if (T === "security"){ securityCard(u, root); tfaCard(u, root); }
+  else if (T === "security"){ securityCard(u, root); tfaCard(u, root); deleteCard(u, root); }
   else if (T === "billing") billingCard(u, root);
 }
 function profileCard(u, root){

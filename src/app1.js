@@ -94,8 +94,10 @@ var tab = "home", lastKey = "", PAGE = document.body.getAttribute("data-page") |
 function toAuth(h){ if (PAGE === "signup") go(h); else location.href = "../signup/" + (h ? "#/" + h : ""); }
 function go(path){ var h = "#/" + path; if (location.hash === h) route(); else location.hash = h; }
 function route(){
+  var r0 = (location.hash || "").replace(/^#\/?/, "");
+  if (PAGE !== "signup" && (r0 === "demo" || /[?&]demo\b/.test(location.search))){ startDemo(); history.replaceState(null, "", location.pathname + "#/"); }
   var u = me(), r = (location.hash || "").replace(/^#\/?/, "");
-  applyTheme();
+  applyTheme(); demoBar(u);
   if (!u || !u.onboarded){
     if (PAGE !== "signup"){ location.replace("../signup/" + (!u && Object.keys(db.users).length ? "#/login" : "")); return; }
     $("#scr-auth").hidden = false; $("#app").hidden = true; closeAll(); lastKey = "";
@@ -180,6 +182,7 @@ function renderAuth(){
     };
     form.appendChild(nextBtn("Sign in"));
     if (pkOk()) form.appendChild(pkButton(err));
+    form.appendChild(altLink(L("<u>Forgot your password?</u>", "<u>ลืมรหัสผ่าน?</u>"), function(){ openForgot(le.value, function(em){ le.value = em; lp.value = ""; check(); try { lp.focus(); } catch (e) {} }); }));
     form.appendChild(altLink("New here? <u>Create an account</u>", function(){ go("signup"); }));
   } else if (key === "account"){
     head("Let's get you in.", "It takes about a minute. Everything else can wait until you are inside.");
