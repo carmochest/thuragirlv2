@@ -33,9 +33,15 @@ function salt(){ var a = new Uint8Array(8); try { crypto.getRandomValues(a); } c
 
 /* ── small ui helpers ── */
 var toastT = 0;
+var toastTr = function(s){ return s; };
 function toast(msg){
-  var t = $("#toast"); if (!t){ t = el("div", "toast"); t.id = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
-  t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(function(){ t.hidden = true; }, 2600);
+  var t = $("#toast"); if (!t){ t = el("div", "toast"); t.id = "toast"; t.setAttribute("role", "status"); t.setAttribute("data-noi18n", ""); t.addEventListener("click", function(){ t.hidden = true; }); document.body.appendChild(t); }
+  msg = String(msg || ""); var cut = msg.search(/[.!?] /), head = cut > 0 ? msg.slice(0, cut + 1) : msg, rest = cut > 0 ? msg.slice(cut + 2) : "";
+  t.textContent = ""; t.className = "toast" + (rest || msg.length > 46 ? " card" : "");
+  t.innerHTML = '<i class="tst-i"><svg class="i"><use href="#i-check"/></svg></i>';
+  var tx = el("div", "tst-t"); tx.appendChild(el("b", "", toastTr(head).replace(/\.$/, ""))); if (rest) tx.appendChild(el("span", "", toastTr(rest))); t.appendChild(tx);
+  t.hidden = false; t.style.animation = "none"; void t.offsetWidth; t.style.animation = "";
+  clearTimeout(toastT); toastT = setTimeout(function(){ t.hidden = true; }, rest ? 4200 : 2600);
 }
 function seg(opts, cur, on){
   var w = el("div", "ob-yn"); w.setAttribute("role", "group");
@@ -385,7 +391,7 @@ function paintSetup(){
 function paintHome(){
   var u = me();
   if (u.hasData && !(u.tx && u.tx.length)){ u.hasData = false; save(); $("#app").classList.add("nodata"); }
-  autoRecords(u); paintSetup(); paintBanks(); paintHero(u); paintNeeds(u); setCount(); paintEmpty(u);
+  autoRecords(u); paintSetup(); paintBanks(); paintHero(u); paintNeeds(u); paintWeek(u); setCount(); paintEmpty(u);
 }
 function openSetupTask(){ var u = me(); if (u.path === "new") go("register"); else openSetup(); }
 
@@ -444,6 +450,20 @@ function openUpload(b){
 }
 
 /* ── money ── */
+function plCard(F){
+  var root = $("#m-plc"); if (!root) return; root.textContent = "";
+  $("#m-plp").textContent = nice(F.from) + " to " + nice(F.to);
+  function block(title, rows, total, cls){
+    var h = el("div", "pl-h " + cls); h.appendChild(el("span", "", title)); h.appendChild(el("b", "num", baht(total))); root.appendChild(h);
+    var list = rows.slice(0, 6), rest = rows.slice(6).reduce(function(a, r){ return a + r[1]; }, 0);
+    if (rest > 0) list = list.concat([["Everything else", rest]]);
+    list.forEach(function(r){ var d = el("div", "pl-r"); d.appendChild(el("span", "", cap(r[0]))); d.appendChild(el("em", "num", total ? Math.round(r[1] / total * 100) + "%" : "")); d.appendChild(el("span", "num", baht(r[1]))); root.appendChild(d); });
+    if (!list.length) root.appendChild(el("div", "pl-r", "Nothing yet"));
+  }
+  block("Money in", F.revMix, F.rev, "in"); block("Money out", F.expMix, F.exp, "out");
+  var k = F.rev - F.exp, t = el("div", "pl-t" + (k < 0 ? " neg" : "")); t.appendChild(el("span", "", k < 0 ? "Loss" : "Kept (profit)"));
+  var v = el("div", "pl-tv"); v.appendChild(el("b", "num", (k < 0 ? "−" : "") + baht(Math.abs(k)))); if (F.rev) v.appendChild(el("small", "num", (k / F.rev * 100).toFixed(1) + "% of money in")); t.appendChild(v); root.appendChild(t);
+}
 var per = "mtd";
 function tickL(n){ return n === 0 ? "0" : n >= 1e6 ? (n / 1e6) + "M" : (n / 1e3) + "K"; }
 function niceStep(max){ var pow = Math.pow(10, Math.floor(Math.log(max) / Math.LN10)), c = [1, 2, 5, 10]; for (var i = 0; i < c.length; i++) if (max / (c[i] * pow) <= 4) return c[i] * pow; return 10 * pow; }
@@ -476,7 +496,7 @@ function renderMoney(){
     cols.appendChild(b); xs.appendChild(el("span", "", r[0]));
     var tr = el("tr"); [r[0], baht(r[1]), baht(r[2]), baht(r[1] - r[2])].forEach(function(c){ tr.appendChild(el("td", "", c)); }); tbl.appendChild(tr);
   });
-  mix($("#m-rev"), F.revMix, ""); mix($("#m-exp"), F.expMix, " out");
+  plCard(F);
   $("#m-vat").previousElementSibling.lastChild.textContent = me().setup.vat === "No" ? "Not VAT registered" : "Monthly VAT, net payable (estimate)";
   $("#m-vat").textContent = baht(F.tax[0]); $("#m-wht").textContent = baht(F.tax[1]); $("#m-corp").textContent = baht(F.tax[2]); $("#m-tax").textContent = baht(F.tax[0] + F.tax[1] + F.tax[2]);
 }
@@ -825,7 +845,6 @@ $$("#m-per button").forEach(function(b){ b.addEventListener("click", function(){
   $$("button", sug).forEach(function(b){ b.addEventListener("mousedown", function(ev){ ev.preventDefault(); }); b.addEventListener("click", function(){ ask(b.textContent); }); });
   $("#b-chat").addEventListener("submit", function(ev){ ev.preventDefault(); if (chat.on && chat.rec) chat.rec.abort(); ask(inp.value); });
   $("#b-popx").addEventListener("click", function(){ clearTimeout(chat.timer); pop.hidden = true; });
-  $("#m-pl").addEventListener("click", function(){ ask("Show the full P&L"); });
   var mic = $('#b-chat [aria-label="Speak"]'); mic.id = "b-mic"; mic.setAttribute("aria-pressed", "false"); mic.addEventListener("click", micToggle);
   var plus = $('#b-chat [aria-label="Upload a file"]'), fi = el("input"); fi.type = "file"; fi.hidden = true; fi.accept = ".csv,.xlsx,.xls,.pdf,image/*"; fi.id = "b-chatfile";
   plus.setAttribute("aria-label", "Add a statement or receipt"); plus.title = "Add a statement or receipt";
@@ -1137,7 +1156,7 @@ function openGS(k, title, sub){
   try { $("#gs-x").focus({ preventScroll: true }); $(".shB-card", s).scrollIntoView({ block: "nearest" }); } catch (e) {}
   return b;
 }
-function closeGS(){ var s = $("#gs"); if (s) s.hidden = true; }
+function closeGS(){ var s = $("#gs"); if (s){ var was = !s.hidden; s.hidden = true; if (was && s.getAttribute("data-dirty")){ s.removeAttribute("data-dirty"); refresh(); } } }
 function btn(cls, label, fn, icon){ var b = el("button", cls); b.type = "button"; b.innerHTML = icon ? '<svg class="i"><use href="#' + icon + '"/></svg>' : ""; b.appendChild(document.createTextNode(label)); if (fn) b.addEventListener("click", fn); return b; }
 function foot(a, b){ var f = el("div", "shB-f" + (b ? "" : " one")); f.appendChild(a); if (b) f.appendChild(b); return f; }
 function refresh(){ BK_CACHE.key = ""; lastKey = ""; showTab(); }
@@ -1202,7 +1221,7 @@ function tasks(u){
   (u.banks || []).filter(function(b){ return Date.now() - b.at > 7 * 864e5; }).forEach(function(b){
     out.push({ k: "bk:" + b.bank + b.acct, ic: "i-up", t: b.bank + " statement is getting old", m: "Last uploaded " + ago(b.at, true), late: { txt: "Uploaded " + ago(b.at, true), cls: "warn" }, btn: "Upload", rank: 6, fn: function(){ openUpload(b); } });
   });
-  moreTasks(u, B, out);
+  moreTasks(u, B, out); proofTasks(u, out);
   return out.sort(function(a, b){ return a.rank - b.rank; });
 }
 function rowFor(x){
@@ -1217,12 +1236,23 @@ function rowFor(x){
 function paintNeeds(u){
   var sec = $(".needB"), setup = $("#b-setuprow"), rev = $("#b-rev"), B = books(u);
   $$(".needB .tk[data-k]:not(#b-rev)").forEach(function(n){ n.remove(); });
-  var T = tasks(u); T.slice(0, 6).forEach(function(x){ sec.insertBefore(rowFor(x), setup); });
+  var T = tasks(u), lat = laterBills(u), shown = needsAll ? T.concat(lat) : T.slice(0, 6);
+  shown.forEach(function(x){ sec.insertBefore(rowFor(x), setup); });
   var p = B && B.pack, showRev = !!(p && !(u.done["rev:" + p.key]));
   rev.hidden = !showRev; rev.classList.remove("gone", "going"); rev.style.height = "";
   if (p){ $(".rt .t", rev).textContent = p.name + " Review Pack"; $(".rt .m", rev).textContent = "Your month on one page. " + baht(p.kept) + " kept."; }
-  var later = (u.bills || []).filter(function(v){ return !v.paid && diffDays(v.due, today()) > 7 && diffDays(v.due, today()) <= 31; }).length + Math.max(0, T.length - 6);
-  var more = $(".needB .more"); more.hidden = !later; if (later) more.firstChild.nodeValue = later + (later === 1 ? " more thing" : " more things") + " coming up this month";
+  var later = lat.length + Math.max(0, T.length - 6);
+  var more = $(".needB .more");
+  if (!more.getAttribute("role")){ more.setAttribute("role", "button"); more.tabIndex = 0; more.addEventListener("click", function(){ needsAll = !needsAll; paintNeeds(me()); if (!needsAll) $(".needB").scrollIntoView({ block: "start", behavior: "smooth" }); }); more.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.key === " "){ e.preventDefault(); more.click(); } }); }
+  more.hidden = !later; more.classList.toggle("open", needsAll);
+  if (later) more.firstChild.nodeValue = needsAll ? "Show less" : later + (later === 1 ? " more thing" : " more things") + " coming up this month";
+}
+var needsAll = false;
+function laterBills(u){
+  var t = today();
+  return (u.bills || []).filter(function(v){ return !v.paid && diffDays(v.due, t) > 7 && diffDays(v.due, t) <= 31; }).sort(function(a, b){ return a.due < b.due ? -1 : 1; }).map(function(v){
+    return { k: "later:" + v.id, ic: "i-clock", t: "Pay " + v.to, m: v.note || "Bill", amt: v.amount, late: { txt: lateTxt(v.due), cls: "" }, btn: "View", rank: 9, fn: function(){ openBill(v); } };
+  });
 }
 
 /* ── home: hero and tiles ── */
@@ -1243,6 +1273,8 @@ function paintHero(u){
 }
 
 /* ── money lists ── */
+var FOLD = {};
+function foldBtn(open, n, fn){ var b = btn("fold lpad", open ? "Show fewer" : "Show all " + n, fn, "i-chev"); b.setAttribute("aria-expanded", String(open)); if (open) b.classList.add("open"); return b; }
 function paintLists(u){
   var L = $$("#b-money .listB"), t = today();
   function fill(sec, title, items, empty, addLabel, addFn){
@@ -1252,11 +1284,14 @@ function paintLists(u){
     var sub = el("div", "sub", items.length + (items.length === 1 ? " open" : " open")); if (late){ sub.appendChild(document.createTextNode(" · ")); sub.appendChild(el("span", "bad", late + " overdue")); }
     h.appendChild(sub); sec.appendChild(h);
     if (!items.length) sec.appendChild(el("p", "st-p lpad", empty));
-    items.forEach(function(x){
+    var key = "fold:" + title, open = !!FOLD[key], cut = 4;
+    items.forEach(function(x, i){
+      if (i >= cut && !open) return;
       var r = el("div", "row"), rt = el("button", "rt rtb"); rt.type = "button"; rt.addEventListener("click", x.open);
       rt.appendChild(el("div", "t", x.name)); var m = el("div", "m"); m.appendChild(el("span", x.due < t ? "bad" : "", lateTxt(x.due))); var ma = el("span", "ma", " · "); ma.appendChild(el("span", "num", baht(x.amt))); m.appendChild(ma); rt.appendChild(m);
       r.appendChild(rt); r.appendChild(el("span", "amt num", baht(x.amt))); r.appendChild(btn("pill soft act", x.btn, x.act)); sec.appendChild(r);
     });
+    if (items.length > cut) sec.appendChild(foldBtn(open, items.length, function(){ FOLD[key] = !open; paintLists(u); }));
     var add = btn("alt lpad", "", addFn); add.innerHTML = "<u>" + addLabel + "</u>"; sec.appendChild(add);
   }
   fill(L[0], "Owed to you", (u.invoices || []).filter(function(v){ return !v.paid; }).sort(function(a, b){ return a.due < b.due ? -1 : 1; }).map(function(v){
@@ -1325,8 +1360,12 @@ function openInvoice(v){
   var ul = el("ul", "shB-l"); v.items.forEach(function(it){ var li = el("li"); li.appendChild(el("span", "", it[0] + (it[1] !== 1 ? " × " + it[1] : ""))); li.appendChild(el("b", "num", baht(it[1] * it[2]))); ul.appendChild(li); }); b.appendChild(ul);
   b.appendChild(el("p", "st-p" + (v.paid ? " okt" : v.due < today() ? " badt" : ""), v.paid ? "Paid on " + niceY(v.paid) + (v.via === "statement" ? ". I found the payment in your bank statement." : ".") : lateTxt(v.due) + (v.reminded ? ". Reminder sent " + niceY(v.reminded) + "." : ".")));
   var pr = btn("pill soft", "Printable invoice", function(){ printInvoice(v); }, "i-doc");
-  var sec = v.paid ? btn("pill soft", "Mark as unpaid", function(){ v.paid = ""; v.via = ""; save(); refresh(); openInvoice(v); })
-    : btn("pill acc", "Mark as paid", function(){ v.paid = today(); save(); refresh(); openInvoice(v); toast("Marked as paid"); });
+  if (v.paid && v.via === "hand"){
+    if (v.proof) b.appendChild(el("p", "st-p", "Payment slip filed: " + v.proof.name + "."));
+    else b.appendChild(btn("pill soft wide", "Upload the payment slip", function(){ proofUp(v, "in"); }, "i-up"));
+  }
+  var sec = v.paid ? btn("pill soft", "Mark as unpaid", function(){ v.paid = ""; v.via = ""; v.proof = null; save(); refresh(); openInvoice(v); })
+    : btn("pill acc", "Mark as paid", function(){ v.paid = today(); v.via = "hand"; v.proof = null; save(); refresh(); openInvoice(v); toast("Marked as paid. Add the payment slip when you can. It waits in Needs you."); });
   b.appendChild(foot(pr, sec));
   if (!v.paid){ var rm = btn("pill soft wide", v.due < today() ? "Send a reminder" : "Send it to the customer", function(){ openRemind(v, v.due >= today()); }, "i-chat"); b.appendChild(rm); }
   var del = btn("alt danger", "Delete this invoice", function(){ if (del.getAttribute("data-arm")){ u.invoices = u.invoices.filter(function(x){ return x !== v; }); save(); refresh(); closeGS(); toast("Invoice deleted"); } else { del.setAttribute("data-arm", "1"); del.textContent = "Tap again to delete"; } });
@@ -1367,7 +1406,13 @@ function openRemind(v, initial){
   }, "i-chat");
   var copy = btn("pill soft", "Copy message", function(){
     var t = $("textarea", ta).value;
-    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ done("Copied. Paste it into LINE or email."); }, function(){ $("textarea", ta).select(); toast("Select the text and copy it"); });
+    function ok(){
+      if (!initial) v.reminded = today(); else v.sent = today(); save();
+      $("#gs").setAttribute("data-dirty", "1"); copy.classList.add("copied"); copy.innerHTML = '<svg class="i"><use href="#i-check"/></svg>'; copy.appendChild(document.createTextNode("Copied"));
+      clearTimeout(copy._t); copy._t = setTimeout(function(){ copy.classList.remove("copied"); copy.textContent = "Copy message"; }, 2200);
+    }
+    function legacy(){ var x = $("textarea", ta); x.focus(); x.select(); try { if (document.execCommand("copy")) return ok(); } catch (e) {} toast("Select the text and copy it"); }
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(ok, legacy); else legacy();
   });
   b.appendChild(foot(copy, mail));
   if (navigator.share){ b.appendChild(btn("pill soft wide", "Share to LINE or another app", function(){ navigator.share({ title: "Invoice " + v.id, text: $("textarea", ta).value }).then(function(){ done("Shared"); }, function(){}); })); }
@@ -1408,10 +1453,11 @@ function openBill(v){
   if (!v.paid){
     b.appendChild(fld("PromptPay ID", v.pp, { mode: "numeric", max: 13, ph: "Phone or tax ID", on: function(x, inp){ inp.value = x.replace(/\D/g, ""); if (inp.value.length === 10 || inp.value.length === 13){ v.pp = inp.value; save(); paintQr(); return ""; } if (!inp.value){ v.pp = ""; save(); paintQr(); } return inp.value ? "A 10-digit phone number or a 13-digit ID" : ""; } }));
     paintQr(); b.appendChild(qr);
-    b.appendChild(foot(btn("pill soft", "Close", closeGS), btn("pill acc", "Mark as paid", function(){ v.paid = today(); save(); refresh(); closeGS(); toast(v.to + " marked as paid"); })));
+    b.appendChild(foot(btn("pill soft", "Close", closeGS), btn("pill acc", "Mark as paid", function(){ v.paid = today(); v.via = "hand"; v.proof = null; save(); refresh(); closeGS(); toast(v.to + " marked as paid. Add the transfer slip when you can. It waits in Needs you."); })));
   } else {
     b.appendChild(el("p", "st-p okt", "Paid on " + niceY(v.paid) + (v.via === "statement" ? ". I found it in your bank statement." : ".")));
-    b.appendChild(foot(btn("pill soft", "Mark as unpaid", function(){ v.paid = ""; v.via = ""; save(); refresh(); openBill(v); })));
+    if (v.via === "hand"){ if (v.proof) b.appendChild(el("p", "st-p", "Transfer slip filed: " + v.proof.name + ".")); else b.appendChild(btn("pill soft wide", "Upload the transfer slip", function(){ proofUp(v, "out"); }, "i-up")); }
+    b.appendChild(foot(btn("pill soft", "Mark as unpaid", function(){ v.paid = ""; v.via = ""; v.proof = null; save(); refresh(); openBill(v); })));
   }
   var del = btn("alt danger", "Delete this bill", function(){ if (del.getAttribute("data-arm")){ u.bills = u.bills.filter(function(x){ return x !== v; }); save(); refresh(); closeGS(); toast("Bill deleted"); } else { del.setAttribute("data-arm", "1"); del.textContent = "Tap again to delete"; } });
   b.appendChild(del);
@@ -1551,6 +1597,22 @@ function dataCard(u, root){
     dataArmed = false; u.tx = []; u.banks = []; u.invoices = []; u.bills = []; u.rcpt = {}; u.done = {}; u.hasData = false; u.matched = 0; u.sample = false; save(); BK_CACHE.key = ""; renderSettings(); toast("Cleared");
   }));
   c.appendChild(r); root.appendChild(c);
+}
+
+/* ── proof of payment, asked for after a hand-marked payment ── */
+function proofUp(v, kind){
+  closeGS();
+  openKyc(kind === "in" ? "Payment slip" : "Transfer slip", (kind === "in" ? "From " + v.to + ", invoice " + v.id : "To " + v.to) + ". A photo or PDF of the slip or bank notification.", function(meta){ v.proof = meta; save(); refresh(); toast(kind === "in" ? "Payment slip filed" : "Transfer slip filed"); });
+}
+function proofTasks(u, out){
+  (u.invoices || []).filter(function(v){ return v.paid && v.via === "hand" && !v.proof; }).forEach(function(v){
+    out.push({ k: "pf:" + v.id, ic: "i-receipt", t: "Add the payment slip from " + v.to, m: "Invoice #" + v.id, amt: invTotal(v), late: { txt: "Marked paid " + nice(v.paid), cls: "" }, btn: "Upload", rank: 3, fn: function(){ proofUp(v, "in"); },
+      story: { h: "Add the payment slip from " + v.to, p: "You marked invoice #" + v.id + " as paid. A photo of the slip keeps the books audit-ready." } });
+  });
+  (u.bills || []).filter(function(v){ return v.paid && v.via === "hand" && !v.proof; }).forEach(function(v){
+    out.push({ k: "pf:" + v.id, ic: "i-receipt", t: "Add the transfer slip for " + v.to, m: v.note || "Bill", amt: v.amount, late: { txt: "Marked paid " + nice(v.paid), cls: "" }, btn: "Upload", rank: 3, fn: function(){ proofUp(v, "out"); },
+      story: { h: "Add the transfer slip for " + v.to, p: "You marked the " + v.to + " bill as paid. A photo of the slip keeps the books audit-ready." } });
+  });
 }
 /* ── extra line icons, same 1.5px stroke as the sprite ── */
 (function(){
@@ -1888,11 +1950,13 @@ function moreTasks(u, B, out){
 /* ── settings extras: notifications, team access, files ── */
 function notifCard(u, root){
   var c = card("Notifications"); u.notif = u.notif || { tax: 1, pay: 1, late: 1, week: 1, ch: "LINE" };
+  if (u.notif.ch === "LINE" || u.notif.ch === "Email" || u.notif.ch === "Both") u.notif.ch2 = u.notif.ch2 || u.notif.ch;
+  var push = el("div", "nt-push"); push.innerHTML = '<i><svg class="i"><use href="#i-bell"/></svg></i>'; var pt = el("div", "tx"); pt.appendChild(el("b", "", "App notifications are always on")); pt.appendChild(el("span", "", "Everything below pops up on your phone first. Turn any of it off here.")); push.appendChild(pt); c.appendChild(push);
   var rows = el("div", "ob-rows");
   [["tax", "Tax filing reminders", "3 days and 1 day before every deadline"], ["pay", "Payroll approvals", "When the month's payroll is ready"], ["late", "Overdue invoices and bills", "One daily summary of what's late"], ["week", "Weekly money digest", "Monday morning: cash in, cash out, what to watch"]].forEach(function(x){
     rows.appendChild(qrow(x[1], x[2], ["On", "Off"], u.notif[x[0]] ? "On" : "Off", function(v){ u.notif[x[0]] = v === "On" ? 1 : 0; save(); }));
   });
-  rows.appendChild(qrow("Send them by", "", ["LINE", "Email", "Both"], u.notif.ch, function(v){ u.notif.ch = v; save(); }));
+  rows.appendChild(qrow("Also send a copy by", "On top of the app notification", ["LINE", "Email", "Both", "None"], u.notif.ch2 || "None", function(v){ u.notif.ch2 = v; u.notif.ch = v; save(); }));
   c.appendChild(rows); c.appendChild(el("p", "tnote", "Test build: choices are saved, but nothing is sent yet."));
   root.appendChild(c);
 }
@@ -1957,12 +2021,23 @@ function paintContacts(u){
   host.appendChild(ch);
   var rows = list.filter(function(c){ return c.kind === tab; }).sort(function(a, b){ return b.total - a.total; });
   if (!rows.length) host.appendChild(el("p", "st-p lpad", tab === "Customer" ? "Customers appear here when you make an invoice." : "Suppliers appear here when you add a bill."));
+  var fk = "fold:c" + tab, open = !!FOLD[fk], cut = 5;
+  if (rows.length > 8){
+    var q = el("input", "csearch"); q.type = "search"; q.placeholder = tab === "Customer" ? "Find a customer" : "Find a supplier"; q.setAttribute("aria-label", q.placeholder); q.value = CQ[tab] || "";
+    q.addEventListener("input", function(){ CQ[tab] = q.value; var pos = q.selectionStart; paintContacts(u); var n = $("#m-contacts .csearch"); if (n){ n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} } });
+    var qw = el("div", "lpad"); qw.appendChild(q); host.appendChild(qw);
+    var needle = (CQ[tab] || "").trim().toLowerCase(); if (needle){ rows = rows.filter(function(c){ return c.name.toLowerCase().indexOf(needle) >= 0; }); open = true; if (!rows.length) host.appendChild(el("p", "st-p lpad", "No one by that name yet.")); }
+  }
+  var all = rows.length;
+  if (!open) rows = rows.slice(0, cut);
   rows.forEach(function(c){
     var r = el("div", "row"), rt = el("div", "rt"); rt.appendChild(el("div", "t", c.name));
     var m = el("div", "m", c.n + (tab === "Customer" ? (c.n === 1 ? " invoice" : " invoices") : (c.n === 1 ? " bill" : " bills")) + (c.open ? " · " + baht(c.open) + " open" : " · all settled")); rt.appendChild(m);
     r.appendChild(rt); r.appendChild(el("span", "amt num", baht(c.total))); host.appendChild(r);
   });
+  if (all > cut && !(CQ[tab] || "").trim()) host.appendChild(foldBtn(open, all, function(){ FOLD[fk] = !open; paintContacts(u); }));
 }
+var CQ = {};
 /* ── morning brief ── */
 function catsBetween(u, a, b){ var o = {}; (u.tx || []).forEach(function(x){ if (x.d < a || x.d > b || x.a >= 0) return; var c = cat(x.t, x.a); o[c] = (o[c] || 0) - x.a; }); return o; }
 function sparkSvg(vals, w, h){
@@ -1997,96 +2072,101 @@ function weekAhead(u, B){
 function renderBrief(){
   var u = me(), B = books(u), pg = $("#b-brief"); if (!B) return;
   $$("#b-brief > :not(.emptyP)").forEach(function(n){ n.remove(); });
-  var now = new Date(), T = tasks(u), p = B.pack, F = B.fin.mtd, mName = MONTH[day(B.asOf).getMonth()], hr = now.getHours();
-  var cards = [];
-  if (p && !u.done["rev:" + p.key]) cards.push({ ic: "i-chart", h: "Your " + p.name + " books are ready to sign off", p: "It is all on one page: " + baht(p.inc) + " in, " + baht(p.exp) + " out, " + baht(p.kept) + " kept.", btn: "Review", fn: openSheet, k: "rev" });
-  T.filter(function(x){ return x.rank <= 3 && x.k.indexOf("rev") !== 0; }).forEach(function(x){ cards.push({ ic: x.ic || "i-clock", h: x.story ? x.story.h : x.t, p: x.story ? x.story.p : (x.m || ""), btn: x.btn, fn: x.fn, k: x.k, amt: x.amt, late: x.late }); });
-  var top = cards.slice(0, 5), rest = T.filter(function(x){ return !top.some(function(s){ return s.k === x.k; }) && x.k.indexOf("rev") !== 0; });
-  var wrap = el("div", "pb");
+  var th = lang() === "th", now = new Date(), TK = tasks(u), p = B.pack, F = B.fin.mtd, mName = MONTH[day(B.asOf).getMonth()], hr = now.getHours(), nm = first(u);
+  var mT = th ? mth(mName) : mName, K = F.rev - F.exp;
+  function P(cls, html){ var x = el("p", cls); x.innerHTML = html; x.setAttribute("data-noi18n", ""); return x; }
+  function n(v){ return '<b class="num">' + esc(v) + "</b>"; }
+  function card(kick, title, cls){ var c = el("section", "cf-card " + (cls || "")), h = el("div", "cf-h"); h.appendChild(el("span", "cf-k", kick)); if (title) h.appendChild(el("h2", "", title)); c.appendChild(h); return c; }
 
-  // hero: the one number, like a wallet balance
-  var hero = el("section", "pb-hero");
-  var hd = el("div", "pb-top"); hd.appendChild(el("span", "pb-kick", "The Morning Brief")); hd.appendChild(el("span", "pb-date", now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }))); hero.appendChild(hd);
-  hero.appendChild(el("p", "pb-hi", (hr < 12 ? "Good morning, " : hr < 18 ? "Good afternoon, " : "Good evening, ") + first(u) + "."));
-  hero.appendChild(el("span", "pb-k", "Cash on hand"));
-  hero.appendChild(el("b", "pb-bal num", baht(B.cash)));
-  if (B.cashD != null) hero.appendChild(el("span", "pb-chg" + (B.cashD < 0 ? " dn" : ""), (B.cashD >= 0 ? "Up " : "Down ") + pctTxt(Math.abs(B.cashD)) + " since 1 " + mName));
-  hero.insertAdjacentHTML("beforeend", sparkSvg(B.series.map(function(s){ return s[1]; }), 320, 64));
-  var acts = el("div", "pb-acts");
-  [["i-up", "Upload", function(){ var b2 = $(".js-anyup"); if (b2) b2.click(); }], ["i-doc", "Invoice", function(){ go(""); setTimeout(startInvoiceFlow, 120); }], ["i-pay", "Pay", function(){ go(""); setTimeout(startPayFlow, 120); }], ["i-chart", "Finance", function(){ go("money"); }]].forEach(function(a){
-    var b = el("button", "pb-act"); b.type = "button"; b.innerHTML = '<i><svg class="i"><use href="#' + a[0] + '"/></svg></i>'; b.appendChild(el("span", "", a[1])); b.addEventListener("click", a[2]); acts.appendChild(b);
+  // what needs a yes, most pressing first
+  var urgent = [];
+  if (p && !u.done["rev:" + p.key]) urgent.push({ ic: "i-chart", h: "Your " + p.name + " books are ready to sign off", p: "It is all on one page: " + baht(p.inc) + " in, " + baht(p.exp) + " out, " + baht(p.kept) + " kept.", btn: "Review", fn: openSheet, k: "rev" });
+  TK.filter(function(x){ return x.rank <= 3 && x.k.indexOf("rev") !== 0; }).forEach(function(x){ urgent.push({ ic: x.ic || "i-clock", h: x.story ? x.story.h : x.t, p: x.story ? x.story.p : (x.m || ""), btn: x.btn, fn: x.fn, k: x.k, amt: x.amt, late: x.late }); });
+  var top = urgent.slice(0, 5), restN = TK.filter(function(x){ return x.k.indexOf("rev") !== 0; }).length - top.filter(function(x){ return x.k !== "rev"; }).length;
+
+  var wrap = el("div", "cf");
+  var mast = el("div", "cf-mast"); mast.innerHTML = '<svg class="tg" width="30" height="31"><use href="#tg"/></svg>';
+  var mt = el("div", "cf-mt"); mt.appendChild(el("b", "", "The Morning Brief")); mt.appendChild(el("span", "", (th ? now.toLocaleDateString("th-TH", { weekday: "long", day: "numeric", month: "long" }) : now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })) + " · " + L("about 5 minutes", "อ่านราว 5 นาที")));
+  mt.lastChild.setAttribute("data-noi18n", ""); mast.appendChild(mt); wrap.appendChild(mast);
+  var hi = el("h1", "cf-hi", (hr < 12 ? L("Good morning, ", "อรุณสวัสดิ์ คุณ ") : hr < 18 ? L("Good afternoon, ", "สวัสดีตอนบ่าย คุณ ") : L("Good evening, ", "สวัสดีตอนเย็น คุณ ")) + nm + L(".", "")); hi.setAttribute("data-noi18n", ""); wrap.appendChild(hi);
+
+  // 1. the short version
+  var sv = card("The short version", "", "lead");
+  var cashS = B.cashD == null ? "" : B.cashD >= 0 ? L(", up " + pctTxt(B.cashD) + " since 1 " + mName, " เพิ่มขึ้น " + pctTxt(B.cashD) + " ตั้งแต่ 1 " + mT) : L(", down " + pctTxt(B.cashD) + " since 1 " + mName, " ลดลง " + pctTxt(B.cashD) + " ตั้งแต่ 1 " + mT);
+  sv.appendChild(P("cf-big", L("You have " + n(baht(B.cash)) + " in the bank" + cashS + ".", "ตอนนี้มีเงินในบัญชี " + n(baht(B.cash)) + cashS)));
+  var mS = L(mName + " has brought in " + n(baht(F.rev)) + " so far. After " + n(baht(F.exp)) + " of costs, you have " + (K >= 0 ? "kept " + n(baht(K)) : "spent " + n(baht(-K)) + " more than came in") + ".",
+    mT + " มีเงินเข้าแล้ว " + n(baht(F.rev)) + " หักค่าใช้จ่าย " + n(baht(F.exp)) + (K >= 0 ? " เหลือเก็บ " + n(baht(K)) : " ใช้เกินรายรับ " + n(baht(-K))));
+  if (F.d != null && K > 0 && Math.abs(F.d) >= 200) mS += L(" That is well " + (F.d >= 0 ? "ahead of" : "behind") + " this point last month.", " " + (F.d >= 0 ? "ดีกว่า" : "น้อยกว่า") + "ช่วงเดียวกันของเดือนก่อนมาก");
+  else if (F.d != null && K > 0) mS += L(" That is " + pctTxt(F.d) + (F.d >= 0 ? " more" : " less") + " than at this point last month.", " " + (F.d >= 0 ? "มากกว่า" : "น้อยกว่า") + "ช่วงเดียวกันของเดือนก่อน " + pctTxt(F.d));
+  sv.appendChild(P("", mS));
+  sv.appendChild(P("", !top.length ? L("Nothing is late and nothing needs signing today. A quiet morning.", "วันนี้ไม่มีอะไรค้างและไม่มีอะไรต้องอนุมัติ เช้าที่สบาย ๆ")
+    : top.length === 1 ? L("One thing needs you today: " + esc(top[0].h.charAt(0).toLowerCase() + top[0].h.slice(1)) + ".", "วันนี้มีหนึ่งเรื่องที่รอคุณ: " + esc(T_(top[0].h)))
+    : L(top.length + " things need you today. The most pressing: " + esc(top[0].h.charAt(0).toLowerCase() + top[0].h.slice(1)) + ".", "วันนี้มี " + top.length + " เรื่องที่รอคุณ เรื่องแรกคือ " + esc(T_(top[0].h)))));
+  wrap.appendChild(sv);
+
+  // 2. what's urgent
+  var ur = card("Needs you", top.length ? "What's urgent" : "Nothing urgent");
+  if (!top.length) ur.appendChild(el("p", "cf-calm", "Nothing is late and nothing needs signing. I will tell you here when something does."));
+  top.forEach(function(s, i){
+    var it = el("div", "cf-item"); it.appendChild(el("span", "cf-no num", String(i + 1)));
+    var bd = el("div", "cf-bd"); bd.appendChild(el("h3", "", s.h)); bd.appendChild(el("p", "", s.p));
+    var ft = el("div", "cf-ft"); if (s.late && s.late.txt) ft.appendChild(el("span", "cf-tag " + (s.late.cls || ""), s.late.txt)); if (s.amt) ft.appendChild(el("b", "num cf-amt", baht(s.amt)));
+    ft.appendChild(btn("pill " + (i === 0 ? "acc" : "soft act"), s.btn, s.fn)); bd.appendChild(ft); it.appendChild(bd); ur.appendChild(it);
   });
-  hero.appendChild(acts); wrap.appendChild(hero);
+  if (restN > 0){ var lk = btn("lnk cf-more", restN + (restN === 1 ? " smaller thing can wait" : " smaller things can wait"), function(){ go(""); }); lk.insertAdjacentHTML("beforeend", '<svg class="i"><use href="#i-chevr"/></svg>'); ur.appendChild(lk); }
+  wrap.appendChild(ur);
 
-  // this month in three tiles
-  var tiles = el("div", "pb-tiles");
-  [["Money in", F.rev, F.dIn, true], ["Money out", F.exp, F.dOut, false], ["Kept", F.rev - F.exp, F.d, true]].forEach(function(x){
-    var t = el("button", "pb-tile"); t.type = "button"; t.addEventListener("click", function(){ go("money"); });
-    t.appendChild(el("span", "k", x[0])); t.appendChild(el("b", "num", baht(x[1])));
-    var good = x[2] != null && (x[2] >= 0) === x[3];
-    t.appendChild(el("small", good ? "up" : "", x[2] == null ? mName + " so far" : (x[2] >= 0 ? "↑ " : "↓ ") + pctTxt(Math.abs(x[2])) + " vs last month"));
-    tiles.appendChild(t);
-  });
-  wrap.appendChild(tiles);
-
-  // needs your yes: cards you swipe through
-  var sec = el("section", "pb-sec"), sh = el("div", "pb-h"); sh.appendChild(el("h2", "", top.length ? "Needs your yes" : "All clear")); if (top.length) sh.appendChild(el("span", "pb-n num", String(top.length))); sec.appendChild(sh);
-  if (!top.length) sec.appendChild(el("p", "pb-calm", "Nothing is late and nothing needs signing. I will tell you here when something does."));
-  else {
-    var rail = el("div", "pb-rail"); rail.setAttribute("role", "list");
-    top.forEach(function(s, i){
-      var c = el("article", "pb-card" + (i === 0 ? " lead" : "")); c.setAttribute("role", "listitem");
-      var ct = el("div", "pb-ct"); ct.innerHTML = '<i class="pb-ic"><svg class="i"><use href="#' + s.ic + '"/></svg></i>';
-      if (s.late && s.late.txt) ct.appendChild(el("span", "pb-tag " + (s.late.cls || ""), s.late.txt));
-      c.appendChild(ct);
-      c.appendChild(el("h3", "", s.h)); c.appendChild(el("p", "", s.p));
-      var cf = el("div", "pb-cf"); if (s.amt) cf.appendChild(el("b", "num pb-amt", baht(s.amt))); cf.appendChild(btn("pill " + (i === 0 ? "acc" : "soft act"), s.btn, s.fn)); c.appendChild(cf);
-      rail.appendChild(c);
-    });
-    sec.appendChild(rail);
-    if (top.length > 1){
-      var dots = el("div", "pb-dots"); top.forEach(function(s, i){ dots.appendChild(el("i", i === 0 ? "on" : "")); }); sec.appendChild(dots);
-      rail.addEventListener("scroll", function(){ var w = rail.firstChild.getBoundingClientRect().width + 12, k = Math.round(rail.scrollLeft / w); $$("i", dots).forEach(function(d, j){ d.className = j === k ? "on" : ""; }); }, { passive: true });
-    }
-  }
-  wrap.appendChild(sec);
-
-  var cols = el("div", "pb-cols"), c1 = el("div", "pb-col"), c2 = el("div", "pb-col");
-  var ev = weekAhead(u, B).sort(function(a, b){ return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; });
-  var wk = el("section", "pb-box"); wk.appendChild(el("h2", "", "The week ahead"));
-  if (!ev.length) wk.appendChild(el("p", "pb-calm", "No bills, invoices or filings fall due in the next seven days."));
-  ev.forEach(function(e){
-    var dd = day(e[0]), r = el("div", "pb-row"), dy = el("span", "pb-day"); dy.appendChild(el("small", "", e[0] === today() ? "Today" : dd.toLocaleDateString("en-GB", { weekday: "short" }))); dy.appendChild(el("b", "num", String(dd.getDate()))); r.appendChild(dy);
-    r.appendChild(el("span", "pb-rt", e[1])); r.appendChild(el("b", "num pb-v " + e[3], (e[3] === "in" ? "+" : "−") + e[2])); wk.appendChild(r);
-  });
-  c1.appendChild(wk);
-  if (rest.length){
-    var cw = el("section", "pb-box"); cw.appendChild(el("h2", "", "Can wait"));
-    rest.slice(0, 4).forEach(function(x){ var r = el("div", "pb-row"); r.innerHTML = '<i class="pb-ic sm"><svg class="i"><use href="#' + (x.ic || "i-clock") + '"/></svg></i>'; var rt = el("span", "pb-rt"); rt.appendChild(el("b", "", x.t)); rt.appendChild(el("small", "", (x.late ? x.late.txt : "") + (x.amt ? " · " + baht(x.amt) : ""))); r.appendChild(rt); r.appendChild(btn("pill soft act", x.btn, x.fn)); cw.appendChild(r); });
-    c1.appendChild(cw);
-  }
-  var ns = noticed(u, B);
-  if (ns.length){
-    var nb = el("section", "pb-box"); nb.appendChild(el("h2", "", "What I noticed"));
-    ns.forEach(function(s){ var r = el("div", "pb-row top"); r.innerHTML = '<i class="pb-ic sm"><svg class="i"><use href="#i-trend"/></svg></i>'; r.appendChild(el("p", "pb-note", s)); nb.appendChild(r); });
-    c2.appendChild(nb);
-  }
-  var mix = F.expMix.slice(0, 5), mx = mix.length ? mix[0][1] : 0;
-  if (mix.length){
-    var wb = el("section", "pb-box"), wh = el("div", "pb-h"); wh.appendChild(el("h2", "", "Where it went")); var sm = btn("lnk", "See finance", function(){ go("money"); }); sm.insertAdjacentHTML("beforeend", '<svg class="i"><use href="#i-chevr"/></svg>'); wh.appendChild(sm); wb.appendChild(wh);
-    mix.forEach(function(m){ var r = el("div", "pb-bar"), tp = el("div", "bt"); tp.appendChild(el("span", "", cap(m[0]))); tp.appendChild(el("b", "num", baht(m[1]))); r.appendChild(tp); var bar = el("i"); bar.style.width = Math.max(4, m[1] / mx * 100) + "%"; r.appendChild(bar); wb.appendChild(r); });
-    c2.appendChild(wb);
-  }
-  var dn = el("section", "pb-box"); dn.appendChild(el("h2", "", "Done for you"));
-  var rc = Object.keys(u.rcpt || {}).length, items = [B.n + " bank lines read and sorted into " + F.expMix.length + " kinds of cost"]; if (u.matched) items.push(u.matched + " payments matched to invoices and bills");
+  // 3. what I did for you
+  var dn = card("Done for you", "What I did while you slept"), ul = el("ul", "cf-done");
+  var rc = Object.keys(u.rcpt || {}).length, items = [B.n + " bank lines read and sorted into " + F.expMix.length + " kinds of cost"];
+  if (u.matched) items.push(u.matched + " payments matched to invoices and bills");
   if (rc) items.push(rc + (rc === 1 ? " receipt" : " receipts") + " filed");
+  var rem = (u.invoices || []).filter(function(v){ return v.reminded && diffDays(today(), v.reminded) <= 7; }).length; if (rem) items.push(rem + (rem === 1 ? " payment reminder" : " payment reminders") + " sent this week");
+  var pf = (u.invoices || []).concat(u.bills || []).filter(function(v){ return v.proof; }).length; if (pf) items.push(pf + (pf === 1 ? " payment slip" : " payment slips") + " filed");
   var TP = taxPack(u, B); if (TP && u.done["tax:" + TP.key]) items.push(TP.name + " tax forms approved");
+  else if (TP) items.push(TP.name + " tax forms prepared and checked");
   if (p && u.done["rev:" + p.key]) items.push(p.name + " books signed off");
-  items.forEach(function(tx){ var r = el("div", "pb-row"); r.innerHTML = '<i class="pb-ic sm ok"><svg class="i"><use href="#i-check"/></svg></i>'; r.appendChild(el("span", "pb-rt", tx)); dn.appendChild(r); });
-  c2.appendChild(dn);
-  cols.appendChild(c1); cols.appendChild(c2); wrap.appendChild(cols);
-  wrap.appendChild(el("p", "pb-end", "That is everything for today. Ask me anything below."));
+  items.push("Cash, costs and profit brought up to date for " + mName);
+  items.forEach(function(tx){ var li = el("li"); li.innerHTML = '<i><svg class="i"><use href="#i-check"/></svg></i>'; li.appendChild(el("span", "", tx)); ul.appendChild(li); });
+  dn.appendChild(ul); wrap.appendChild(dn);
+
+  // 4. worth a look
+  var ns = noticed(u, B), big = F.expMix[0];
+  if (big && F.exp) ns.unshift(L("Your biggest cost this month is " + big[0].toLowerCase() + ": " + baht(big[1]) + ", or " + Math.round(big[1] / F.exp * 100) + "% of everything that went out.", "ค่าใช้จ่ายก้อนใหญ่สุดเดือนนี้คือ" + T(cap(big[0])) + " " + baht(big[1]) + " หรือ " + Math.round(big[1] / F.exp * 100) + "% ของเงินออกทั้งหมด"));
+  if (ns.length){
+    var ob = card("Worth a look", "What I noticed");
+    ns.slice(0, 4).forEach(function(s){ var r = el("div", "cf-note"); r.innerHTML = '<i><svg class="i"><use href="#i-trend"/></svg></i>'; r.appendChild(el("p", "", s)); ob.appendChild(r); });
+    wrap.appendChild(ob);
+  }
+
+  // 5. the week ahead
+  var ev = weekAhead(u, B).sort(function(a, b){ return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; });
+  var wk = card("Coming up", "The week ahead");
+  if (!ev.length) wk.appendChild(el("p", "cf-calm", "No bills, invoices or filings fall due in the next seven days."));
+  ev.forEach(function(e){ wk.appendChild(dayRow(e)); });
+  wrap.appendChild(wk);
+
+  var end = el("div", "cf-end"); end.innerHTML = '<svg class="tg" width="26" height="27"><use href="#tg"/></svg>'; end.appendChild(el("p", "", "That is everything for today. Enjoy your coffee. Ask me anything below.")); wrap.appendChild(end);
   pg.appendChild(wrap);
+}
+function T_(s){ return lang() === "th" ? T(s) : s; }
+function dayRow(e){
+  var dd = day(e[0]), r = el("div", "pb-row"), dy = el("span", "pb-day");
+  dy.appendChild(el("small", "", e[0] === today() ? "Today" : dd.toLocaleDateString("en-GB", { weekday: "short" }))); dy.appendChild(el("b", "num", String(dd.getDate()))); r.appendChild(dy);
+  r.appendChild(el("span", "pb-rt", e[1])); r.appendChild(el("b", "num pb-v " + e[3], (e[3] === "in" ? "+" : "−") + e[2])); return r;
+}
+/* home borrows the week ahead from the brief */
+function paintWeek(u){
+  var B = books(u), host = $("#b-week"), needs = $(".needB");
+  if (!host && needs){ host = el("section", "card weekB"); host.id = "b-week"; host.setAttribute("aria-label", "The week ahead"); needs.parentNode.insertBefore(host, needs.nextSibling); }
+  if (!host) return; host.textContent = "";
+  if (!B){ host.hidden = true; return; }
+  var ev = weekAhead(u, B).sort(function(a, b){ return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0; });
+  host.hidden = !ev.length; if (!ev.length) return;
+  var h = el("div", "cardh"); h.appendChild(el("h2", "", "The week ahead"));
+  var tin = 0, tout = 0; ev.forEach(function(e){ var v = +String(e[2]).replace(/[^\d.]/g, ""); if (e[3] === "in") tin += v; else tout += v; });
+  h.appendChild(el("div", "sub", (tin ? "+" + baht(tin) + " in" : "") + (tin && tout ? " · " : "") + (tout ? "−" + baht(tout) + " out" : ""))); host.appendChild(h);
+  ev.slice(0, 5).forEach(function(e){ host.appendChild(dayRow(e)); });
 }
 /* ── guided chat: ThuraGirl asks, the owner answers by typing, talking or tapping ── */
 function popOpts(list){
@@ -2237,11 +2317,14 @@ function chipRow(items, on){ var c = el("div", "chips qch"); items.forEach(funct
 /* ── settings, in tabs so nothing crowds ── */
 var setTab = "account", STABS = [["account", "Account"], ["company", "Company"], ["team", "Team"], ["apps", "Apps"], ["files", "Files"], ["security", "Security"], ["billing", "Plan"]];
 function renderSettings(){
-  var u = me(), root = $("#b-settings"); root.textContent = ""; root.classList.remove("in");
+  var u = me(), root = $("#b-settings"), oldNav = $(".stabs", root), keepX = oldNav ? oldNav.scrollLeft : 0; root.textContent = ""; root.classList.remove("in");
   var h = el("div", "pgh"); h.appendChild(el("h1", "", "Settings")); h.appendChild(el("p", "", "Changes save as you type.")); root.appendChild(h);
   var nav = el("div", "chips stabs"); nav.setAttribute("role", "tablist");
   STABS.forEach(function(t){ var b = el("button", "", t[1]); b.type = "button"; b.setAttribute("role", "tab"); b.setAttribute("aria-selected", String(setTab === t[0])); b.setAttribute("aria-pressed", String(setTab === t[0])); b.addEventListener("click", function(){ setTab = t[0]; renderSettings(); }); nav.appendChild(b); });
   root.appendChild(nav);
+  nav.scrollLeft = keepX;
+  var on = $('[aria-selected="true"]', nav);
+  if (on) requestAnimationFrame(function(){ var l = on.offsetLeft - nav.offsetLeft, r = l + on.offsetWidth; if (l < nav.scrollLeft + 16 || r > nav.scrollLeft + nav.clientWidth - 16) nav.scrollTo({ left: Math.max(0, l - (nav.clientWidth - on.offsetWidth) / 2), behavior: keepX ? "smooth" : "auto" }); });
   var T = setTab;
   if (T === "account"){ profileCard(u, root); notifCard(u, root); appearanceCard(u, root); accountCard(u, root); }
   else if (T === "company"){ companyCard(u, root); recordsCard(u, root); }
@@ -2668,7 +2751,18 @@ var TH = {
   "name@company.co.th": "name@company.co.th", "customer@example.com": "customer@example.com", "Invoice number, what it is for": "เลขที่ใบแจ้งหนี้ ค่าอะไร",
   "Bangkok Bank": "ธนาคารกรุงเทพ", "Krungsri": "กรุงศรี", "Krungthai": "กรุงไทย", "Lotus Wholesale": "Lotus Wholesale",
   "MEA (electricity)": "กฟน. (ค่าไฟ)", "PTT (electricity)": "PTT (ค่าไฟ)", "Electricity, PTT": "ค่าไฟ, PTT", "Rent, Watthana Property": "ค่าเช่า, Watthana Property",
-  "Catering": "จัดเลี้ยง", "Catering, 50 guests": "จัดเลี้ยง 50 ท่าน", "Catering, staff party": "จัดเลี้ยงงานเลี้ยงพนักงาน", "Thai Beverage Co": "Thai Beverage Co"
+  "Catering": "จัดเลี้ยง", "Catering, 50 guests": "จัดเลี้ยง 50 ท่าน", "Catering, staff party": "จัดเลี้ยงงานเลี้ยงพนักงาน", "Thai Beverage Co": "Thai Beverage Co",
+  "Show less": "ย่อลง", "Show fewer": "แสดงน้อยลง", "Upload the payment slip": "อัปโหลดสลิปรับเงิน", "Upload the transfer slip": "อัปโหลดสลิปโอนเงิน",
+  "Payment slip": "สลิปรับเงิน", "Transfer slip": "สลิปโอนเงิน", "Payment slip filed": "เก็บสลิปรับเงินแล้ว", "Transfer slip filed": "เก็บสลิปโอนเงินแล้ว", "Marked as paid.": "ทำเครื่องหมายว่าจ่ายแล้ว", "Marked as paid": "ทำเครื่องหมายว่าจ่ายแล้ว",
+  "Add the payment slip when you can. It waits in Needs you.": "เพิ่มสลิปได้เมื่อสะดวก รายการนี้รออยู่ในหัวข้อรอคุณอยู่", "Add the transfer slip when you can. It waits in Needs you.": "เพิ่มสลิปได้เมื่อสะดวก รายการนี้รออยู่ในหัวข้อรอคุณอยู่",
+  "App notifications are always on": "การแจ้งเตือนในแอปเปิดอยู่เสมอ", "Everything below pops up on your phone first. Turn any of it off here.": "ทุกเรื่องด้านล่างจะเด้งเตือนในมือถือก่อน ปิดเรื่องไหนก็ได้ที่นี่",
+  "Also send a copy by": "ส่งสำเนาทางอื่นด้วย", "On top of the app notification": "นอกเหนือจากการแจ้งเตือนในแอป", "None": "ไม่ส่ง",
+  "Profit and loss": "กำไรขาดทุน", "Kept (profit)": "เหลือเก็บ (กำไร)", "Loss": "ขาดทุน", "Everything else": "อื่น ๆ", "Nothing yet": "ยังไม่มี",
+  "Find a customer": "ค้นหาลูกค้า", "Find a supplier": "ค้นหาซัพพลายเออร์", "No one by that name yet.": "ยังไม่มีชื่อนี้",
+  "The short version": "สรุปสั้น ๆ", "What's urgent": "เรื่องด่วน", "Nothing urgent": "ไม่มีเรื่องด่วน", "What I did while you slept": "สิ่งที่หนูทำให้ระหว่างที่คุณพักผ่อน",
+  "Worth a look": "ควรดูสักหน่อย", "Coming up": "ใกล้ถึง", "That is everything for today. Enjoy your coffee. Ask me anything below.": "วันนี้มีแค่นี้ ดื่มกาแฟให้อร่อยนะคะ ถามหนูได้ทุกเรื่องด้านล่างเลย",
+  "Nothing is late and nothing needs signing. I will tell you here when something does.": "ไม่มีอะไรเลยกำหนดและไม่มีอะไรต้องเซ็น ถ้ามีหนูจะบอกตรงนี้",
+  "No bills, invoices or filings fall due in the next seven days.": "เจ็ดวันข้างหน้าไม่มีบิล ใบแจ้งหนี้ หรือแบบภาษีที่ครบกำหนด",
 };
 
 /* ── several companies under one sign-in ── */
@@ -2879,7 +2973,25 @@ var RULES = [
   [new RegExp("^Profit and loss, " + MO + " so far \\(from your bank lines\\)$"), function(m){ return "งบกำไรขาดทุน เดือน" + mth(m[1]) + " ถึงตอนนี้ (จากรายการเดินบัญชี)"; }],
   [/^Kept (-?฿[\d,-]+), a (-?[\d.]+)% margin$/, "เหลือเก็บ $1 อัตรากำไร $2%"],
   [/^([A-Z][A-Za-z ,&]+?) (-?฿[\d,.-]+)$/, function(m){ var t = T(m[1]); return t === m[1] ? m[0] : t + " " + m[2]; }],
-  [/^Sample statement loaded\. (\d[\d,]*) transactions read\.$/, "โหลดรายการเดินบัญชีตัวอย่างแล้ว อ่านไป $1 รายการ"]
+  [/^Sample statement loaded\. (\d[\d,]*) transactions read\.$/, "โหลดรายการเดินบัญชีตัวอย่างแล้ว อ่านไป $1 รายการ"],
+  [/^(\d+) smaller things? can wait$/, "อีก $1 เรื่องเล็ก ๆ รอได้"], [/^Show all (\d+)$/, "แสดงทั้งหมด $1"],
+  [/^Add the payment slip from (.+)$/, "เพิ่มสลิปรับเงินจาก $1"], [/^Add the transfer slip for (.+)$/, "เพิ่มสลิปโอนเงินให้ $1"],
+  [/^Marked paid (.+)$/, function(m){ return "จ่ายแล้วเมื่อ " + dates(m[1]); }],
+  [/^You marked invoice (#?\S+) as paid\. A photo of the slip keeps the books audit-ready\.$/, "คุณทำเครื่องหมายว่าใบแจ้งหนี้ $1 จ่ายแล้ว ถ่ายรูปสลิปไว้ช่วยให้บัญชีพร้อมตรวจสอบ"],
+  [/^You marked the (.+) bill as paid\. A photo of the slip keeps the books audit-ready\.$/, "คุณทำเครื่องหมายว่าบิล $1 จ่ายแล้ว ถ่ายรูปสลิปไว้ช่วยให้บัญชีพร้อมตรวจสอบ"],
+  [/^From (.+), invoice (\S+)\. A photo or PDF of the slip or bank notification\.$/, "จาก $1 ใบแจ้งหนี้ $2 รูปหรือ PDF ของสลิปหรือข้อความแจ้งเตือนจากธนาคาร"],
+  [/^To (.+)\. A photo or PDF of the slip or bank notification\.$/, "ถึง $1 รูปหรือ PDF ของสลิปหรือข้อความแจ้งเตือนจากธนาคาร"],
+  [/^(.+) marked as paid\.?$/, "$1 จ่ายแล้ว"],
+  [/^(\d+) payment reminders? sent this week$/, "ส่งข้อความทวงเงิน $1 ครั้งในสัปดาห์นี้"], [/^(\d+) payment slips? filed$/, "เก็บสลิป $1 ใบ"],
+  [new RegExp("^Cash, costs and profit brought up to date for " + MO + "$"), function(m){ return "อัปเดตเงินสด ค่าใช้จ่าย และกำไรของเดือน" + mth(m[1]) + " แล้ว"; }],
+  [new RegExp("^" + MO + " tax forms prepared and checked$"), function(m){ return "เตรียมและตรวจแบบภาษีเดือน" + mth(m[1]) + " แล้ว"; }],
+  [/^Payment slip filed: (.+)\.$/, "เก็บสลิปแล้ว: $1"], [/^Transfer slip filed: (.+)\.$/, "เก็บสลิปแล้ว: $1"],
+  [/^The (.+) bill is overdue$/, "บิล $1 เลยกำหนดแล้ว"], [/^(.+) is due (today|soon)$/, function(m){ return m[1] + (m[2] === "today" ? " ครบกำหนดวันนี้" : " ใกล้ครบกำหนด"); }],
+  [/^(฿[\d,.]+), (.+)\. Scan the PromptPay code or mark it paid\.$/, function(m){ return m[1] + " " + T(cap(m[2])) + " สแกน QR พร้อมเพย์หรือทำเครื่องหมายว่าจ่ายแล้ว"; }],
+  [/^Payroll is ready for your yes$/, "เงินเดือนพร้อมให้คุณอนุมัติ"],
+  [/^(฿[\d,.]+) to (\d+) people on (.+), after SSO and tax\.$/, function(m){ return m[1] + " ให้ " + m[2] + " คน วันที่ " + dates(m[3]) + " หลังหักประกันสังคมและภาษี"; }],
+  [/^(\d{1,2} [A-Z][a-z]+(?: \d{4})?) to (\d{1,2} [A-Z][a-z]+(?: \d{4})?)$/, function(m){ return dates(m[1]) + " ถึง " + dates(m[2]); }],
+  [/^(-?[\d.]+)% of money in$/, "$1% ของเงินเข้า"],
 ];
 var TCACHE = {};
 function T(s){
@@ -2937,7 +3049,7 @@ var i18nObs = new MutationObserver(function(recs){
 });
 i18nObs.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS });
 // toasts appear right away
-toast = (function(orig){ return function(msg){ orig(lang() === "th" ? T(msg) : msg); }; })(toast);
+toastTr = function(s){ return lang() === "th" ? T(s) : s; };
 document.documentElement.lang = lang();
 
 /* Thai questions reach the same answers */

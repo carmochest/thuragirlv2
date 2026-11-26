@@ -221,5 +221,16 @@ var TH = {
   "name@company.co.th": "name@company.co.th", "customer@example.com": "customer@example.com", "Invoice number, what it is for": "เลขที่ใบแจ้งหนี้ ค่าอะไร",
   "Bangkok Bank": "ธนาคารกรุงเทพ", "Krungsri": "กรุงศรี", "Krungthai": "กรุงไทย", "Lotus Wholesale": "Lotus Wholesale",
   "MEA (electricity)": "กฟน. (ค่าไฟ)", "PTT (electricity)": "PTT (ค่าไฟ)", "Electricity, PTT": "ค่าไฟ, PTT", "Rent, Watthana Property": "ค่าเช่า, Watthana Property",
-  "Catering": "จัดเลี้ยง", "Catering, 50 guests": "จัดเลี้ยง 50 ท่าน", "Catering, staff party": "จัดเลี้ยงงานเลี้ยงพนักงาน", "Thai Beverage Co": "Thai Beverage Co"
+  "Catering": "จัดเลี้ยง", "Catering, 50 guests": "จัดเลี้ยง 50 ท่าน", "Catering, staff party": "จัดเลี้ยงงานเลี้ยงพนักงาน", "Thai Beverage Co": "Thai Beverage Co",
+  "Show less": "ย่อลง", "Show fewer": "แสดงน้อยลง", "Upload the payment slip": "อัปโหลดสลิปรับเงิน", "Upload the transfer slip": "อัปโหลดสลิปโอนเงิน",
+  "Payment slip": "สลิปรับเงิน", "Transfer slip": "สลิปโอนเงิน", "Payment slip filed": "เก็บสลิปรับเงินแล้ว", "Transfer slip filed": "เก็บสลิปโอนเงินแล้ว", "Marked as paid.": "ทำเครื่องหมายว่าจ่ายแล้ว", "Marked as paid": "ทำเครื่องหมายว่าจ่ายแล้ว",
+  "Add the payment slip when you can. It waits in Needs you.": "เพิ่มสลิปได้เมื่อสะดวก รายการนี้รออยู่ในหัวข้อรอคุณอยู่", "Add the transfer slip when you can. It waits in Needs you.": "เพิ่มสลิปได้เมื่อสะดวก รายการนี้รออยู่ในหัวข้อรอคุณอยู่",
+  "App notifications are always on": "การแจ้งเตือนในแอปเปิดอยู่เสมอ", "Everything below pops up on your phone first. Turn any of it off here.": "ทุกเรื่องด้านล่างจะเด้งเตือนในมือถือก่อน ปิดเรื่องไหนก็ได้ที่นี่",
+  "Also send a copy by": "ส่งสำเนาทางอื่นด้วย", "On top of the app notification": "นอกเหนือจากการแจ้งเตือนในแอป", "None": "ไม่ส่ง",
+  "Profit and loss": "กำไรขาดทุน", "Kept (profit)": "เหลือเก็บ (กำไร)", "Loss": "ขาดทุน", "Everything else": "อื่น ๆ", "Nothing yet": "ยังไม่มี",
+  "Find a customer": "ค้นหาลูกค้า", "Find a supplier": "ค้นหาซัพพลายเออร์", "No one by that name yet.": "ยังไม่มีชื่อนี้",
+  "The short version": "สรุปสั้น ๆ", "What's urgent": "เรื่องด่วน", "Nothing urgent": "ไม่มีเรื่องด่วน", "What I did while you slept": "สิ่งที่หนูทำให้ระหว่างที่คุณพักผ่อน",
+  "Worth a look": "ควรดูสักหน่อย", "Coming up": "ใกล้ถึง", "That is everything for today. Enjoy your coffee. Ask me anything below.": "วันนี้มีแค่นี้ ดื่มกาแฟให้อร่อยนะคะ ถามหนูได้ทุกเรื่องด้านล่างเลย",
+  "Nothing is late and nothing needs signing. I will tell you here when something does.": "ไม่มีอะไรเลยกำหนดและไม่มีอะไรต้องเซ็น ถ้ามีหนูจะบอกตรงนี้",
+  "No bills, invoices or filings fall due in the next seven days.": "เจ็ดวันข้างหน้าไม่มีบิล ใบแจ้งหนี้ หรือแบบภาษีที่ครบกำหนด",
 };

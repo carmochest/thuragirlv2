@@ -334,11 +334,13 @@ function moreTasks(u, B, out){
 /* ── settings extras: notifications, team access, files ── */
 function notifCard(u, root){
   var c = card("Notifications"); u.notif = u.notif || { tax: 1, pay: 1, late: 1, week: 1, ch: "LINE" };
+  if (u.notif.ch === "LINE" || u.notif.ch === "Email" || u.notif.ch === "Both") u.notif.ch2 = u.notif.ch2 || u.notif.ch;
+  var push = el("div", "nt-push"); push.innerHTML = '<i><svg class="i"><use href="#i-bell"/></svg></i>'; var pt = el("div", "tx"); pt.appendChild(el("b", "", "App notifications are always on")); pt.appendChild(el("span", "", "Everything below pops up on your phone first. Turn any of it off here.")); push.appendChild(pt); c.appendChild(push);
   var rows = el("div", "ob-rows");
   [["tax", "Tax filing reminders", "3 days and 1 day before every deadline"], ["pay", "Payroll approvals", "When the month's payroll is ready"], ["late", "Overdue invoices and bills", "One daily summary of what's late"], ["week", "Weekly money digest", "Monday morning: cash in, cash out, what to watch"]].forEach(function(x){
     rows.appendChild(qrow(x[1], x[2], ["On", "Off"], u.notif[x[0]] ? "On" : "Off", function(v){ u.notif[x[0]] = v === "On" ? 1 : 0; save(); }));
   });
-  rows.appendChild(qrow("Send them by", "", ["LINE", "Email", "Both"], u.notif.ch, function(v){ u.notif.ch = v; save(); }));
+  rows.appendChild(qrow("Also send a copy by", "On top of the app notification", ["LINE", "Email", "Both", "None"], u.notif.ch2 || "None", function(v){ u.notif.ch2 = v; u.notif.ch = v; save(); }));
   c.appendChild(rows); c.appendChild(el("p", "tnote", "Test build: choices are saved, but nothing is sent yet."));
   root.appendChild(c);
 }
@@ -403,9 +405,20 @@ function paintContacts(u){
   host.appendChild(ch);
   var rows = list.filter(function(c){ return c.kind === tab; }).sort(function(a, b){ return b.total - a.total; });
   if (!rows.length) host.appendChild(el("p", "st-p lpad", tab === "Customer" ? "Customers appear here when you make an invoice." : "Suppliers appear here when you add a bill."));
+  var fk = "fold:c" + tab, open = !!FOLD[fk], cut = 5;
+  if (rows.length > 8){
+    var q = el("input", "csearch"); q.type = "search"; q.placeholder = tab === "Customer" ? "Find a customer" : "Find a supplier"; q.setAttribute("aria-label", q.placeholder); q.value = CQ[tab] || "";
+    q.addEventListener("input", function(){ CQ[tab] = q.value; var pos = q.selectionStart; paintContacts(u); var n = $("#m-contacts .csearch"); if (n){ n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} } });
+    var qw = el("div", "lpad"); qw.appendChild(q); host.appendChild(qw);
+    var needle = (CQ[tab] || "").trim().toLowerCase(); if (needle){ rows = rows.filter(function(c){ return c.name.toLowerCase().indexOf(needle) >= 0; }); open = true; if (!rows.length) host.appendChild(el("p", "st-p lpad", "No one by that name yet.")); }
+  }
+  var all = rows.length;
+  if (!open) rows = rows.slice(0, cut);
   rows.forEach(function(c){
     var r = el("div", "row"), rt = el("div", "rt"); rt.appendChild(el("div", "t", c.name));
     var m = el("div", "m", c.n + (tab === "Customer" ? (c.n === 1 ? " invoice" : " invoices") : (c.n === 1 ? " bill" : " bills")) + (c.open ? " · " + baht(c.open) + " open" : " · all settled")); rt.appendChild(m);
     r.appendChild(rt); r.appendChild(el("span", "amt num", baht(c.total))); host.appendChild(r);
   });
+  if (all > cut && !(CQ[tab] || "").trim()) host.appendChild(foldBtn(open, all, function(){ FOLD[fk] = !open; paintContacts(u); }));
 }
+var CQ = {};

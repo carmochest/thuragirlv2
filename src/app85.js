@@ -207,7 +207,25 @@ var RULES = [
   [new RegExp("^Profit and loss, " + MO + " so far \\(from your bank lines\\)$"), function(m){ return "งบกำไรขาดทุน เดือน" + mth(m[1]) + " ถึงตอนนี้ (จากรายการเดินบัญชี)"; }],
   [/^Kept (-?฿[\d,-]+), a (-?[\d.]+)% margin$/, "เหลือเก็บ $1 อัตรากำไร $2%"],
   [/^([A-Z][A-Za-z ,&]+?) (-?฿[\d,.-]+)$/, function(m){ var t = T(m[1]); return t === m[1] ? m[0] : t + " " + m[2]; }],
-  [/^Sample statement loaded\. (\d[\d,]*) transactions read\.$/, "โหลดรายการเดินบัญชีตัวอย่างแล้ว อ่านไป $1 รายการ"]
+  [/^Sample statement loaded\. (\d[\d,]*) transactions read\.$/, "โหลดรายการเดินบัญชีตัวอย่างแล้ว อ่านไป $1 รายการ"],
+  [/^(\d+) smaller things? can wait$/, "อีก $1 เรื่องเล็ก ๆ รอได้"], [/^Show all (\d+)$/, "แสดงทั้งหมด $1"],
+  [/^Add the payment slip from (.+)$/, "เพิ่มสลิปรับเงินจาก $1"], [/^Add the transfer slip for (.+)$/, "เพิ่มสลิปโอนเงินให้ $1"],
+  [/^Marked paid (.+)$/, function(m){ return "จ่ายแล้วเมื่อ " + dates(m[1]); }],
+  [/^You marked invoice (#?\S+) as paid\. A photo of the slip keeps the books audit-ready\.$/, "คุณทำเครื่องหมายว่าใบแจ้งหนี้ $1 จ่ายแล้ว ถ่ายรูปสลิปไว้ช่วยให้บัญชีพร้อมตรวจสอบ"],
+  [/^You marked the (.+) bill as paid\. A photo of the slip keeps the books audit-ready\.$/, "คุณทำเครื่องหมายว่าบิล $1 จ่ายแล้ว ถ่ายรูปสลิปไว้ช่วยให้บัญชีพร้อมตรวจสอบ"],
+  [/^From (.+), invoice (\S+)\. A photo or PDF of the slip or bank notification\.$/, "จาก $1 ใบแจ้งหนี้ $2 รูปหรือ PDF ของสลิปหรือข้อความแจ้งเตือนจากธนาคาร"],
+  [/^To (.+)\. A photo or PDF of the slip or bank notification\.$/, "ถึง $1 รูปหรือ PDF ของสลิปหรือข้อความแจ้งเตือนจากธนาคาร"],
+  [/^(.+) marked as paid\.?$/, "$1 จ่ายแล้ว"],
+  [/^(\d+) payment reminders? sent this week$/, "ส่งข้อความทวงเงิน $1 ครั้งในสัปดาห์นี้"], [/^(\d+) payment slips? filed$/, "เก็บสลิป $1 ใบ"],
+  [new RegExp("^Cash, costs and profit brought up to date for " + MO + "$"), function(m){ return "อัปเดตเงินสด ค่าใช้จ่าย และกำไรของเดือน" + mth(m[1]) + " แล้ว"; }],
+  [new RegExp("^" + MO + " tax forms prepared and checked$"), function(m){ return "เตรียมและตรวจแบบภาษีเดือน" + mth(m[1]) + " แล้ว"; }],
+  [/^Payment slip filed: (.+)\.$/, "เก็บสลิปแล้ว: $1"], [/^Transfer slip filed: (.+)\.$/, "เก็บสลิปแล้ว: $1"],
+  [/^The (.+) bill is overdue$/, "บิล $1 เลยกำหนดแล้ว"], [/^(.+) is due (today|soon)$/, function(m){ return m[1] + (m[2] === "today" ? " ครบกำหนดวันนี้" : " ใกล้ครบกำหนด"); }],
+  [/^(฿[\d,.]+), (.+)\. Scan the PromptPay code or mark it paid\.$/, function(m){ return m[1] + " " + T(cap(m[2])) + " สแกน QR พร้อมเพย์หรือทำเครื่องหมายว่าจ่ายแล้ว"; }],
+  [/^Payroll is ready for your yes$/, "เงินเดือนพร้อมให้คุณอนุมัติ"],
+  [/^(฿[\d,.]+) to (\d+) people on (.+), after SSO and tax\.$/, function(m){ return m[1] + " ให้ " + m[2] + " คน วันที่ " + dates(m[3]) + " หลังหักประกันสังคมและภาษี"; }],
+  [/^(\d{1,2} [A-Z][a-z]+(?: \d{4})?) to (\d{1,2} [A-Z][a-z]+(?: \d{4})?)$/, function(m){ return dates(m[1]) + " ถึง " + dates(m[2]); }],
+  [/^(-?[\d.]+)% of money in$/, "$1% ของเงินเข้า"],
 ];
 var TCACHE = {};
 function T(s){
@@ -265,7 +283,7 @@ var i18nObs = new MutationObserver(function(recs){
 });
 i18nObs.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS });
 // toasts appear right away
-toast = (function(orig){ return function(msg){ orig(lang() === "th" ? T(msg) : msg); }; })(toast);
+toastTr = function(s){ return lang() === "th" ? T(s) : s; };
 document.documentElement.lang = lang();
 
 /* Thai questions reach the same answers */

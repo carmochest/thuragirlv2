@@ -285,7 +285,6 @@ $$("#m-per button").forEach(function(b){ b.addEventListener("click", function(){
   $$("button", sug).forEach(function(b){ b.addEventListener("mousedown", function(ev){ ev.preventDefault(); }); b.addEventListener("click", function(){ ask(b.textContent); }); });
   $("#b-chat").addEventListener("submit", function(ev){ ev.preventDefault(); if (chat.on && chat.rec) chat.rec.abort(); ask(inp.value); });
   $("#b-popx").addEventListener("click", function(){ clearTimeout(chat.timer); pop.hidden = true; });
-  $("#m-pl").addEventListener("click", function(){ ask("Show the full P&L"); });
   var mic = $('#b-chat [aria-label="Speak"]'); mic.id = "b-mic"; mic.setAttribute("aria-pressed", "false"); mic.addEventListener("click", micToggle);
   var plus = $('#b-chat [aria-label="Upload a file"]'), fi = el("input"); fi.type = "file"; fi.hidden = true; fi.accept = ".csv,.xlsx,.xls,.pdf,image/*"; fi.id = "b-chatfile";
   plus.setAttribute("aria-label", "Add a statement or receipt"); plus.title = "Add a statement or receipt";

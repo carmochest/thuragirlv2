@@ -115,7 +115,7 @@ function paintSetup(){
 function paintHome(){
   var u = me();
   if (u.hasData && !(u.tx && u.tx.length)){ u.hasData = false; save(); $("#app").classList.add("nodata"); }
-  autoRecords(u); paintSetup(); paintBanks(); paintHero(u); paintNeeds(u); setCount(); paintEmpty(u);
+  autoRecords(u); paintSetup(); paintBanks(); paintHero(u); paintNeeds(u); paintWeek(u); setCount(); paintEmpty(u);
 }
 function openSetupTask(){ var u = me(); if (u.path === "new") go("register"); else openSetup(); }
 
@@ -174,6 +174,20 @@ function openUpload(b){
 }
 
 /* ── money ── */
+function plCard(F){
+  var root = $("#m-plc"); if (!root) return; root.textContent = "";
+  $("#m-plp").textContent = nice(F.from) + " to " + nice(F.to);
+  function block(title, rows, total, cls){
+    var h = el("div", "pl-h " + cls); h.appendChild(el("span", "", title)); h.appendChild(el("b", "num", baht(total))); root.appendChild(h);
+    var list = rows.slice(0, 6), rest = rows.slice(6).reduce(function(a, r){ return a + r[1]; }, 0);
+    if (rest > 0) list = list.concat([["Everything else", rest]]);
+    list.forEach(function(r){ var d = el("div", "pl-r"); d.appendChild(el("span", "", cap(r[0]))); d.appendChild(el("em", "num", total ? Math.round(r[1] / total * 100) + "%" : "")); d.appendChild(el("span", "num", baht(r[1]))); root.appendChild(d); });
+    if (!list.length) root.appendChild(el("div", "pl-r", "Nothing yet"));
+  }
+  block("Money in", F.revMix, F.rev, "in"); block("Money out", F.expMix, F.exp, "out");
+  var k = F.rev - F.exp, t = el("div", "pl-t" + (k < 0 ? " neg" : "")); t.appendChild(el("span", "", k < 0 ? "Loss" : "Kept (profit)"));
+  var v = el("div", "pl-tv"); v.appendChild(el("b", "num", (k < 0 ? "−" : "") + baht(Math.abs(k)))); if (F.rev) v.appendChild(el("small", "num", (k / F.rev * 100).toFixed(1) + "% of money in")); t.appendChild(v); root.appendChild(t);
+}
 var per = "mtd";
 function tickL(n){ return n === 0 ? "0" : n >= 1e6 ? (n / 1e6) + "M" : (n / 1e3) + "K"; }
 function niceStep(max){ var pow = Math.pow(10, Math.floor(Math.log(max) / Math.LN10)), c = [1, 2, 5, 10]; for (var i = 0; i < c.length; i++) if (max / (c[i] * pow) <= 4) return c[i] * pow; return 10 * pow; }
@@ -206,7 +220,7 @@ function renderMoney(){
     cols.appendChild(b); xs.appendChild(el("span", "", r[0]));
     var tr = el("tr"); [r[0], baht(r[1]), baht(r[2]), baht(r[1] - r[2])].forEach(function(c){ tr.appendChild(el("td", "", c)); }); tbl.appendChild(tr);
   });
-  mix($("#m-rev"), F.revMix, ""); mix($("#m-exp"), F.expMix, " out");
+  plCard(F);
   $("#m-vat").previousElementSibling.lastChild.textContent = me().setup.vat === "No" ? "Not VAT registered" : "Monthly VAT, net payable (estimate)";
   $("#m-vat").textContent = baht(F.tax[0]); $("#m-wht").textContent = baht(F.tax[1]); $("#m-corp").textContent = baht(F.tax[2]); $("#m-tax").textContent = baht(F.tax[0] + F.tax[1] + F.tax[2]);
 }

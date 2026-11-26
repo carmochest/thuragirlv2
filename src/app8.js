@@ -147,11 +147,14 @@ function chipRow(items, on){ var c = el("div", "chips qch"); items.forEach(funct
 /* ── settings, in tabs so nothing crowds ── */
 var setTab = "account", STABS = [["account", "Account"], ["company", "Company"], ["team", "Team"], ["apps", "Apps"], ["files", "Files"], ["security", "Security"], ["billing", "Plan"]];
 function renderSettings(){
-  var u = me(), root = $("#b-settings"); root.textContent = ""; root.classList.remove("in");
+  var u = me(), root = $("#b-settings"), oldNav = $(".stabs", root), keepX = oldNav ? oldNav.scrollLeft : 0; root.textContent = ""; root.classList.remove("in");
   var h = el("div", "pgh"); h.appendChild(el("h1", "", "Settings")); h.appendChild(el("p", "", "Changes save as you type.")); root.appendChild(h);
   var nav = el("div", "chips stabs"); nav.setAttribute("role", "tablist");
   STABS.forEach(function(t){ var b = el("button", "", t[1]); b.type = "button"; b.setAttribute("role", "tab"); b.setAttribute("aria-selected", String(setTab === t[0])); b.setAttribute("aria-pressed", String(setTab === t[0])); b.addEventListener("click", function(){ setTab = t[0]; renderSettings(); }); nav.appendChild(b); });
   root.appendChild(nav);
+  nav.scrollLeft = keepX;
+  var on = $('[aria-selected="true"]', nav);
+  if (on) requestAnimationFrame(function(){ var l = on.offsetLeft - nav.offsetLeft, r = l + on.offsetWidth; if (l < nav.scrollLeft + 16 || r > nav.scrollLeft + nav.clientWidth - 16) nav.scrollTo({ left: Math.max(0, l - (nav.clientWidth - on.offsetWidth) / 2), behavior: keepX ? "smooth" : "auto" }); });
   var T = setTab;
   if (T === "account"){ profileCard(u, root); notifCard(u, root); appearanceCard(u, root); accountCard(u, root); }
   else if (T === "company"){ companyCard(u, root); recordsCard(u, root); }

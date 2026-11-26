@@ -15,7 +15,7 @@ function openGS(k, title, sub){
   try { $("#gs-x").focus({ preventScroll: true }); $(".shB-card", s).scrollIntoView({ block: "nearest" }); } catch (e) {}
   return b;
 }
-function closeGS(){ var s = $("#gs"); if (s) s.hidden = true; }
+function closeGS(){ var s = $("#gs"); if (s){ var was = !s.hidden; s.hidden = true; if (was && s.getAttribute("data-dirty")){ s.removeAttribute("data-dirty"); refresh(); } } }
 function btn(cls, label, fn, icon){ var b = el("button", cls); b.type = "button"; b.innerHTML = icon ? '<svg class="i"><use href="#' + icon + '"/></svg>' : ""; b.appendChild(document.createTextNode(label)); if (fn) b.addEventListener("click", fn); return b; }
 function foot(a, b){ var f = el("div", "shB-f" + (b ? "" : " one")); f.appendChild(a); if (b) f.appendChild(b); return f; }
 function refresh(){ BK_CACHE.key = ""; lastKey = ""; showTab(); }
@@ -80,7 +80,7 @@ function tasks(u){
   (u.banks || []).filter(function(b){ return Date.now() - b.at > 7 * 864e5; }).forEach(function(b){
     out.push({ k: "bk:" + b.bank + b.acct, ic: "i-up", t: b.bank + " statement is getting old", m: "Last uploaded " + ago(b.at, true), late: { txt: "Uploaded " + ago(b.at, true), cls: "warn" }, btn: "Upload", rank: 6, fn: function(){ openUpload(b); } });
   });
-  moreTasks(u, B, out);
+  moreTasks(u, B, out); proofTasks(u, out);
   return out.sort(function(a, b){ return a.rank - b.rank; });
 }
 function rowFor(x){
@@ -95,12 +95,23 @@ function rowFor(x){
 function paintNeeds(u){
   var sec = $(".needB"), setup = $("#b-setuprow"), rev = $("#b-rev"), B = books(u);
   $$(".needB .tk[data-k]:not(#b-rev)").forEach(function(n){ n.remove(); });
-  var T = tasks(u); T.slice(0, 6).forEach(function(x){ sec.insertBefore(rowFor(x), setup); });
+  var T = tasks(u), lat = laterBills(u), shown = needsAll ? T.concat(lat) : T.slice(0, 6);
+  shown.forEach(function(x){ sec.insertBefore(rowFor(x), setup); });
   var p = B && B.pack, showRev = !!(p && !(u.done["rev:" + p.key]));
   rev.hidden = !showRev; rev.classList.remove("gone", "going"); rev.style.height = "";
   if (p){ $(".rt .t", rev).textContent = p.name + " Review Pack"; $(".rt .m", rev).textContent = "Your month on one page. " + baht(p.kept) + " kept."; }
-  var later = (u.bills || []).filter(function(v){ return !v.paid && diffDays(v.due, today()) > 7 && diffDays(v.due, today()) <= 31; }).length + Math.max(0, T.length - 6);
-  var more = $(".needB .more"); more.hidden = !later; if (later) more.firstChild.nodeValue = later + (later === 1 ? " more thing" : " more things") + " coming up this month";
+  var later = lat.length + Math.max(0, T.length - 6);
+  var more = $(".needB .more");
+  if (!more.getAttribute("role")){ more.setAttribute("role", "button"); more.tabIndex = 0; more.addEventListener("click", function(){ needsAll = !needsAll; paintNeeds(me()); if (!needsAll) $(".needB").scrollIntoView({ block: "start", behavior: "smooth" }); }); more.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.key === " "){ e.preventDefault(); more.click(); } }); }
+  more.hidden = !later; more.classList.toggle("open", needsAll);
+  if (later) more.firstChild.nodeValue = needsAll ? "Show less" : later + (later === 1 ? " more thing" : " more things") + " coming up this month";
+}
+var needsAll = false;
+function laterBills(u){
+  var t = today();
+  return (u.bills || []).filter(function(v){ return !v.paid && diffDays(v.due, t) > 7 && diffDays(v.due, t) <= 31; }).sort(function(a, b){ return a.due < b.due ? -1 : 1; }).map(function(v){
+    return { k: "later:" + v.id, ic: "i-clock", t: "Pay " + v.to, m: v.note || "Bill", amt: v.amount, late: { txt: lateTxt(v.due), cls: "" }, btn: "View", rank: 9, fn: function(){ openBill(v); } };
+  });
 }
 
 /* ── home: hero and tiles ── */
@@ -121,6 +132,8 @@ function paintHero(u){
 }
 
 /* ── money lists ── */
+var FOLD = {};
+function foldBtn(open, n, fn){ var b = btn("fold lpad", open ? "Show fewer" : "Show all " + n, fn, "i-chev"); b.setAttribute("aria-expanded", String(open)); if (open) b.classList.add("open"); return b; }
 function paintLists(u){
   var L = $$("#b-money .listB"), t = today();
   function fill(sec, title, items, empty, addLabel, addFn){
@@ -130,11 +143,14 @@ function paintLists(u){
     var sub = el("div", "sub", items.length + (items.length === 1 ? " open" : " open")); if (late){ sub.appendChild(document.createTextNode(" · ")); sub.appendChild(el("span", "bad", late + " overdue")); }
     h.appendChild(sub); sec.appendChild(h);
     if (!items.length) sec.appendChild(el("p", "st-p lpad", empty));
-    items.forEach(function(x){
+    var key = "fold:" + title, open = !!FOLD[key], cut = 4;
+    items.forEach(function(x, i){
+      if (i >= cut && !open) return;
       var r = el("div", "row"), rt = el("button", "rt rtb"); rt.type = "button"; rt.addEventListener("click", x.open);
       rt.appendChild(el("div", "t", x.name)); var m = el("div", "m"); m.appendChild(el("span", x.due < t ? "bad" : "", lateTxt(x.due))); var ma = el("span", "ma", " · "); ma.appendChild(el("span", "num", baht(x.amt))); m.appendChild(ma); rt.appendChild(m);
       r.appendChild(rt); r.appendChild(el("span", "amt num", baht(x.amt))); r.appendChild(btn("pill soft act", x.btn, x.act)); sec.appendChild(r);
     });
+    if (items.length > cut) sec.appendChild(foldBtn(open, items.length, function(){ FOLD[key] = !open; paintLists(u); }));
     var add = btn("alt lpad", "", addFn); add.innerHTML = "<u>" + addLabel + "</u>"; sec.appendChild(add);
   }
   fill(L[0], "Owed to you", (u.invoices || []).filter(function(v){ return !v.paid; }).sort(function(a, b){ return a.due < b.due ? -1 : 1; }).map(function(v){
@@ -203,8 +219,12 @@ function openInvoice(v){
   var ul = el("ul", "shB-l"); v.items.forEach(function(it){ var li = el("li"); li.appendChild(el("span", "", it[0] + (it[1] !== 1 ? " × " + it[1] : ""))); li.appendChild(el("b", "num", baht(it[1] * it[2]))); ul.appendChild(li); }); b.appendChild(ul);
   b.appendChild(el("p", "st-p" + (v.paid ? " okt" : v.due < today() ? " badt" : ""), v.paid ? "Paid on " + niceY(v.paid) + (v.via === "statement" ? ". I found the payment in your bank statement." : ".") : lateTxt(v.due) + (v.reminded ? ". Reminder sent " + niceY(v.reminded) + "." : ".")));
   var pr = btn("pill soft", "Printable invoice", function(){ printInvoice(v); }, "i-doc");
-  var sec = v.paid ? btn("pill soft", "Mark as unpaid", function(){ v.paid = ""; v.via = ""; save(); refresh(); openInvoice(v); })
-    : btn("pill acc", "Mark as paid", function(){ v.paid = today(); save(); refresh(); openInvoice(v); toast("Marked as paid"); });
+  if (v.paid && v.via === "hand"){
+    if (v.proof) b.appendChild(el("p", "st-p", "Payment slip filed: " + v.proof.name + "."));
+    else b.appendChild(btn("pill soft wide", "Upload the payment slip", function(){ proofUp(v, "in"); }, "i-up"));
+  }
+  var sec = v.paid ? btn("pill soft", "Mark as unpaid", function(){ v.paid = ""; v.via = ""; v.proof = null; save(); refresh(); openInvoice(v); })
+    : btn("pill acc", "Mark as paid", function(){ v.paid = today(); v.via = "hand"; v.proof = null; save(); refresh(); openInvoice(v); toast("Marked as paid. Add the payment slip when you can. It waits in Needs you."); });
   b.appendChild(foot(pr, sec));
   if (!v.paid){ var rm = btn("pill soft wide", v.due < today() ? "Send a reminder" : "Send it to the customer", function(){ openRemind(v, v.due >= today()); }, "i-chat"); b.appendChild(rm); }
   var del = btn("alt danger", "Delete this invoice", function(){ if (del.getAttribute("data-arm")){ u.invoices = u.invoices.filter(function(x){ return x !== v; }); save(); refresh(); closeGS(); toast("Invoice deleted"); } else { del.setAttribute("data-arm", "1"); del.textContent = "Tap again to delete"; } });
@@ -245,7 +265,13 @@ function openRemind(v, initial){
   }, "i-chat");
   var copy = btn("pill soft", "Copy message", function(){
     var t = $("textarea", ta).value;
-    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ done("Copied. Paste it into LINE or email."); }, function(){ $("textarea", ta).select(); toast("Select the text and copy it"); });
+    function ok(){
+      if (!initial) v.reminded = today(); else v.sent = today(); save();
+      $("#gs").setAttribute("data-dirty", "1"); copy.classList.add("copied"); copy.innerHTML = '<svg class="i"><use href="#i-check"/></svg>'; copy.appendChild(document.createTextNode("Copied"));
+      clearTimeout(copy._t); copy._t = setTimeout(function(){ copy.classList.remove("copied"); copy.textContent = "Copy message"; }, 2200);
+    }
+    function legacy(){ var x = $("textarea", ta); x.focus(); x.select(); try { if (document.execCommand("copy")) return ok(); } catch (e) {} toast("Select the text and copy it"); }
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(ok, legacy); else legacy();
   });
   b.appendChild(foot(copy, mail));
   if (navigator.share){ b.appendChild(btn("pill soft wide", "Share to LINE or another app", function(){ navigator.share({ title: "Invoice " + v.id, text: $("textarea", ta).value }).then(function(){ done("Shared"); }, function(){}); })); }
@@ -286,10 +312,11 @@ function openBill(v){
   if (!v.paid){
     b.appendChild(fld("PromptPay ID", v.pp, { mode: "numeric", max: 13, ph: "Phone or tax ID", on: function(x, inp){ inp.value = x.replace(/\D/g, ""); if (inp.value.length === 10 || inp.value.length === 13){ v.pp = inp.value; save(); paintQr(); return ""; } if (!inp.value){ v.pp = ""; save(); paintQr(); } return inp.value ? "A 10-digit phone number or a 13-digit ID" : ""; } }));
     paintQr(); b.appendChild(qr);
-    b.appendChild(foot(btn("pill soft", "Close", closeGS), btn("pill acc", "Mark as paid", function(){ v.paid = today(); save(); refresh(); closeGS(); toast(v.to + " marked as paid"); })));
+    b.appendChild(foot(btn("pill soft", "Close", closeGS), btn("pill acc", "Mark as paid", function(){ v.paid = today(); v.via = "hand"; v.proof = null; save(); refresh(); closeGS(); toast(v.to + " marked as paid. Add the transfer slip when you can. It waits in Needs you."); })));
   } else {
     b.appendChild(el("p", "st-p okt", "Paid on " + niceY(v.paid) + (v.via === "statement" ? ". I found it in your bank statement." : ".")));
-    b.appendChild(foot(btn("pill soft", "Mark as unpaid", function(){ v.paid = ""; v.via = ""; save(); refresh(); openBill(v); })));
+    if (v.via === "hand"){ if (v.proof) b.appendChild(el("p", "st-p", "Transfer slip filed: " + v.proof.name + ".")); else b.appendChild(btn("pill soft wide", "Upload the transfer slip", function(){ proofUp(v, "out"); }, "i-up")); }
+    b.appendChild(foot(btn("pill soft", "Mark as unpaid", function(){ v.paid = ""; v.via = ""; v.proof = null; save(); refresh(); openBill(v); })));
   }
   var del = btn("alt danger", "Delete this bill", function(){ if (del.getAttribute("data-arm")){ u.bills = u.bills.filter(function(x){ return x !== v; }); save(); refresh(); closeGS(); toast("Bill deleted"); } else { del.setAttribute("data-arm", "1"); del.textContent = "Tap again to delete"; } });
   b.appendChild(del);
@@ -429,4 +456,20 @@ function dataCard(u, root){
     dataArmed = false; u.tx = []; u.banks = []; u.invoices = []; u.bills = []; u.rcpt = {}; u.done = {}; u.hasData = false; u.matched = 0; u.sample = false; save(); BK_CACHE.key = ""; renderSettings(); toast("Cleared");
   }));
   c.appendChild(r); root.appendChild(c);
+}
+
+/* ── proof of payment, asked for after a hand-marked payment ── */
+function proofUp(v, kind){
+  closeGS();
+  openKyc(kind === "in" ? "Payment slip" : "Transfer slip", (kind === "in" ? "From " + v.to + ", invoice " + v.id : "To " + v.to) + ". A photo or PDF of the slip or bank notification.", function(meta){ v.proof = meta; save(); refresh(); toast(kind === "in" ? "Payment slip filed" : "Transfer slip filed"); });
+}
+function proofTasks(u, out){
+  (u.invoices || []).filter(function(v){ return v.paid && v.via === "hand" && !v.proof; }).forEach(function(v){
+    out.push({ k: "pf:" + v.id, ic: "i-receipt", t: "Add the payment slip from " + v.to, m: "Invoice #" + v.id, amt: invTotal(v), late: { txt: "Marked paid " + nice(v.paid), cls: "" }, btn: "Upload", rank: 3, fn: function(){ proofUp(v, "in"); },
+      story: { h: "Add the payment slip from " + v.to, p: "You marked invoice #" + v.id + " as paid. A photo of the slip keeps the books audit-ready." } });
+  });
+  (u.bills || []).filter(function(v){ return v.paid && v.via === "hand" && !v.proof; }).forEach(function(v){
+    out.push({ k: "pf:" + v.id, ic: "i-receipt", t: "Add the transfer slip for " + v.to, m: v.note || "Bill", amt: v.amount, late: { txt: "Marked paid " + nice(v.paid), cls: "" }, btn: "Upload", rank: 3, fn: function(){ proofUp(v, "out"); },
+      story: { h: "Add the transfer slip for " + v.to, p: "You marked the " + v.to + " bill as paid. A photo of the slip keeps the books audit-ready." } });
+  });
 }

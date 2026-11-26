@@ -33,9 +33,15 @@ function salt(){ var a = new Uint8Array(8); try { crypto.getRandomValues(a); } c
 
 /* ── small ui helpers ── */
 var toastT = 0;
+var toastTr = function(s){ return s; };
 function toast(msg){
-  var t = $("#toast"); if (!t){ t = el("div", "toast"); t.id = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
-  t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(function(){ t.hidden = true; }, 2600);
+  var t = $("#toast"); if (!t){ t = el("div", "toast"); t.id = "toast"; t.setAttribute("role", "status"); t.setAttribute("data-noi18n", ""); t.addEventListener("click", function(){ t.hidden = true; }); document.body.appendChild(t); }
+  msg = String(msg || ""); var cut = msg.search(/[.!?] /), head = cut > 0 ? msg.slice(0, cut + 1) : msg, rest = cut > 0 ? msg.slice(cut + 2) : "";
+  t.textContent = ""; t.className = "toast" + (rest || msg.length > 46 ? " card" : "");
+  t.innerHTML = '<i class="tst-i"><svg class="i"><use href="#i-check"/></svg></i>';
+  var tx = el("div", "tst-t"); tx.appendChild(el("b", "", toastTr(head).replace(/\.$/, ""))); if (rest) tx.appendChild(el("span", "", toastTr(rest))); t.appendChild(tx);
+  t.hidden = false; t.style.animation = "none"; void t.offsetWidth; t.style.animation = "";
+  clearTimeout(toastT); toastT = setTimeout(function(){ t.hidden = true; }, rest ? 4200 : 2600);
 }
 function seg(opts, cur, on){
   var w = el("div", "ob-yn"); w.setAttribute("role", "group");
