@@ -110,6 +110,7 @@ General rules for the real build:
 - `GET /auditor/companies/:id/filings?period=`, `PATCH .../filings/:formId { filed, filedAt, receiptFileId }`, `PATCH .../checklist/:itemId { done }`, `POST .../periods/:period/close`.
 - Deadline calculation (`dueOf`, `fyEnd` in `src/auditor.html`) should move server-side so reminders and the auditor desk agree. Add Thai public holidays (today only weekends roll forward).
 - Audit trail of every auditor action.
+- Auditor demo (`demoBtn` in `src/auditor.html`): today it creates a local demo lead (`demo-auditor@thuragirl.test`) with sample companies. The real app should serve a read-only demo desk with sample companies only, never real client data.
 - Language: `src/aud-th.js` translates the auditor pages on the client from a dictionary. Once data comes from the server, send Thai labels for forms and statuses from the API rather than translating English strings.
 
 ## 13. Real PDF data

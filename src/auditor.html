@@ -170,6 +170,9 @@
   .gs{color:var(--mute);font-size:14px;line-height:1.55}
   .gs.sm,.gn{font-size:12.5px}
   .gn{color:var(--mute);line-height:1.5}
+  .gor{display:flex;align-items:center;gap:10px;color:var(--mute);font-size:12.5px}.gor::before,.gor::after{content:"";flex:1;height:1px;background:var(--line)}
+  .demo-bar{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;padding:8px 16px;background:var(--soft);font-size:13px;font-weight:600}
+  .demo-bar button{border:0;border-radius:99px;padding:6px 12px;font:inherit;font-weight:700;cursor:pointer;background:var(--ink,#0F1514);color:var(--surface,#fff)}
   .gf{display:grid;gap:12px}
   .fl{display:grid;gap:6px;font-size:12.5px;font-weight:700;color:var(--mute)}
   .fl input{border:0;background:var(--soft);border-radius:14px;padding:12px 14px;font:600 15px var(--font);color:var(--ink);width:100%}
@@ -457,7 +460,7 @@
   function saveAU(){ store("tg.aud.users", AU); }
   var ASSIGN = load("tg.aud.assign", {});
   function saveAssign(){ store("tg.aud.assign", ASSIGN); }
-  function leadEmail(){ var l = Object.keys(AU).filter(function(k){ return AU[k].role === "lead"; })[0]; return l || null; }
+  function leadEmail(){ var l = Object.keys(AU).filter(function(k){ return AU[k].role === "lead"; }).sort(function(x, y){ return (AU[x].demo ? 1 : 0) - (AU[y].demo ? 1 : 0); })[0]; return l || null; }
   function owner(co){ return has(ASSIGN, co.id) ? ASSIGN[co.id] : co.sample ? leadEmail() : null; }
   function isLead(){ return ME && ME.role === "lead"; }
   function initials(n){ return (n || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(function(w){ return w.charAt(0).toUpperCase(); }).join(""); }
@@ -489,7 +492,7 @@
   var SESSION_H = 12;
   var LOGIN = !!window.AUD_LOGIN;
   function startSession(acc){ store("tg.aud.session", { email: acc.email, at: Date.now() }); acc.last = Date.now(); saveAU(); ME = acc; if (LOGIN) location.href = "../auditor/"; else boot(); }
-  function signOut(){ try { localStorage.removeItem("tg.aud.session"); } catch (e) {} ME = null; closeDlg(); location.href = "../auditorlogin/"; }
+  function signOut(){ try { localStorage.removeItem("tg.aud.session"); } catch (e) {} if (ME && ME.demo){ var de = ME.email; delete AU[de]; saveAU(); Object.keys(ASSIGN).forEach(function(k){ if (ASSIGN[k] === de) delete ASSIGN[k]; }); saveAssign(); var db2 = readOwners(); Object.keys(db2.users || {}).forEach(function(k){ var u = db2.users[k]; if (u.auditor && u.auditor.name === "Demo Auditor") delete u.auditor; }); store("tg.v2", db2); } ME = null; closeDlg(); location.href = "../auditorlogin/"; }
 
   function field(label, type, auto, val){
     var w = el("label", "fl"); w.appendChild(el("span", "", label)); var i = el("input"); i.type = type || "text"; if (auto) i.autocomplete = auto; if (val) i.value = val; w.appendChild(i); return [w, i];
@@ -499,12 +502,27 @@
     var c = el("div", "gc"); c.innerHTML = '<div class="brand"><b>thuragirl<i>.</i></b><span>Auditor</span></div>';
     c.appendChild(el("h1", "", title)); if (sub) c.appendChild(el("p", "gs", sub)); g.appendChild(c); return c;
   }
+  /* demo: look around the desk as a lead auditor with sample companies, no account needed */
+  var DEMO = "demo-auditor@thuragirl.test";
+  function demoBtn(c){
+    c.appendChild(el("div", "gor", "or"));
+    c.appendChild(btn("btn wide", "Try the demo", function(){
+      AU[DEMO] = AU[DEMO] || { email: DEMO, name: "Demo Auditor", cpa: "", role: "lead", demo: true, at: Date.now(), passkeys: [] };
+      saveAU(); store("tg.aud.samples", true); startSession(AU[DEMO]);
+    }));
+    c.appendChild(el("p", "gs sm", "Look around the desk with sample companies. No account needed."));
+  }
+  function demoStrip(){
+    var old = $("#aud-demo"); if (old) old.remove(); if (!ME || !ME.demo) return;
+    var d = el("div", "demo-bar"); d.id = "aud-demo"; d.appendChild(el("span", "", "Demo with sample companies"));
+    d.appendChild(btn("", "Leave the demo", signOut)); document.body.insertBefore(d, document.body.firstChild);
+  }
   function testNote(c){ c.appendChild(el("p", "gn", "Test build: accounts stay in this browser and are not sent anywhere. Please use a made-up password.")); }
   function setupScreen(){
     var c = gateCard("Set up the auditor desk", "This first account is the lead. The lead adds the other auditors and decides who looks after which company.");
     var f = el("form", "gf"), n = field("Full name", "text", "name"), e = field("Work email", "email", "email"), cpa = field("CPA or tax auditor registration number", "text", "off"), p = field("Password, at least 8 characters", "password", "new-password");
     [n, e, cpa, p].forEach(function(x){ f.appendChild(x[0]); });
-    var err = el("div", "ge"); f.appendChild(err); var b = el("button", "btn pri", "Create the lead account"); b.type = "submit"; f.appendChild(b); c.appendChild(f); testNote(c);
+    var err = el("div", "ge"); f.appendChild(err); var b = el("button", "btn pri", "Create the lead account"); b.type = "submit"; f.appendChild(b); c.appendChild(f); demoBtn(c); testNote(c);
     f.addEventListener("submit", function(ev){ ev.preventDefault();
       var em = e[1].value.trim().toLowerCase();
       if (!n[1].value.trim() || !/^\S+@\S+\.\S+$/.test(em)) { err.textContent = "Add your name and a work email."; return; }
@@ -520,7 +538,7 @@
     var err = el("div", "ge", msg || ""); f.appendChild(err); var b = el("button", "btn pri", "Sign in"); b.type = "submit"; f.appendChild(b); c.appendChild(f);
     if (pkOk() && Object.keys(AU).some(function(k){ return (AU[k].passkeys || []).length; })) c.appendChild(btn("btn wide", "Sign in with a passkey", function(){ err.textContent = ""; pkSignIn(err); }));
     c.appendChild(el("p", "gs sm", "New here? Ask your lead auditor to add you. Then sign in with your email and set a password."));
-    testNote(c);
+    demoBtn(c); testNote(c);
     f.addEventListener("submit", function(ev){ ev.preventDefault();
       var acc = AU[e[1].value.trim().toLowerCase()]; if (!acc){ err.textContent = "There's no auditor with that email. Ask your lead to add you."; return; }
       if (!acc.hash){ setPassScreen(acc); return; }
@@ -814,8 +832,8 @@
     var ses = load("tg.aud.session", null);
     ME = ses && AU[ses.email] && Date.now() - ses.at < SESSION_H * 3600e3 ? AU[ses.email] : null;
     if (LOGIN && ME){ location.replace("../auditor/"); return; }
-    if (!ME){ if (!LOGIN){ location.replace("../auditorlogin/"); return; } if (!Object.keys(AU).length) setupScreen(); else signInScreen(ses ? "You were signed out after " + SESSION_H + " hours. Sign in again." : ""); return; }
-    $("#gate").hidden = true; $("#app").hidden = false; syncModeUI(); render();
+    if (!ME){ if (!LOGIN){ location.replace("../auditorlogin/"); return; } if (!Object.keys(AU).some(function(k){ return !AU[k].demo; })) setupScreen(); else signInScreen(ses ? "You were signed out after " + SESSION_H + " hours. Sign in again." : ""); return; }
+    $("#gate").hidden = true; $("#app").hidden = false; if (ME.demo) scope = "all"; demoStrip(); syncModeUI(); render();
   }
   boot();
 })();

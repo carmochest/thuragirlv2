@@ -31,7 +31,7 @@ Live test build: https://carmochest.github.io/thuragirlv2/ (GitHub Pages, `main`
 - **Forgot password.** On sign-in, "Forgot your password?" asks for the email and shows "Check your email". In this test build no email is sent; "Open the reset link" goes straight to the new-password step.
 - **Delete my account.** Settings → Security → Delete my account lists what is removed and asks you to type DELETE (ลบ in Thai). It clears the account from this browser and returns to sign-up.
 - **Thai everywhere.** The owner app, the landing page (with Thai screenshots) and both auditor pages switch between English and Thai. The auditor pages have an EN/ไทย switch at the bottom left (stored in `tg.aud.lang`).
-- **Auditor.** Create the first auditor at `/auditorlogin/` (that account becomes the lead), then open `/auditor/`. Companies signed up in the same browser appear with a "Signed up" badge. You can switch on sample companies.
+- **Auditor.** Create the first auditor at `/auditorlogin/` (that account becomes the lead), then open `/auditor/`. Companies signed up in the same browser appear with a "Signed up" badge. You can switch on sample companies. Visiting `/auditor/` while signed out sends you to `/auditorlogin/`, and signing in brings you back to the desk. To look around without an account, press **Try the demo** on the auditor sign-in: it opens the desk as a demo lead auditor with sample companies, under a "Demo with sample companies" strip. "Leave the demo" removes the demo account and its assignments, so it never becomes the real lead.
 
 ## Build and run
 

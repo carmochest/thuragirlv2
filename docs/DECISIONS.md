@@ -15,6 +15,7 @@ Decided by the product owner during v2 design. Build to these unless they are ch
 | Charts | Keep Finance clean: one "Sales by channel" donut (Month/Year). P&L detail is tap-to-drill (a donut plus top payees per line), not more charts on the page. Anything custom goes through chat, which answers with a chart that can be pinned to Finance. |
 | Accounts | Owners can reset a forgotten password by email (30-minute link) and delete their own account from Settings → Security (PDPA). Filed tax records are kept for 5 years, then deleted. |
 | Demo | The landing page offers "Try the demo": a sample restaurant with full books, no sign-up, with a "Create my account" strip on top. |
+| Auditor demo | `/auditor/` stays behind the auditor sign-in. The sign-in page offers "Try the demo", which opens the desk with sample companies only. |
 | Design | Option B: neutral greys plus one teal accent; red only for overdue text; amber only for stale items; pink only in the logo; thin line icons; no emoji. EN and TH, day and night, including the auditor pages and the landing screenshots. |
 | Security | Passkey offered as the recommended sign-in; authenticator-app 2FA with backup codes for owners and auditors. Auditor sessions last 12 hours. |
 | Versions | v1 lives in the `thuragirl` repository and is not touched. v2 is this repository. |
