@@ -1,5 +1,5 @@
 """Builds the ThuraGirl v2 test site. Run:  python3 src/build.py
-Writes signup/, dashboard/, auditor/, assets/ and index.html next to src/."""
+Writes signup/, dashboard/, auditor/, auditorlogin/, assets/ and index.html next to src/."""
 import re, os, shutil
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
 def read(n): return open(os.path.join(HERE, n), encoding="utf-8").read()
@@ -101,6 +101,7 @@ aud = re.sub(r"<title>.*?</title>\s*<meta name=\"claude:viewport-fit-sides\"[^>]
 aud_fonts = re.search(r'family=DM\+Sans[^"]+', read("auditor.html")).group(0)
 i = aud.index("<style>"); j = aud.index("</style>") + 8
 write("auditor/index.html", (HEAD % ("Auditor · ThuraGirl", "../", "https://fonts.googleapis.com/css2?" + aud_fonts)) + aud[i:j] + "\n</head>\n<body>\n" + aud[j:].strip() + "\n</body>\n</html>\n")
+write("auditorlogin/index.html", (HEAD % ("Auditor sign-in · ThuraGirl", "../", "https://fonts.googleapis.com/css2?" + aud_fonts)) + aud[i:j] + "\n<script>window.AUD_LOGIN = true;</script>\n</head>\n<body>\n" + aud[j:].strip() + "\n</body>\n</html>\n")
 hub = (HEAD % ("ThuraGirl v2 · test build", "", fonts)) + '''<style>
   :root{--bg:#F4F5F5;--surface:#fff;--ink:#0F1514;--mute:#667270;--line:#E2E6E5;--accent:#0FBFB6}
   @media (prefers-color-scheme:dark){:root{--bg:#0B0E0E;--surface:#151919;--ink:#F1F4F3;--mute:#98A4A1;--line:#293030;--accent:#2DD4C8}}
@@ -124,7 +125,8 @@ hub = (HEAD % ("ThuraGirl v2 · test build", "", fonts)) + '''<style>
   <nav>
     <a href="signup/"><div><b>Sign up</b><span>Create an account and set up a company</span></div><em>/signup</em></a>
     <a href="dashboard/"><div><b>Dashboard</b><span>The owner's app: home, money, brief, settings</span></div><em>/dashboard</em></a>
-    <a href="auditor/"><div><b>Auditor desk</b><span>Design mock with sample companies</span></div><em>/auditor</em></a>
+    <a href="auditorlogin/"><div><b>Auditor sign-in</b><span>For ThuraGirl auditors. The first account becomes the lead</span></div><em>/auditorlogin</em></a>
+    <a href="auditor/"><div><b>Auditor desk</b><span>Queue, checklists, due dates and filing proofs</span></div><em>/auditor</em></a>
   </nav>
 </main>
 </body>

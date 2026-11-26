@@ -150,6 +150,53 @@
   .vw-d dt{color:var(--mute);font-weight:600}
   .vw-d dd{margin:0;font-weight:600;word-break:break-word}
   .vw-c .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  [hidden]{display:none!important}
+  .per select{border:0;background:var(--surface);color:var(--ink);font:700 13px var(--font);border-radius:99px;padding:9px 34px 9px 15px;cursor:pointer;-webkit-appearance:none;appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667270' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6.5 9.5 5.5 5.5 5.5-5.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:14px}
+  button.me{border:0;cursor:pointer}
+  .scope{display:flex;margin-bottom:8px;background:var(--soft);width:100%}
+  .scope button{flex:1;padding:7px 8px;font-size:12.5px}
+  .samp{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--mute);padding:12px 6px 2px;cursor:pointer}
+  .samp input{accent-color:var(--accent);width:16px;height:16px}
+  .co .new{font:700 10.5px var(--num);letter-spacing:.06em;text-transform:uppercase;color:var(--hint);background:var(--tint);border-radius:99px;padding:2px 7px;margin-left:7px;vertical-align:2px}
+  .sh small.dl{font-weight:700}
+  .sh small.dl.hot{color:var(--bad)}
+  .co .due.hot{color:var(--bad)}
+  .dg{font:800 12px var(--font);color:var(--mute);padding:12px 0 2px;letter-spacing:.01em}
+  .doc.sub{padding-left:14px}
+  .doc.open .ic{background:var(--soft);color:var(--mute)}
+  .assign{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--mute)}
+  .assign label{display:flex;align-items:center;gap:8px}
+  .assign select{border:0;background:var(--soft);color:var(--ink);font:700 13px var(--font);border-radius:12px;padding:8px 12px;max-width:240px}
+  .gate{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+  .gc{background:var(--surface);border-radius:28px;padding:26px 24px;width:min(440px,100%);display:grid;gap:14px;box-shadow:var(--shadow)}
+  .gc h1{font-size:26px;font-weight:800;letter-spacing:-.03em;margin-top:6px}
+  .gs{color:var(--mute);font-size:14px;line-height:1.55}
+  .gs.sm,.gn{font-size:12.5px}
+  .gn{color:var(--mute);line-height:1.5}
+  .gf{display:grid;gap:12px}
+  .fl{display:grid;gap:6px;font-size:12.5px;font-weight:700;color:var(--mute)}
+  .fl input{border:0;background:var(--soft);border-radius:14px;padding:12px 14px;font:600 15px var(--font);color:var(--ink);width:100%}
+  .ge{color:var(--bad);font-size:13px;font-weight:700;min-height:0}
+  .ge:empty{display:none}
+  .btn.wide,.gf .btn{justify-content:center;width:100%}
+  .gf.row{grid-template-columns:repeat(3,minmax(0,1fr)) auto;align-items:end}
+  .gf.row .btn{width:auto}
+  .gf.row .ge{grid-column:1 / -1}
+  .vw-c{max-height:calc(100vh - 32px);overflow:auto}
+  .dlh{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .srow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+  .srow b{font-size:14px} .srow small{display:block;color:var(--mute);font-size:12.5px;margin-top:2px;line-height:1.45}
+  .srow .mini,.after .mini{border:0;background:var(--soft);border-radius:99px;padding:7px 12px;font-weight:700;font-size:12.5px;cursor:pointer;white-space:nowrap}
+  .vw-c .grp{padding:10px 0 0}
+  .qr{width:180px;height:180px;margin:0 auto;display:grid;place-items:center;font-size:12.5px;color:var(--mute);text-align:center}
+  .qr svg{width:100%;height:100%;border-radius:12px}
+  .key{display:block;text-align:center;font:700 14px var(--num);letter-spacing:.06em;background:var(--soft);border-radius:12px;padding:10px}
+  .codes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .codes code{font:700 14px var(--num);background:var(--soft);border-radius:10px;padding:8px;text-align:center}
+  @media (max-width:900px){ .per select{padding:8px 30px 8px 12px} .gf.row{grid-template-columns:1fr} .gf.row .btn{width:100%} .assign select{max-width:none;flex:1} }
 </style>
 </head>
 <body>
@@ -164,7 +211,8 @@
   <symbol id="i-dash" viewBox="0 0 24 24"><path d="M7 12h10"/></symbol>
 </svg>
 
-<div class="wrap">
+<div class="gate" id="gate" hidden></div>
+<div class="wrap" id="app" hidden>
   <header class="top">
     <div class="brand"><b>thuragirl<i>.</i></b><span>Auditor</span></div>
     <div class="url">thuragirl.com<b>/auditor</b></div>
@@ -173,7 +221,8 @@
       <button type="button" data-m="month" aria-pressed="true">Monthly close</button>
       <button type="button" data-m="year" aria-pressed="false">Yearly close</button>
     </div>
-    <div class="me"><b>SA</b><span>Somchai A., CPA</span></div>
+    <label class="per" id="perw"><span class="sr">Month</span><select id="per" aria-label="Month to close"></select></label>
+    <button type="button" class="me" id="me" aria-haspopup="dialog"><b id="me-i"></b><span id="me-n"></span></button>
   </header>
 
   <div class="stats" id="stats" role="group" aria-label="Filter the queue"></div>
@@ -181,12 +230,14 @@
   <div class="desk" id="desk">
     <section class="pane left" aria-label="Company queue">
       <div class="ph"><h2>Queue</h2><small id="qn"></small></div>
+      <div class="seg scope" id="scope" role="group" aria-label="Whose companies"></div>
       <input class="search" id="search" type="search" placeholder="Find a company" aria-label="Find a company">
       <div class="q" id="queue"></div>
+      <label class="samp"><input type="checkbox" id="samples"> Show sample companies</label>
     </section>
     <section class="pane right" id="detail" aria-label="Company documents"></section>
   </div>
-  <p class="foot">Sample data. The company list, statuses and due dates are made up to show the layout; the document checklist is the one from your brief. "Request" is drawn as sending a task into the owner's Needs you list in the ThuraGirl app.</p>
+  <p class="foot">Test build. Companies that sign up in this browser join the queue and get their requests on their own dashboard. The sample companies are made up. Accounts, assignments and documents stay in this browser until the live backend is connected. Due dates assume e-filing (paper dates shown too), move weekend dates to Monday, and do not yet skip public holidays.</p>
 </div>
 <div class="toast" id="toast" role="status" hidden></div>
 
@@ -195,219 +246,520 @@
   var $ = function(s, r){ return (r || document).querySelector(s); };
   function el(tag, cls, text){ var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
   function ico(id){ return '<svg class="i"><use href="#' + id + '"/></svg>'; }
+  function btn(cls, text, fn){ var b = el("button", cls, text); b.type = "button"; if (fn) b.addEventListener("click", fn); return b; }
+  function load(k, d){ try { var v = JSON.parse(localStorage.getItem(k) || "null"); return v == null ? d : v; } catch (e) { return d; } }
+  function store(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function has(o, k){ return Object.prototype.hasOwnProperty.call(o, k); }
+  function H(s){ var h = 7; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; h ^= h >>> 13; h = Math.imul(h, 2654435761) >>> 0; return (h % 10007) / 10007; }
 
-  var WHT = ["Full payment list: supplier payments, bank, petty cash, card and platform payouts", "Payee record: tax ID, person or company, branch, address", "Contract or scope of work, invoice, service acceptance", "Payment voucher and bank proof with date paid", "Withholding certificates issued (50 ทวิ)", "Earlier forms and certificates, for corrections"];
+  /* ── the checklist. A line that names several documents is split, so each one gets its own tick. */
+  var WHT = [
+    ["Full payment list", ["Supplier payments", "Bank payments", "Petty cash", "Card payouts", "Platform payouts"]],
+    "Payee record: tax ID, person or company, branch, address",
+    ["Work done", ["Contract or scope of work", "Invoice", "Service acceptance"]],
+    ["Proof of payment", ["Payment voucher", "Bank proof with date paid"]],
+    "Withholding certificates issued (50 ทวิ)",
+    ["For corrections", ["Earlier forms", "Earlier certificates"]]];
+  var M7 = { p: 7, e: 15 };
   var SETS = {
     month: { forms: [
-      { id: "books", short: "Books", name: "Books", sub: "Every month, no form", docs: ["Bank, card and wallet statements for the full month", "Reconciliations: bank, customer balances, supplier balances", "Adjustment entries with supporting documents", "Trial balance (all account balances) and ledger", "List of open exceptions"] },
-      { id: "pp30", short: "ภ.พ.30", name: "ภ.พ.30", sub: "VAT return", built: 1, needs: "vat", due: 15, docs: ["Sales tax invoices, receipts, credit and debit notes", "Orders or contracts, and delivery or service acceptance", "Sales channel exports, platform settlements, payment-provider statements", "Supplier full tax invoices, credit and debit notes", "Purchase orders, goods or service received, proof of payment", "Sales VAT report and purchase VAT report", "Last month's ภ.พ.30 and receipt, with any overpaid VAT carried forward", "VAT registration (ภ.พ.20), branch list, approval for combined filing"] },
-      { id: "wht", short: "ภ.ง.ด.3/53", name: "ภ.ง.ด.3 and ภ.ง.ด.53", sub: "Withholding tax: payments to individuals and to companies", built: 1, due: 7, docs: WHT },
-      { id: "pnd1", short: "ภ.ง.ด.1", name: "ภ.ง.ด.1", sub: "Withholding tax on salaries", built: 1, needs: "staff", due: 7, docs: ["Employee list: joiners and leavers", "Employment contracts", "Payroll register: gross, deductions, net", "Bank payroll file and proof of payment", "Payroll journal entry"] },
-      { id: "sso", short: "สปส.1-10", name: "สปส.1-10", sub: "Social security", built: 1, needs: "sso", due: 15, docs: ["Employee list with status: active, joined, left, unpaid leave", "HR change documents: resignation, termination, start dates", "Attendance, overtime, commission, bonus inputs", "Payroll register with wage base and both contributions", "Bank payroll file and proof of payment", "Form parts 1 and 2, submission response, official receipt"] }
+      { id: "books", short: "Books", name: "Books", sub: "Every month, no form", list: [
+        ["Statements for the full month", ["Bank statements", "Card statements", "Wallet statements"]],
+        ["Reconciliations", ["Bank", "Customer balances", "Supplier balances"]],
+        ["Adjustment entries", ["Entries", "Supporting documents"]],
+        ["Trial balance and ledger", ["Trial balance (all account balances)", "General ledger"]],
+        "List of open exceptions"] },
+      { id: "pp30", short: "ภ.พ.30", name: "ภ.พ.30", sub: "VAT return", built: 1, needs: "vat", due: { p: 15, e: 23 }, list: [
+        ["Sales documents", ["Sales tax invoices", "Receipts", "Credit notes", "Debit notes"]],
+        ["Orders and delivery", ["Orders or contracts", "Delivery or service acceptance"]],
+        ["Sales channels", ["Sales channel exports", "Platform settlements", "Payment-provider statements"]],
+        ["Supplier documents", ["Full tax invoices", "Credit notes", "Debit notes"]],
+        ["Purchases", ["Purchase orders", "Goods or service received", "Proof of payment"]],
+        ["VAT reports", ["Sales VAT report", "Purchase VAT report"]],
+        ["Last month", ["ภ.พ.30", "Receipt", "Overpaid VAT carried forward"]],
+        ["Registration", ["VAT registration (ภ.พ.20)", "Branch list", "Approval for combined filing"]]] },
+      { id: "pnd3", short: "ภ.ง.ด.3", name: "ภ.ง.ด.3", sub: "Withholding tax: payments to individuals", built: 1, due: M7, list: WHT },
+      { id: "pnd53", short: "ภ.ง.ด.53", name: "ภ.ง.ด.53", sub: "Withholding tax: payments to companies", built: 1, due: M7, list: WHT },
+      { id: "pnd1", short: "ภ.ง.ด.1", name: "ภ.ง.ด.1", sub: "Withholding tax on salaries", built: 1, needs: "staff", due: M7, list: [
+        "Employee list: joiners and leavers", "Employment contracts", "Payroll register: gross, deductions, net",
+        ["Payroll payment", ["Bank payroll file", "Proof of payment"]], "Payroll journal entry"] },
+      { id: "sso", short: "สปส.1-10", name: "สปส.1-10", sub: "Social security", built: 1, needs: "sso", due: { p: 15, e: 15 }, list: [
+        "Employee list with status: active, joined, left, unpaid leave",
+        ["HR changes", ["Resignations", "Terminations", "Start dates"]],
+        ["Pay inputs", ["Attendance", "Overtime", "Commission", "Bonus"]],
+        "Payroll register with wage base and both contributions",
+        ["Payroll payment", ["Bank payroll file", "Proof of payment"]],
+        ["The form", ["Part 1", "Part 2", "Submission response", "Official receipt"]]] }
     ], trig: [
-      { id: "pp36", short: "ภ.พ.36", name: "ภ.พ.36", sub: "VAT paid on behalf of a foreign supplier", docs: ["Foreign contract", "Invoice", "Proof of where the service was used", "Remittance proof", "Exchange rate source"] },
-      { id: "pnd54", short: "ภ.ง.ด.54", name: "ภ.ง.ด.54", sub: "Payments abroad", docs: ["Payee country", "Tax residency certificate", "Contract", "Invoice", "Remittance proof", "Exchange rate source"] },
-      { id: "pnd2", short: "ภ.ง.ด.2", name: "ภ.ง.ด.2", sub: "Royalties, interest, dividends. Same documents as ภ.ง.ด.3 and 53", docs: WHT }
+      { id: "pp36", short: "ภ.พ.36", name: "ภ.พ.36", sub: "VAT paid on behalf of a foreign supplier", due: M7, list: ["Foreign contract", "Invoice", "Proof of where the service was used", "Remittance proof", "Exchange rate source"] },
+      { id: "pnd54", short: "ภ.ง.ด.54", name: "ภ.ง.ด.54", sub: "Payments abroad", due: M7, list: ["Payee country", "Tax residency certificate", "Contract", "Invoice", "Remittance proof", "Exchange rate source"] },
+      { id: "pnd2", short: "ภ.ง.ด.2", name: "ภ.ง.ด.2", sub: "Royalties, interest, dividends. Same documents as ภ.ง.ด.3 and 53", due: M7, list: WHT }
     ] },
     year: { forms: [
-      { id: "ybooks", short: "Books", name: "Books", sub: "Year-end books", docs: ["12 monthly packs", "Final locked trial balance, ledger, sub-ledgers", "Year-end adjustments with supporting documents", "Schedules: fixed assets and depreciation, accruals, provisions, loans, stock count"] },
-      { id: "pnd51", short: "ภ.ง.ด.51", name: "ภ.ง.ด.51", sub: "Half-year corporate income tax", docs: ["Year-to-date trial balance and management accounts", "Full-year profit forecast with assumptions", "Tax losses brought forward, incentives (BOI, SME status)", "Withholding certificates received (tax credits)", "Earlier ภ.ง.ด.51 payment and receipt"] },
-      { id: "pnd50", short: "ภ.ง.ด.50", name: "ภ.ง.ด.50", sub: "Annual corporate income tax", docs: ["Final financial statements, notes, audit report", "Bridge from accounting profit to taxable profit", "Schedules: tax depreciation, donations, entertainment, non-deductible expenses, tax losses", "Credits: ภ.ง.ด.51 payment, withholding certificates received", "Related-party transaction records"] },
-      { id: "pnd1k", short: "ภ.ง.ด.1ก", name: "ภ.ง.ด.1ก", sub: "Annual payroll summary", needs: "staff", docs: ["Full-year payroll, matched to the 12 monthly ภ.ง.ด.1 forms", "Annual withholding certificates for employees (50 ทวิ)"] },
-      { id: "dbd", short: "DBD", name: "DBD financial statements", sub: "Annual filing with DBD", docs: ["Final financial statements with last year's figures, and notes", "Signed audit report with the CPA's name and registration number", "Board documents, AGM notice and minutes", "Filing files: the statements in DBD's electronic format, audit report PDF, notes PDF", "Submission reference and accepted status"] },
-      { id: "boj5", short: "บอจ.5", name: "บอจ.5", sub: "Shareholder list", docs: ["Share register as of the AGM date", "Share transfers during the year", "Capital and share data"] }
+      { id: "ybooks", short: "Books", name: "Books", sub: "Year-end books", packs: 1, list: [
+        ["Final and locked", ["Trial balance", "Ledger", "Sub-ledgers"]],
+        ["Year-end adjustments", ["Entries", "Supporting documents"]],
+        ["Schedules", ["Fixed assets and depreciation", "Accruals", "Provisions", "Loans", "Stock count"]]] },
+      { id: "pnd51", short: "ภ.ง.ด.51", name: "ภ.ง.ด.51", sub: "Half-year corporate income tax", ydue: "h51", list: [
+        ["Year to date", ["Trial balance", "Management accounts"]],
+        ["Full-year forecast", ["Profit forecast", "Assumptions"]],
+        ["Losses and incentives", ["Tax losses brought forward", "BOI incentives", "SME status"]],
+        "Withholding certificates received (tax credits)",
+        ["Earlier ภ.ง.ด.51", ["Payment", "Receipt"]]] },
+      { id: "pnd50", short: "ภ.ง.ด.50", name: "ภ.ง.ด.50", sub: "Annual corporate income tax", ydue: "y50", list: [
+        ["Final accounts", ["Financial statements", "Notes", "Audit report"]],
+        "Bridge from accounting profit to taxable profit",
+        ["Schedules", ["Tax depreciation", "Donations", "Entertainment", "Non-deductible expenses", "Tax losses"]],
+        ["Credits", ["ภ.ง.ด.51 payment", "Withholding certificates received"]],
+        "Related-party transaction records"] },
+      { id: "pnd1k", short: "ภ.ง.ด.1ก", name: "ภ.ง.ด.1ก", sub: "Annual payroll summary, for the calendar year", needs: "staff", ydue: "y1k", list: [
+        "Full-year payroll, matched to the 12 monthly ภ.ง.ด.1 forms", "Annual withholding certificates for employees (50 ทวิ)"] },
+      { id: "dbd", short: "DBD", name: "DBD financial statements", sub: "Annual filing with DBD", ydue: "dbd", list: [
+        ["Final statements", ["Statements with last year's figures", "Notes"]],
+        "Signed audit report with the CPA's name and registration number",
+        ["Board and AGM", ["Board documents", "AGM notice", "AGM minutes"]],
+        ["Filing files", ["Statements in DBD's electronic format", "Audit report PDF", "Notes PDF"]],
+        ["After filing", ["Submission reference", "Accepted status"]]] },
+      { id: "boj5", short: "บอจ.5", name: "บอจ.5", sub: "Shareholder list", ydue: "boj5", list: ["Share register as of the AGM date", "Share transfers during the year", "Capital and share data"] }
     ], trig: [] }
   };
+  ["month", "year"].forEach(function(m){ SETS[m].forms.concat(SETS[m].trig).forEach(function(f){
+    f.items = []; f.list.forEach(function(x){ if (typeof x === "string") f.items.push({ id: String(f.items.length), d: x }); else x[1].forEach(function(s){ f.items.push({ id: String(f.items.length), d: s, g: x[0] }); }); });
+  }); });
   var AFTER = ["Submission response", "Payment proof", "Official receipt"];
-  var NOW = new Date(), PM = new Date(NOW.getFullYear(), NOW.getMonth() - 1, 1), MNAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  var PMON = MNAMES[PM.getMonth()], PLABEL = PMON + " " + PM.getFullYear(), FYLABEL = "FY " + (NOW.getFullYear() - 1);
+
+  /* ── dates. Thai filing deadlines; weekend dates roll to Monday. */
+  var MN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  var NOW = new Date(), TODAY = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate());
+  function eom(y, m){ return new Date(y, m + 1, 0); }
+  function addD(d, n){ var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function biz(d){ var x = new Date(d); while (x.getDay() === 0 || x.getDay() === 6) x.setDate(x.getDate() + 1); return x; }
+  function fmt(d){ return d.getDate() + " " + MN[d.getMonth()].slice(0, 3) + (d.getFullYear() !== NOW.getFullYear() ? " " + d.getFullYear() : ""); }
+  function days(d){ return Math.round((d - TODAY) / 864e5); }
+  function mkey(y, m){ var d = new Date(y, m, 1); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2); }
+  function kym(k){ return [+k.slice(0, 4), +k.slice(5, 7) - 1]; }
+  function mlabel(k){ var a = kym(k); return MN[a[1]] + " " + a[0]; }
+  var PM = mkey(NOW.getFullYear(), NOW.getMonth() - 1), PREV = mkey(NOW.getFullYear(), NOW.getMonth() - 2);
+  function fyEnd(co){ var fe = (co.fe || 12) - 1, E = eom(TODAY.getFullYear() - 1, fe); while (eom(E.getFullYear(), E.getMonth() + 5) < TODAY) E = eom(E.getFullYear() + 1, fe); return E; }
+  function perOf(co){ if (mode === "month") return mper; var E = fyEnd(co); return "FY" + mkey(E.getFullYear(), E.getMonth()); }
+  function dueOf(co, f, per){
+    if (f.due){ var a = kym(per); return { p: biz(new Date(a[0], a[1] + 1, f.due.p)), e: biz(new Date(a[0], a[1] + 1, f.due.e)) }; }
+    if (!f.ydue) return null;
+    var E = fyEnd(co), Y = E.getFullYear(), M = E.getMonth(), agm = eom(Y, M + 4), p, e;
+    if (f.ydue === "h51"){ p = eom(Y, M - 4); e = addD(p, 8); }
+    else if (f.ydue === "y50"){ p = addD(E, 150); e = addD(p, 8); }
+    else if (f.ydue === "y1k"){ p = eom(Y + 1, 1); e = addD(p, 8); }
+    else if (f.ydue === "dbd"){ p = e = eom(Y, M + 5); }
+    else { p = e = addD(agm, 14); }
+    return { p: biz(p), e: biz(e) };
+  }
+
+  /* ── companies */
   var COS = [
-    { n: "Bangkok Bites Co., Ltd.", t: "Restaurant · Bangkok", vat: 1, sso: 1, staff: 7, c: .78 },
-    { n: "Chiang Mai Crafts Studio", t: "Craft and manufacturing · Chiang Mai", vat: 1, sso: 1, staff: 4, c: .5 },
-    { n: "Phuket Digital Agency", t: "Services and agency · Phuket", vat: 1, sso: 1, staff: 12, c: 1 },
-    { n: "Nimman Coffee Roasters", t: "Cafe and bakery · Chiang Mai", vat: 0, sso: 1, staff: 5, c: .9 },
-    { n: "Siam Glow Salon", t: "Beauty and salon · Bangkok", vat: 0, sso: 0, staff: 0, c: .62 },
-    { n: "Baan Suan Online", t: "Online and e-commerce · Nonthaburi", vat: 1, sso: 0, staff: 0, c: .4 },
-    { n: "Rayong Parts Manufacturing", t: "Manufacturing · Rayong", vat: 1, sso: 1, staff: 38, c: 2 },
-    { n: "Krabi Dive Tours", t: "Services and agency · Krabi", vat: 1, sso: 1, staff: 9, c: .86 }
-  ];
-  // deterministic sample statuses
-  function rnd(seed){ var x = Math.sin(seed * 9301 + 49297) * 233280; return x - Math.floor(x); }
-  var ST = {}, FILED = {}, TRIGON = {}, AFT = {}, CLOSED = {};
-  COS.forEach(function(co, ci){
-    ["month", "year"].forEach(function(m, mi){
-      SETS[m].forms.concat(SETS[m].trig).forEach(function(f, fi){
-        var c = m === "year" ? Math.min(1, co.c * 0.7) : co.c;
-        f.docs.forEach(function(d, di){
-          var r = rnd(ci * 131 + mi * 977 + fi * 53 + di * 7 + 1), r2 = rnd(ci * 71 + fi * 113 + di * 37 + mi * 211 + 5);
-          ST[ci + m + f.id + di] = r < c ? (r2 < .62 ? "auto" : "client") : (r2 < .35 ? "ask" : "miss");
-        });
-        if (co.c >= 2 && m === "month"){ FILED[ci + m + f.id] = 1; CLOSED[ci + m] = 1; AFTER.forEach(function(a, ai){ AFT[ci + m + f.id + ai] = 1; }); }
-      });
+    { id: "s0", n: "Bangkok Bites Co., Ltd.", t: "Restaurant · Bangkok", vat: 1, sso: 1, staff: 7, c: .78 },
+    { id: "s1", n: "Chiang Mai Crafts Studio", t: "Craft and manufacturing · Chiang Mai", vat: 1, sso: 1, staff: 4, c: .5 },
+    { id: "s2", n: "Phuket Digital Agency", t: "Services and agency · Phuket", vat: 1, sso: 1, staff: 12, c: 1, fe: 6 },
+    { id: "s3", n: "Nimman Coffee Roasters", t: "Cafe and bakery · Chiang Mai", vat: 0, sso: 1, staff: 5, c: .9 },
+    { id: "s4", n: "Siam Glow Salon", t: "Beauty and salon · Bangkok", vat: 0, sso: 0, staff: 0, c: .62 },
+    { id: "s5", n: "Baan Suan Online", t: "Online and e-commerce · Nonthaburi", vat: 1, sso: 0, staff: 0, c: .4, lag: 1 },
+    { id: "s6", n: "Rayong Parts Manufacturing", t: "Manufacturing · Rayong", vat: 1, sso: 1, staff: 38, c: 2 },
+    { id: "s7", n: "Krabi Dive Tours", t: "Services and agency · Krabi", vat: 1, sso: 1, staff: 9, c: .86, fe: 9 }
+  ].map(function(c){ c.sample = 1; return c; });
+  function readOwners(){ return load("tg.v2", {}); }
+  function realCos(){
+    var DB = readOwners(), out = [];
+    Object.keys(DB.users || {}).forEach(function(k){
+      var u = DB.users[k]; if (!u.onboarded) return;
+      var name = u.path === "new" ? (u.reg && u.reg.names && u.reg.names[0] ? "บริษัท " + u.reg.names[0] + " จำกัด" : "New company (not registered yet)") : (u.company && u.company.name) || u.email;
+      out.push({ id: "u:" + k, real: k, n: name, t: (u.company && u.company.type ? u.company.type : u.path === "new" ? "Registering" : "Company") + " · " + (u.name || u.email),
+        vat: u.setup && u.setup.vat === "Yes" ? 1 : 0, sso: u.setup && u.setup.sso === "Yes" ? 1 : 0, staff: (u.team || []).length, c: 0, fe: u.reg && +u.reg.fy ? +u.reg.fy : 12, joined: u.created || Date.now() });
     });
-  });
-  TRIGON["0monthpnd54"] = 1;
-
-  // companies that signed up in this browser join the queue, ahead of the samples
-  var DB = {}; try { DB = JSON.parse(localStorage.getItem("tg.v2") || "{}"); } catch (e) {}
-  var REAL = [];
-  Object.keys(DB.users || {}).forEach(function(k){
-    var u = DB.users[k]; if (!u.onboarded) return;
-    var name = u.path === "new" ? (u.reg && u.reg.names && u.reg.names[0] ? "บริษัท " + u.reg.names[0] + " จำกัด" : "New company (not registered)") : (u.company && u.company.name) || u.email;
-    REAL.push({ n: name, t: (u.company && u.company.type ? u.company.type : u.path === "new" ? "Registering" : "Company") + " · signed up in this browser", vat: u.setup && u.setup.vat === "Yes" ? 1 : 0, sso: u.setup && u.setup.sso === "Yes" ? 1 : 0, staff: (u.team || []).length, c: 0, real: k });
-  });
-  REAL.forEach(function(co, ri){
-    var ci = COS.length; COS.push(co);
-    var u = DB.users[co.real];
-    ["month", "year"].forEach(function(m){
-      SETS[m].forms.concat(SETS[m].trig).forEach(function(f){
-        f.docs.forEach(function(d, di){
-          var k = ci + m + f.id + di, got = m === "month" && (/Bank, card and wallet statements/.test(d) ? (u.banks || []).length : /Payroll register/.test(d) ? (u.team || []).length : /Sales tax invoices/.test(d) ? (u.invoices || []).length : 0);
-          ST[k] = got ? "auto" : "miss";
-        });
-      });
-    });
-  });
-  function reqId(ci, m, f, di){ return "aud:" + m + ":" + f.id + ":" + di; }
-  // owners' uploads in answer to a request count as received
-  function syncReal(){
-    var db2 = {}; try { db2 = JSON.parse(localStorage.getItem("tg.v2") || "{}"); } catch (e) {}
-    COS.forEach(function(co, ci){
-      if (!co.real) return; var u = (db2.users || {})[co.real]; if (!u) return;
-      (u.requests || []).forEach(function(r){ if (!r.aud) return; var k = ci + r.aud; if (r.file && ST[k] === "ask") ST[k] = "client"; if (r.file) FILE[k] = r.file; });
-    });
+    return out;
   }
-  function pushRequest(ci, m, f, di){
-    var co = COS[ci]; if (!co.real) return;
-    var db2 = {}; try { db2 = JSON.parse(localStorage.getItem("tg.v2") || "{}"); } catch (e) { return; }
-    var u = (db2.users || {})[co.real]; if (!u) return;
-    u.requests = u.requests || []; var tag = m + f.id + di;
-    if (u.requests.some(function(r){ return r.aud === tag && !r.file; })) return;
-    u.requests.push({ id: "a" + Date.now().toString(36) + di, aud: tag, doc: f.docs[di], form: f.name, at: Date.now() });
-    try { localStorage.setItem("tg.v2", JSON.stringify(db2)); } catch (e) {}
-  }
-  var FILE = {}, SAVEKEY = "tg.aud";
-  try { var sv = JSON.parse(localStorage.getItem(SAVEKEY) || "null"); if (sv){ ["ST", "FILED", "TRIGON", "AFT", "CLOSED"].forEach(function(n){ var o = sv[n] || {}; var tgt = { ST: ST, FILED: FILED, TRIGON: TRIGON, AFT: AFT, CLOSED: CLOSED }[n]; Object.keys(o).forEach(function(k){ tgt[k] = o[k]; }); }); } } catch (e) {}
-  function persist(){ try { localStorage.setItem(SAVEKEY, JSON.stringify({ ST: ST, FILED: FILED, TRIGON: TRIGON, AFT: AFT, CLOSED: CLOSED })); } catch (e) {} }
-  syncReal();
+  var ALL = [];
+  function refreshCos(){ ALL = realCos().concat(COS); }
+  function cosShown(){ return ALL.filter(function(c){ return !c.sample || showSamples; }); }
 
-  var mode = "month", sel = 0, filter = "all", term = "", open = {};
+  /* ── state: what the auditor changed, on top of each company's starting point */
+  var SAVE = "tg.aud2", S0 = load(SAVE, {});
+  var ST = S0.ST || {}, FILED = S0.FILED || {}, AFT = S0.AFT || {}, CLOSED = S0.CLOSED || {}, TRIG = S0.TRIG || {}, FILE = {};
+  function persist(){ store(SAVE, { ST: ST, FILED: FILED, AFT: AFT, CLOSED: CLOSED, TRIG: TRIG }); }
+  function K(){ return [].slice.call(arguments).join("|"); }
+  function isMonth(per){ return per.indexOf("FY") !== 0; }
+  function sampleFiledAuto(co, per, f){
+    if (isMonth(per)){
+      if (per < PM) return !(co.lag && per === PREV);
+      if (per === PM){ var d = dueOf(co, f, per); return co.c >= 2 || !!(d && d.e < TODAY && H(K(co.id, per, f.id, "f")) < .88); }
+      return false;
+    }
+    var dd = dueOf(co, f, per); return !!(dd && dd.e < TODAY && !co.lag);
+  }
+  function realDoc(co, per, f, it){
+    var u = (readOwners().users || {})[co.real]; if (!u || !isMonth(per)) return 0;
+    var d = it.d, g = it.g || "";
+    if (f.id === "books" && /^Bank statements/.test(d)) return (u.banks || []).length || u.stmt ? "auto" : 0;
+    if (f.id === "pp30" && g === "Sales documents" && /Sales tax invoices|Receipts/.test(d)) return (u.invoices || []).length ? "auto" : 0;
+    if (f.id === "pp30" && g === "Supplier documents" && /Full tax invoices/.test(d)) return (u.bills || []).length ? "auto" : 0;
+    if (/Payroll register|Employee list/.test(d)) return (u.team || []).length ? "auto" : 0;
+    return 0;
+  }
+  function docSt(co, per, f, it){
+    var k = K(co.id, per, f.id, it.id); if (has(ST, k)) return ST[k];
+    if (co.real) return realDoc(co, per, f, it) || "miss";
+    var r = H(k), r2 = H(k + "s"), got = r2 < .62 ? "auto" : "client";
+    if (isMonth(per) && per < PM) return co.lag && per === PREV && r < .3 ? "miss" : got;
+    if (sampleFiledAuto(co, per, f)) return got;
+    var c = isMonth(per) ? co.c : Math.min(1, co.c * .7);
+    return r < c ? got : (H(k + "x") < .35 ? "ask" : "miss");
+  }
+  function isFiled(co, per, f){ var k = K(co.id, per, f.id); return has(FILED, k) ? !!FILED[k] : !co.real && sampleFiledAuto(co, per, f); }
+  function aftOn(co, per, f, ai){ var k = K(co.id, per, f.id, "a" + ai); return has(AFT, k) ? !!AFT[k] : !co.real && isFiled(co, per, f) && !has(FILED, K(co.id, per, f.id)) && (per < PM || H(k) < .8); }
+  function isClosed(co, per){ var k = K(co.id, per); if (has(CLOSED, k)) return !!CLOSED[k]; if (co.real || !isMonth(per)) return false; return per < PM ? !(co.lag && per === PREV) : co.c >= 2; }
+  function trigOn(co, per, f){ var k = K(co.id, per, f.id); return has(TRIG, k) ? !!TRIG[k] : co.id === "s0" && per === PM && f.id === "pnd54"; }
+
+  // the yearly "12 monthly packs" are the monthly closes themselves
+  function packs(co){
+    var E = fyEnd(co), out = [];
+    for (var i = 11; i >= 0; i--){
+      var y = E.getFullYear(), m = E.getMonth() - i, key = mkey(y, m), a = kym(key), ended = eom(a[0], a[1]) < TODAY;
+      out.push({ id: "p" + key, d: MN[a[1]] + " " + a[0], g: "12 monthly packs", pack: key, st: !ended ? "open" : isClosed(co, key) ? "auto" : "miss" });
+    }
+    return out;
+  }
+  function itemsOf(co, f){ return f.packs ? packs(co).concat(f.items) : f.items; }
+  function stOf(co, per, f, it){ return it.pack ? it.st : docSt(co, per, f, it); }
+
   function applies(co, f){ return !f.needs || (f.needs === "vat" ? co.vat : f.needs === "sso" ? co.sso : co.staff > 0); }
-  function activeForms(ci){
-    var co = COS[ci], S = SETS[mode];
-    return S.forms.filter(function(f){ return applies(co, f); }).concat(S.trig.filter(function(f){ return TRIGON[ci + mode + f.id]; }));
+  function activeForms(co, per){ var S = SETS[mode]; return S.forms.filter(function(f){ return applies(co, f); }).concat(S.trig.filter(function(f){ return trigOn(co, per, f); })); }
+  function formStat(co, per, f){
+    var o = { got: 0, ask: 0, miss: 0, open: 0, n: 0 };
+    itemsOf(co, f).forEach(function(it){ var s = stOf(co, per, f, it); o.n++; if (s === "miss") o.miss++; else if (s === "ask") o.ask++; else if (s === "open") o.open++; else o.got++; });
+    o.filed = isFiled(co, per, f); o.due = dueOf(co, f, per);
+    // a deadline that passed before the company joined ThuraGirl was theirs to meet, not ours
+    o.pre = !!(o.due && co.joined && o.due.e < new Date(new Date(co.joined).setHours(0, 0, 0, 0)) && !o.filed); return o;
   }
-  function formStat(ci, f){
-    var o = { got: 0, ask: 0, miss: 0, n: f.docs.length };
-    f.docs.forEach(function(d, di){ var s = ST[ci + mode + f.id + di]; if (s === "miss") o.miss++; else if (s === "ask") o.ask++; else o.got++; });
-    o.filed = !!FILED[ci + mode + f.id]; return o;
-  }
-  function coStat(ci){
-    var o = { got: 0, ask: 0, miss: 0, n: 0, filed: 0, forms: 0, due: 99 };
-    activeForms(ci).forEach(function(f){
-      var s = formStat(ci, f); o.got += s.got; o.ask += s.ask; o.miss += s.miss; o.n += s.n; if (f.id !== "books" && f.id !== "ybooks"){ o.forms++; if (s.filed) o.filed++; }
-      if (!s.filed && f.due && f.due < o.due) o.due = f.due;
+  function coStat(co){
+    var per = perOf(co), o = { got: 0, ask: 0, miss: 0, open: 0, n: 0, filed: 0, forms: 0, due: null, per: per };
+    activeForms(co, per).forEach(function(f){
+      var s = formStat(co, per, f); o.got += s.got; o.ask += s.ask; o.miss += s.miss; o.open += s.open; o.n += s.n;
+      if (f.id !== "books" && f.id !== "ybooks"){ o.forms++; if (s.filed) o.filed++; }
+      if (!s.filed && !s.pre && s.due && (!o.due || s.due.e < o.due.e)) o.due = s.due;
     });
-    o.stage = CLOSED[ci + mode] ? "filed" : (o.miss + o.ask) ? "collect" : "ready"; return o;
+    o.closed = isClosed(co, per);
+    o.stage = o.closed ? "filed" : (o.miss + o.ask + o.open) ? "collect" : "ready"; return o;
   }
-  var TODAY = NOW.getDate();
   function dueText(s){
-    if (s.stage === "filed") return ["Filed", "ok"];
-    if (mode === "year" || s.due === 99) return [s.stage === "ready" ? "Ready to close" : "Collecting", s.stage === "ready" ? "ok" : ""];
-    var d = s.due - TODAY; return [d === 0 ? "Due today" : d < 0 ? Math.abs(d) + " days late" : "Due in " + d + " days", d <= 0 ? "hot" : ""];
+    if (s.closed) return ["Closed", "ok"];
+    if (!s.due) return [s.stage === "ready" ? "Ready to close" : "Collecting", s.stage === "ready" ? "ok" : ""];
+    var d = days(s.due.e);
+    return [d < 0 ? Math.abs(d) + (d === -1 ? " day late" : " days late") : d === 0 ? "Due today" : d <= 14 ? "Due in " + d + (d === 1 ? " day" : " days") : "Due " + fmt(s.due.e), d <= 0 ? "hot" : ""];
   }
-  var toastT = 0;
-  function toast(m){ var t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(function(){ t.hidden = true; }, 2600); }
 
+  /* ── auditor accounts: password, then an authenticator code if it's on; or a passkey */
+  var AU = load("tg.aud.users", {}), ME = null;
+  function saveAU(){ store("tg.aud.users", AU); }
+  var ASSIGN = load("tg.aud.assign", {});
+  function saveAssign(){ store("tg.aud.assign", ASSIGN); }
+  function leadEmail(){ var l = Object.keys(AU).filter(function(k){ return AU[k].role === "lead"; })[0]; return l || null; }
+  function owner(co){ return has(ASSIGN, co.id) ? ASSIGN[co.id] : co.sample ? leadEmail() : null; }
+  function isLead(){ return ME && ME.role === "lead"; }
+  function initials(n){ return (n || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(function(w){ return w.charAt(0).toUpperCase(); }).join(""); }
+  function digest(t){ return crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)).then(function(b){ return Array.prototype.map.call(new Uint8Array(b), function(x){ return ("0" + x.toString(16)).slice(-2); }).join(""); }); }
+  function rnd(n){ var a = new Uint8Array(n); crypto.getRandomValues(a); return a; }
+  function b64u(buf){ var s = "", a = new Uint8Array(buf); for (var i = 0; i < a.length; i++) s += String.fromCharCode(a[i]); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+  function hexs(a){ return Array.prototype.map.call(a, function(x){ return ("0" + x.toString(16)).slice(-2); }).join(""); }
+  var B32 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  function b32(bytes){ var bits = "", out = ""; for (var i = 0; i < bytes.length; i++) bits += ("00000000" + bytes[i].toString(2)).slice(-8); for (var j = 0; j + 5 <= bits.length; j += 5) out += B32[parseInt(bits.substr(j, 5), 2)]; return out; }
+  function unb32(s){ var bits = "", out = []; s.toUpperCase().split("").forEach(function(c){ bits += ("00000" + B32.indexOf(c).toString(2)).slice(-5); }); for (var i = 0; i + 8 <= bits.length; i += 8) out.push(parseInt(bits.substr(i, 8), 2)); return new Uint8Array(out); }
+  function totp(secret, step){
+    var c = new Uint8Array(8), n = step; for (var i = 7; i >= 0; i--){ c[i] = n & 255; n = Math.floor(n / 256); }
+    return crypto.subtle.importKey("raw", unb32(secret), { name: "HMAC", hash: "SHA-1" }, false, ["sign"]).then(function(k){ return crypto.subtle.sign("HMAC", k, c); }).then(function(sig){
+      var h = new Uint8Array(sig), o = h[19] & 15, v = ((h[o] & 127) << 24) | (h[o + 1] << 16) | (h[o + 2] << 8) | h[o + 3]; return ("000000" + (v % 1e6)).slice(-6);
+    });
+  }
+  function totpOk(secret, code){ var s = Math.floor(Date.now() / 30000); return Promise.all([s - 1, s, s + 1].map(function(x){ return totp(secret, x); })).then(function(a){ return a.indexOf(code) >= 0; }); }
+  function mkCodes(){ var out = []; for (var i = 0; i < 10; i++){ var s = hexs(rnd(5)); out.push({ c: s.slice(0, 5) + "-" + s.slice(5), used: 0 }); } return out; }
+  function pkOk(){ return !!(window.PublicKeyCredential && navigator.credentials && navigator.credentials.create) && window.isSecureContext; }
+  var qrP = null;
+  function qrSvg(text){
+    if (!qrP) qrP = window.qrcode ? Promise.resolve() : new Promise(function(ok, no){ var s = document.createElement("script"); s.src = "../assets/vendor/qrcode.js"; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+    return qrP.then(function(){
+      var q = qrcode(0, "M"); q.addData(text); q.make(); var n = q.getModuleCount(), m = 2, path = "";
+      for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (q.isDark(r, c)) path += "M" + (c + m) + " " + (r + m) + "h1v1h-1z";
+      return '<svg viewBox="0 0 ' + (n + m * 2) + " " + (n + m * 2) + '" role="img" aria-label="QR code for your authenticator app" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="' + path + '" fill="#0F1514"/></svg>';
+    });
+  }
+  var SESSION_H = 12;
+  var LOGIN = !!window.AUD_LOGIN;
+  function startSession(acc){ store("tg.aud.session", { email: acc.email, at: Date.now() }); acc.last = Date.now(); saveAU(); ME = acc; if (LOGIN) location.href = "../auditor/"; else boot(); }
+  function signOut(){ try { localStorage.removeItem("tg.aud.session"); } catch (e) {} ME = null; closeDlg(); location.href = "../auditorlogin/"; }
+
+  function field(label, type, auto, val){
+    var w = el("label", "fl"); w.appendChild(el("span", "", label)); var i = el("input"); i.type = type || "text"; if (auto) i.autocomplete = auto; if (val) i.value = val; w.appendChild(i); return [w, i];
+  }
+  function gateCard(title, sub){
+    var g = $("#gate"); g.textContent = ""; g.hidden = false; $("#app").hidden = true;
+    var c = el("div", "gc"); c.innerHTML = '<div class="brand"><b>thuragirl<i>.</i></b><span>Auditor</span></div>';
+    c.appendChild(el("h1", "", title)); if (sub) c.appendChild(el("p", "gs", sub)); g.appendChild(c); return c;
+  }
+  function testNote(c){ c.appendChild(el("p", "gn", "Test build: accounts stay in this browser and are not sent anywhere. Please use a made-up password.")); }
+  function setupScreen(){
+    var c = gateCard("Set up the auditor desk", "This first account is the lead. The lead adds the other auditors and decides who looks after which company.");
+    var f = el("form", "gf"), n = field("Full name", "text", "name"), e = field("Work email", "email", "email"), cpa = field("CPA or tax auditor registration number", "text", "off"), p = field("Password, at least 8 characters", "password", "new-password");
+    [n, e, cpa, p].forEach(function(x){ f.appendChild(x[0]); });
+    var err = el("div", "ge"); f.appendChild(err); var b = el("button", "btn pri", "Create the lead account"); b.type = "submit"; f.appendChild(b); c.appendChild(f); testNote(c);
+    f.addEventListener("submit", function(ev){ ev.preventDefault();
+      var em = e[1].value.trim().toLowerCase();
+      if (!n[1].value.trim() || !/^\S+@\S+\.\S+$/.test(em)) { err.textContent = "Add your name and a work email."; return; }
+      if (p[1].value.length < 8){ err.textContent = "The password needs at least 8 characters."; return; }
+      var salt = hexs(rnd(16)); digest(salt + p[1].value).then(function(h){ var acc = { email: em, name: n[1].value.trim(), cpa: cpa[1].value.trim(), role: "lead", salt: salt, hash: h, at: Date.now(), passkeys: [] }; AU[em] = acc; saveAU(); startSession(acc); });
+    });
+    setTimeout(function(){ n[1].focus(); }, 0);
+  }
+  function signInScreen(msg){
+    var c = gateCard("Sign in", "The back office for ThuraGirl's auditors.");
+    var f = el("form", "gf"), e = field("Work email", "email", "username"), p = field("Password", "password", "current-password");
+    f.appendChild(e[0]); f.appendChild(p[0]);
+    var err = el("div", "ge", msg || ""); f.appendChild(err); var b = el("button", "btn pri", "Sign in"); b.type = "submit"; f.appendChild(b); c.appendChild(f);
+    if (pkOk() && Object.keys(AU).some(function(k){ return (AU[k].passkeys || []).length; })) c.appendChild(btn("btn wide", "Sign in with a passkey", function(){ err.textContent = ""; pkSignIn(err); }));
+    c.appendChild(el("p", "gs sm", "New here? Ask your lead auditor to add you. Then sign in with your email and set a password."));
+    testNote(c);
+    f.addEventListener("submit", function(ev){ ev.preventDefault();
+      var acc = AU[e[1].value.trim().toLowerCase()]; if (!acc){ err.textContent = "There's no auditor with that email. Ask your lead to add you."; return; }
+      if (!acc.hash){ setPassScreen(acc); return; }
+      digest(acc.salt + p[1].value).then(function(h){ if (h !== acc.hash){ err.textContent = "That password doesn't match."; return; } if (acc.tfa) codeScreen(acc); else startSession(acc); });
+    });
+    setTimeout(function(){ e[1].focus(); }, 0);
+  }
+  function setPassScreen(acc){
+    var c = gateCard("Welcome, " + acc.name.split(" ")[0], "Your lead added you. Set a password to finish.");
+    var f = el("form", "gf"), p = field("New password, at least 8 characters", "password", "new-password"), p2 = field("Type it again", "password", "new-password");
+    f.appendChild(p[0]); f.appendChild(p2[0]); var err = el("div", "ge"); f.appendChild(err); var b = el("button", "btn pri", "Set password and sign in"); b.type = "submit"; f.appendChild(b); c.appendChild(f); testNote(c);
+    f.addEventListener("submit", function(ev){ ev.preventDefault();
+      if (p[1].value.length < 8){ err.textContent = "The password needs at least 8 characters."; return; } if (p[1].value !== p2[1].value){ err.textContent = "The two passwords don't match."; return; }
+      acc.salt = hexs(rnd(16)); digest(acc.salt + p[1].value).then(function(h){ acc.hash = h; saveAU(); startSession(acc); });
+    });
+    setTimeout(function(){ p[1].focus(); }, 0);
+  }
+  function codeScreen(acc){
+    var c = gateCard("One more step", "Type the 6-digit code from your authenticator app, or a backup code.");
+    var f = el("form", "gf"), k = field("Code", "text", "one-time-code"); k[1].inputMode = "numeric"; f.appendChild(k[0]);
+    var err = el("div", "ge"); f.appendChild(err); var b = el("button", "btn pri", "Verify"); b.type = "submit"; f.appendChild(b); c.appendChild(f);
+    c.appendChild(btn("btn wide", "Back", function(){ signInScreen(); }));
+    f.addEventListener("submit", function(ev){ ev.preventDefault(); var v = k[1].value.trim().toLowerCase();
+      var bc = (acc.tfa.codes || []).filter(function(x){ return !x.used && x.c === v; })[0]; if (bc){ bc.used = Date.now(); saveAU(); startSession(acc); return; }
+      totpOk(acc.tfa.secret, v.replace(/\D/g, "")).then(function(g){ if (g) startSession(acc); else err.textContent = "That code doesn't match. Try the newest one."; });
+    });
+    setTimeout(function(){ k[1].focus(); }, 0);
+  }
+  function pkSignIn(err){
+    navigator.credentials.get({ publicKey: { challenge: rnd(32), userVerification: "required", timeout: 60000 } }).then(function(c){
+      if (!c) return; var id = b64u(c.rawId), acc = null;
+      Object.keys(AU).forEach(function(k){ if ((AU[k].passkeys || []).some(function(p){ return p.id === id; })) acc = AU[k]; });
+      if (!acc){ err.textContent = "That passkey isn't linked to an auditor in this browser."; return; }
+      startSession(acc);
+    }).catch(function(e){ if (e && e.name !== "NotAllowedError" && e.name !== "AbortError") err.textContent = "Passkey sign-in didn't work: " + (e.message || e.name); });
+  }
+  function pkCreate(acc, done){
+    var uid = acc.pkUser || b64u(rnd(16)); acc.pkUser = uid;
+    var raw = Uint8Array.from(atob(uid.replace(/-/g, "+").replace(/_/g, "/") + "==".slice(0, (4 - uid.length % 4) % 4)), function(c){ return c.charCodeAt(0); });
+    navigator.credentials.create({ publicKey: { challenge: rnd(32), rp: { name: "ThuraGirl Auditor" }, user: { id: raw, name: acc.email, displayName: acc.name },
+      pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+      authenticatorSelection: { residentKey: "required", requireResidentKey: true, userVerification: "required" }, timeout: 60000, attestation: "none" } }).then(function(c){
+      if (!c) return; acc.passkeys = (acc.passkeys || []).concat([{ id: b64u(c.rawId), at: Date.now() }]); saveAU(); toast("Passkey added"); if (done) done();
+    }).catch(function(e){ if (e && e.name !== "NotAllowedError" && e.name !== "AbortError") toast("The passkey was not added: " + (e.message || e.name)); });
+  }
+
+  /* ── account, security and team: one dialog */
+  function dlg(title){
+    var m = $("#dlg"); if (!m){ m = el("div", "vw"); m.id = "dlg"; m.setAttribute("role", "dialog"); m.setAttribute("aria-modal", "true"); document.body.appendChild(m); m.addEventListener("click", function(ev){ if (ev.target === m) closeDlg(); }); }
+    m.textContent = ""; m.hidden = false; var c = el("div", "vw-c"); m.appendChild(c);
+    var hd = el("div", "dlh"); hd.appendChild(el("h3", "", title)); hd.appendChild(btn("btn", "Close", closeDlg)); c.appendChild(hd); return c;
+  }
+  function closeDlg(){ var m = $("#dlg"); if (m) m.hidden = true; var v = $("#view"); if (v) v.hidden = true; }
+  document.addEventListener("keydown", function(ev){ if (ev.key === "Escape") closeDlg(); });
+  function accountDlg(){
+    var c = dlg(ME.name);
+    var dl = el("dl", "vw-d"); [["Email", ME.email], ["Registration", ME.cpa || "Not added"], ["Role", ME.role === "lead" ? "Lead auditor: adds auditors and assigns companies" : "Auditor"]].forEach(function(r){ dl.appendChild(el("dt", "", r[0])); dl.appendChild(el("dd", "", r[1])); }); c.appendChild(dl);
+    c.appendChild(el("div", "grp", "Sign-in security"));
+    var pk = el("div", "srow"), pt = el("div"); pt.appendChild(el("b", "", "Passkey")); pt.appendChild(el("small", "", !pkOk() ? "This browser can't make passkeys." : (ME.passkeys || []).length ? (ME.passkeys.length + (ME.passkeys.length === 1 ? " passkey" : " passkeys") + ". Sign in with Face ID, Touch ID or your screen lock.") : "Sign in with Face ID or Touch ID instead of a password.")); pk.appendChild(pt);
+    if (pkOk()) pk.appendChild(btn("mini", "Add a passkey", function(){ pkCreate(ME, accountDlg); })); c.appendChild(pk);
+    var tf = el("div", "srow"), tt = el("div"); tt.appendChild(el("b", "", "Two-step sign-in")); tt.appendChild(el("small", "", ME.tfa ? "On. " + (ME.tfa.codes || []).filter(function(x){ return !x.used; }).length + " backup codes left." : "After your password, ask for a code from an authenticator app.")); tf.appendChild(tt);
+    tf.appendChild(ME.tfa ? btn("mini", "Turn off", function(){ delete ME.tfa; saveAU(); toast("Two-step sign-in is off"); accountDlg(); }) : btn("mini", "Set it up", tfaSetup)); c.appendChild(tf);
+    if (isLead()) teamBlock(c);
+    var acts = el("div", "acts"); acts.appendChild(btn("btn", "Sign out", signOut)); c.appendChild(acts);
+  }
+  function tfaSetup(){
+    var c = dlg("Two-step sign-in"), sec = b32(rnd(20)), uri = "otpauth://totp/ThuraGirl%20Auditor:" + encodeURIComponent(ME.email) + "?secret=" + sec + "&issuer=ThuraGirl%20Auditor&digits=6&period=30";
+    c.appendChild(el("p", "", "Scan this in Google Authenticator, Microsoft Authenticator or 1Password, or type the key by hand."));
+    var q = el("div", "qr"); c.appendChild(q); c.appendChild(el("code", "key", sec.match(/.{1,4}/g).join(" ")));
+    qrSvg(uri).then(function(s){ q.innerHTML = s; }, function(){ q.textContent = "The QR code didn't load. Type the key instead."; });
+    var k = field("6-digit code from the app", "text", "one-time-code"); k[1].inputMode = "numeric"; c.appendChild(k[0]); var err = el("div", "ge"); c.appendChild(err);
+    var acts = el("div", "acts"); acts.appendChild(btn("btn", "Cancel", accountDlg));
+    acts.appendChild(btn("btn pri", "Turn on", function(){ totpOk(sec, k[1].value.replace(/\D/g, "")).then(function(g){
+      if (!g){ err.textContent = "That code doesn't match. Check the phone's time is set automatically, and try the newest code."; return; }
+      ME.tfa = { secret: sec, at: Date.now(), codes: mkCodes() }; saveAU();
+      var c2 = dlg("Your backup codes"); c2.appendChild(el("p", "", "Keep them somewhere safe. Each one works once, if you lose your phone."));
+      var g2 = el("div", "codes"); ME.tfa.codes.forEach(function(x){ g2.appendChild(el("code", "", x.c)); }); c2.appendChild(g2);
+      var a2 = el("div", "acts"); a2.appendChild(btn("btn pri", "Done", accountDlg)); c2.appendChild(a2);
+    }); })); c.appendChild(acts);
+  }
+  function teamBlock(c){
+    c.appendChild(el("div", "grp", "Auditors"));
+    Object.keys(AU).forEach(function(k){
+      var a = AU[k], n = ALL.filter(function(co){ return owner(co) === k; }).length, r = el("div", "srow"), t = el("div");
+      t.appendChild(el("b", "", a.name + (k === ME.email ? " (you)" : ""))); t.appendChild(el("small", "", k + " · " + (a.role === "lead" ? "Lead" : "Auditor") + " · " + n + (n === 1 ? " company" : " companies") + (a.hash ? "" : " · hasn't signed in yet"))); r.appendChild(t); c.appendChild(r);
+    });
+    var f = el("form", "gf row"), n = field("Name", "text", "off"), e = field("Email", "email", "off"), cpa = field("Registration number", "text", "off");
+    [n, e, cpa].forEach(function(x){ f.appendChild(x[0]); }); var b = el("button", "btn", "Add auditor"); b.type = "submit"; f.appendChild(b); var err = el("div", "ge"); f.appendChild(err); c.appendChild(f);
+    f.addEventListener("submit", function(ev){ ev.preventDefault(); var em = e[1].value.trim().toLowerCase();
+      if (!n[1].value.trim() || !/^\S+@\S+\.\S+$/.test(em)){ err.textContent = "Add a name and an email."; return; } if (AU[em]){ err.textContent = "That auditor is already on the desk."; return; }
+      AU[em] = { email: em, name: n[1].value.trim(), cpa: cpa[1].value.trim(), role: "auditor", at: Date.now(), passkeys: [] }; saveAU(); toast(n[1].value.trim() + " added. They sign in with this email and set a password."); accountDlg();
+    });
+  }
+
+  /* ── the desk */
+  var mode = "month", mper = PM, selId = null, filter = "all", term = "", open = {}, scope = "mine", showSamples = load("tg.aud.samples", true);
+  var toastT = 0;
+  function toast(m){ var t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(function(){ t.hidden = true; }, 2800); }
+  function inScope(co){ var o = owner(co); return scope === "all" ? true : scope === "none" ? !o : o === ME.email; }
+  function visible(){ return cosShown().filter(inScope); }
+  function selCo(){ var v = visible(); return v.filter(function(c){ return c.id === selId; })[0] || v[0] || null; }
+
+  function renderScope(){
+    var root = $("#scope"); root.textContent = "";
+    if (!isLead()){ root.hidden = true; scope = "mine"; return; } root.hidden = false;
+    var shown = cosShown();
+    [["mine", "Mine", shown.filter(function(c){ return owner(c) === ME.email; }).length], ["none", "Unassigned", shown.filter(function(c){ return !owner(c); }).length], ["all", "Everyone's", shown.length]].forEach(function(x){
+      var b = btn("", x[1] + " " + x[2], function(){ scope = x[0]; render(); }); b.setAttribute("aria-pressed", String(scope === x[0])); root.appendChild(b);
+    });
+  }
   function renderStats(){
     var c = { all: 0, collect: 0, ready: 0, filed: 0 };
-    COS.forEach(function(co, ci){ var s = coStat(ci); c.all++; c[s.stage]++; });
+    visible().forEach(function(co){ var s = coStat(co); c.all++; c[s.stage]++; });
     var root = $("#stats"); root.textContent = "";
-    [["all", "All companies"], ["collect", "Waiting on documents"], ["ready", "Ready to close"], ["filed", "Filed"]].forEach(function(x){
+    [["all", "All companies"], ["collect", "Waiting on documents"], ["ready", "Ready to close"], ["filed", "Closed"]].forEach(function(x){
       var b = el("button", "stat"); b.type = "button"; b.setAttribute("aria-pressed", String(filter === x[0]));
       b.appendChild(el("span", "", x[1])); b.appendChild(el("b", "num", c[x[0]]));
       b.addEventListener("click", function(){ filter = x[0]; render(); }); root.appendChild(b);
     });
   }
   function renderQueue(){
-    var root = $("#queue"); root.textContent = "";
-    var rows = COS.map(function(co, ci){ return { co: co, ci: ci, s: coStat(ci) }; })
+    var root = $("#queue"), cur = selCo(); root.textContent = "";
+    var rows = visible().map(function(co){ return { co: co, s: coStat(co) }; })
       .filter(function(r){ return (filter === "all" || r.s.stage === filter) && r.co.n.toLowerCase().indexOf(term) >= 0; })
-      .sort(function(a, b){ var o = { collect: 0, ready: 1, filed: 2 }; return (o[a.s.stage] - o[b.s.stage]) || (a.s.due - b.s.due) || (b.s.miss + b.s.ask - a.s.miss - a.s.ask); });
+      .sort(function(a, b){ var o = { collect: 0, ready: 1, filed: 2 }; return (o[a.s.stage] - o[b.s.stage]) || ((a.s.due ? +a.s.due.e : 9e15) - (b.s.due ? +b.s.due.e : 9e15)) || (b.s.miss + b.s.ask - a.s.miss - a.s.ask); });
     $("#qn").textContent = rows.length + (rows.length === 1 ? " company" : " companies") + " · most urgent first";
-    if (!rows.length) root.appendChild(el("div", "none", "No companies match."));
+    if (!rows.length) root.appendChild(el("div", "none", scope === "mine" && !visible().length ? "No companies are assigned to you yet." : "No companies match."));
     rows.forEach(function(r){
-      var b = el("button", "co"); b.type = "button"; if (r.ci === sel) b.setAttribute("aria-current", "true");
-      var l = el("div"); l.appendChild(el("div", "nm", r.co.n)); l.appendChild(el("div", "ty", r.co.t)); b.appendChild(l);
+      var b = el("button", "co"); b.type = "button"; if (cur && r.co.id === cur.id) b.setAttribute("aria-current", "true");
+      var l = el("div"), nm = el("div", "nm", r.co.n); if (r.co.real) nm.appendChild(el("span", "new", "Signed up")); l.appendChild(nm);
+      var o = owner(r.co); l.appendChild(el("div", "ty", r.co.t + (scope !== "mine" ? " · " + (o ? (AU[o] ? AU[o].name : o) : "Unassigned") : ""))); b.appendChild(l);
       var d = dueText(r.s), rt = el("div"); rt.appendChild(el("div", "due " + d[1], d[0])); rt.appendChild(el("div", "cnt", r.s.got + " of " + r.s.n + " documents")); b.appendChild(rt);
       var strip = el("div", "strip");
       SETS[mode].forms.forEach(function(f){
-        var ok = applies(r.co, f), fs = ok ? formStat(r.ci, f) : null, cls = !ok ? "na" : fs.filed || !(fs.miss + fs.ask) ? "done" : fs.miss ? "miss" : "ask";
-        var word = !ok ? "not needed" : fs.filed ? "filed" : fs.miss ? fs.miss + " missing" : fs.ask ? fs.ask + " requested" : "complete";
+        var ok = applies(r.co, f), fs = ok ? formStat(r.co, r.s.per, f) : null, cls = !ok ? "na" : fs.filed || !(fs.miss + fs.ask + fs.open) ? "done" : fs.miss ? "miss" : "ask";
+        var word = !ok ? "not needed" : fs.filed ? "filed" : fs.miss ? fs.miss + " missing" : fs.ask ? fs.ask + " requested" : fs.open ? "month not over" : "complete";
         var p = el("span", "fs " + cls, f.short); p.title = f.short + ": " + word; p.setAttribute("aria-label", f.short + ", " + word); strip.appendChild(p);
       });
       b.appendChild(strip);
-      b.addEventListener("click", function(){ sel = r.ci; open = {}; $("#desk").classList.add("detail"); render(); window.scrollTo(0, 0); });
+      b.addEventListener("click", function(){ selId = r.co.id; open = {}; $("#desk").classList.add("detail"); render(); window.scrollTo(0, 0); });
       root.appendChild(b);
     });
   }
   function statusPill(s){
-    var map = { auto: ["done", "i-check", "From ThuraGirl"], client: ["done", "i-check", "From client"], ask: ["ask", "i-clock", "Requested"], miss: ["miss", "i-x", "Missing"] }[s];
+    var map = { auto: ["done", "i-check", "From ThuraGirl"], client: ["done", "i-check", "From client"], ask: ["ask", "i-clock", "Requested"], miss: ["miss", "i-x", "Missing"], open: ["", "i-clock", "Month not over"] }[s];
     var p = el("span", "pill " + map[0]); p.innerHTML = ico(map[1]); p.appendChild(document.createTextNode(map[2])); return p;
   }
+  function pushRequest(co, per, f, it){
+    if (!co.real) return; var db2 = readOwners(), u = (db2.users || {})[co.real]; if (!u) return;
+    u.requests = u.requests || []; var tag = K(per, f.id, it.id);
+    if (u.requests.some(function(r){ return r.aud === tag && !r.file; })) return;
+    u.requests.push({ id: "a" + Date.now().toString(36) + it.id, aud: tag, doc: (it.g ? it.g + ": " : "") + it.d + (isMonth(per) ? ", " + mlabel(per) : ""), form: f.name, at: Date.now() });
+    store("tg.v2", db2);
+  }
+  function syncReal(){
+    var db2 = readOwners();
+    ALL.forEach(function(co){
+      if (!co.real) return; var u = (db2.users || {})[co.real]; if (!u) return;
+      (u.requests || []).forEach(function(r){ if (!r.aud || !r.file) return; var k = co.id + "|" + r.aud; if (!has(ST, k) || ST[k] === "ask" || ST[k] === "miss") ST[k] = "client"; FILE[k] = r.file; });
+    });
+  }
+  function who(n){ return n.replace(/\.$/, ""); }
   function renderDetail(){
-    var root = $("#detail"), co = COS[sel], s = coStat(sel), S = SETS[mode]; root.textContent = "";
+    var root = $("#detail"), co = selCo(); root.textContent = "";
+    if (!co){ root.appendChild(el("div", "none", "Pick a company from the queue.")); return; }
+    selId = co.id; var per = perOf(co), s = coStat(co), S = SETS[mode];
     var h = el("div", "dh");
-    var back = el("button", "btn back"); back.type = "button"; back.innerHTML = ico("i-chevl") + "Queue"; back.style.justifySelf = "start";
-    back.addEventListener("click", function(){ $("#desk").classList.remove("detail"); }); h.appendChild(back);
+    var back = btn("btn back", null, function(){ $("#desk").classList.remove("detail"); }); back.innerHTML = ico("i-chevl") + "Queue"; back.style.justifySelf = "start"; h.appendChild(back);
     h.appendChild(el("h2", "", co.n));
-    var tags = el("div", "tags");
-    [mode === "month" ? PLABEL : FYLABEL, co.vat ? "VAT registered" : "Not VAT registered", co.sso ? "SSO enrolled" : "No SSO", co.staff ? co.staff + " employees" : "No employees"].forEach(function(t){ tags.appendChild(el("span", "tag", t)); });
+    var tags = el("div", "tags"), E = fyEnd(co);
+    [mode === "month" ? mlabel(per) : "Year ending " + E.getDate() + " " + MN[E.getMonth()] + " " + E.getFullYear(), co.vat ? "VAT registered" : "Not VAT registered", co.sso ? "SSO enrolled" : "No SSO", co.staff ? co.staff + " employees" : "No employees"].forEach(function(t){ tags.appendChild(el("span", "tag", t)); });
     h.appendChild(tags);
+    // who looks after it
+    var as = el("div", "assign"), o = owner(co);
+    if (isLead()){
+      var lab = el("label"); lab.appendChild(el("span", "", "Auditor")); var sel = el("select"); sel.appendChild(new Option("Unassigned", ""));
+      Object.keys(AU).forEach(function(k){ var op = new Option(AU[k].name, k); if (k === o) op.selected = true; sel.appendChild(op); });
+      sel.addEventListener("change", function(){ ASSIGN[co.id] = sel.value || null; saveAssign(); setOwnerAuditor(co, sel.value); toast(sel.value ? co.n + " is now with " + AU[sel.value].name : co.n + " is unassigned"); render(); });
+      lab.appendChild(sel); as.appendChild(lab);
+    } else as.appendChild(el("span", "", "Auditor: " + (o && AU[o] ? AU[o].name : "Unassigned")));
+    h.appendChild(as);
     var sum = el("dl", "sum");
     [["Received", s.got], ["Requested", s.ask], ["Missing", s.miss]].forEach(function(x){ var d = el("div"); d.appendChild(el("dt", "", x[0])); d.appendChild(el("dd", "num", x[1])); sum.appendChild(d); });
     h.appendChild(sum);
     var bar = el("div", "bar"); bar.setAttribute("role", "img"); bar.setAttribute("aria-label", s.got + " of " + s.n + " documents received"); var fill = el("i"); fill.style.width = (s.n ? s.got / s.n * 100 : 0) + "%"; bar.appendChild(fill); h.appendChild(bar);
     var acts = el("div", "acts");
-    var req = el("button", "btn pri"); req.type = "button"; req.innerHTML = ico("i-send") + (s.miss ? "Request " + s.miss + " missing" : "Nothing to request"); req.disabled = !s.miss;
-    req.addEventListener("click", function(){ var n = 0; activeForms(sel).forEach(function(f){ f.docs.forEach(function(d, di){ var k = sel + mode + f.id + di; if (ST[k] === "miss"){ ST[k] = "ask"; pushRequest(sel, mode, f, di); n++; } }); }); toast(n + " requests sent to " + who(co.n) + (co.real ? ". They show on their dashboard." : "")); render(); });
-    var cls = el("button", "btn"); cls.type = "button"; cls.innerHTML = ico("i-lock") + (s.stage === "filed" ? "Closed" : mode === "month" ? "Close " + PMON : "Close " + FYLABEL); cls.disabled = s.stage !== "ready" || s.filed < s.forms;
-    cls.title = s.stage === "filed" ? "Closed" : s.stage !== "ready" ? "Collect every document first" : s.filed < s.forms ? "Mark every form as filed first" : "Lock the books for this period";
-    cls.addEventListener("click", function(){ CLOSED[sel + mode] = Date.now(); toast(co.n + ": " + (mode === "month" ? PLABEL : FYLABEL) + " closed"); render(); });
-    acts.appendChild(req); acts.appendChild(cls); h.appendChild(acts);
+    var req = btn("btn pri", null, function(){ var n = 0; activeForms(co, per).forEach(function(f){ itemsOf(co, f).forEach(function(it){ if (it.pack) return; var k = K(co.id, per, f.id, it.id); if (docSt(co, per, f, it) === "miss"){ ST[k] = "ask"; pushRequest(co, per, f, it); n++; } }); }); toast(n + (n === 1 ? " request" : " requests") + " sent to " + who(co.n) + (co.real ? ". They show in Needs you on their dashboard." : "")); render(); });
+    var reqN = 0; activeForms(co, per).forEach(function(f){ itemsOf(co, f).forEach(function(it){ if (!it.pack && docSt(co, per, f, it) === "miss") reqN++; }); });
+    req.innerHTML = ico("i-send") + (reqN ? "Request " + reqN + " missing" : "Nothing to request"); req.disabled = !reqN;
+    var plabel = mode === "month" ? MN[kym(per)[1]] : "the year";
+    var cls = btn("btn", null, function(){ CLOSED[K(co.id, per)] = Date.now(); toast(co.n + ": " + (mode === "month" ? mlabel(per) : "year") + " closed"); render(); });
+    cls.innerHTML = ico("i-lock") + (s.closed ? "Closed" : "Close " + plabel); cls.disabled = s.closed || s.stage !== "ready" || s.filed < s.forms;
+    cls.title = s.closed ? "Closed" : s.stage !== "ready" ? "Collect every document first" : s.filed < s.forms ? "Mark every form as filed first" : "Lock the books for this period";
+    acts.appendChild(req); acts.appendChild(cls);
+    if (s.closed && has(CLOSED, K(co.id, per))) acts.appendChild(btn("btn", "Reopen", function(){ CLOSED[K(co.id, per)] = 0; render(); }));
+    h.appendChild(acts);
     root.appendChild(h);
 
-    var act = activeForms(sel), auto = act.filter(function(f){ return formStat(sel, f).miss; })[0] || act.filter(function(f){ return formStat(sel, f).ask; })[0];
-    function section(f, isTrig){
-      var fs = formStat(sel, f), key = f.id, isOpen = open[key] != null ? open[key] : (auto && auto.id === f.id);
+    var act = activeForms(co, per), auto = act.filter(function(f){ return formStat(co, per, f).miss; })[0] || act.filter(function(f){ return formStat(co, per, f).ask; })[0];
+    function section(f){
+      var fs = formStat(co, per, f), key = f.id, isOpen = open[key] != null ? open[key] : (auto && auto.id === f.id);
       var sec = el("div", "sec" + (isOpen ? " open" : "")), sh = el("button", "sh"); sh.type = "button"; sh.setAttribute("aria-expanded", String(isOpen));
-      var t = el("div", "t"), b = el("b", "", f.name); t.appendChild(b); if (f.built) t.insertAdjacentHTML("beforeend", '<span class="built">Built</span>'); t.appendChild(el("small", "", f.sub)); sh.appendChild(t);
-      var pc = fs.filed ? "done" : fs.miss ? "miss" : fs.ask ? "ask" : "done", pt = fs.filed ? "Filed" : fs.miss ? fs.miss + " missing" : fs.ask ? fs.ask + " requested" : "Complete";
+      var t = el("div", "t"), b = el("b", "", f.name); t.appendChild(b); if (f.built) t.insertAdjacentHTML("beforeend", '<span class="built">Built</span>'); t.appendChild(el("small", "", f.sub));
+      if (fs.due && fs.pre) t.appendChild(el("small", "dl", "Was due " + fmt(fs.due.e) + ", before they joined ThuraGirl"));
+      else if (fs.due){ var dd = days(fs.due.e), late = !fs.filed && dd < 0;
+        t.appendChild(el("small", "dl" + (late || (!fs.filed && dd === 0) ? " hot" : ""), (fs.filed ? "Was due " : late ? "Late. Was due " : "Due ") + fmt(fs.due.e) + (+fs.due.p !== +fs.due.e ? " by e-filing, " + fmt(fs.due.p) + " on paper" : ""))); }
+      sh.appendChild(t);
+      var pc = fs.filed ? "done" : fs.miss ? "miss" : fs.ask ? "ask" : fs.open ? "" : "done", pt = fs.filed ? "Filed" : fs.miss ? fs.miss + " missing" : fs.ask ? fs.ask + " requested" : fs.open ? fs.open + " to come" : "Complete";
       var pill = el("span", "pill " + pc); pill.innerHTML = ico(pc === "done" ? "i-check" : pc === "miss" ? "i-x" : "i-clock"); pill.appendChild(document.createTextNode(pt)); sh.appendChild(pill);
       sh.insertAdjacentHTML("beforeend", '<svg class="i cv"><use href="#i-chev"/></svg>');
       sh.addEventListener("click", function(){ open[key] = !isOpen; renderDetail(); }); sec.appendChild(sh);
-      var sb = el("div", "sb");
-      f.docs.forEach(function(d, di){
-        var k = sel + mode + f.id + di, st = ST[k], cl = st === "miss" ? "miss" : st === "ask" ? "ask" : "done";
-        var row = el("div", "doc " + cl), ic = el("span", "ic"); ic.innerHTML = ico(cl === "done" ? "i-check" : cl === "miss" ? "i-x" : "i-clock"); row.appendChild(ic);
-        row.appendChild(el("div", "tx", d)); row.appendChild(statusPill(st));
-        if (st === "miss"){ var a = el("button", "mini", "Request"); a.type = "button"; a.addEventListener("click", function(){ ST[k] = "ask"; pushRequest(sel, mode, f, di); toast("Request sent to " + who(co.n) + (co.real ? ". It shows on their dashboard." : "")); render(); }); row.appendChild(a); }
-        else if (st === "ask"){ var a2 = el("button", "mini", "Mark received"); a2.type = "button"; a2.addEventListener("click", function(){ ST[k] = "client"; render(); }); row.appendChild(a2); }
-        else { var a3 = el("button", "mini", "View"); a3.type = "button"; a3.addEventListener("click", function(){ viewDoc(co, f, d, st, FILE[k]); }); row.appendChild(a3); }
+      var sb = el("div", "sb"), lastG = null;
+      itemsOf(co, f).forEach(function(it){
+        if (it.g !== lastG){ if (it.g) sb.appendChild(el("div", "dg", it.g)); lastG = it.g; }
+        var k = K(co.id, per, f.id, it.id), st = stOf(co, per, f, it), cl = st === "miss" ? "miss" : st === "ask" ? "ask" : st === "open" ? "open" : "done";
+        var row = el("div", "doc " + cl + (it.g ? " sub" : "")), ic = el("span", "ic"); ic.innerHTML = ico(cl === "done" ? "i-check" : cl === "miss" ? "i-x" : "i-clock"); row.appendChild(ic);
+        row.appendChild(el("div", "tx", it.d)); row.appendChild(statusPill(st));
+        if (it.pack){
+          if (it.pack <= PM){ var op = btn("mini", st === "auto" ? "View month" : "Go to month", function(){ mode = "month"; mper = it.pack; open = {}; syncModeUI(); render(); window.scrollTo(0, 0); }); row.appendChild(op); }
+        } else if (st === "miss"){ row.appendChild(btn("mini", "Request", function(){ ST[k] = "ask"; pushRequest(co, per, f, it); toast("Request sent to " + who(co.n) + (co.real ? ". It shows in Needs you on their dashboard." : "")); render(); })); }
+        else if (st === "ask"){ row.appendChild(btn("mini", "Mark received", function(){ ST[k] = "client"; render(); })); }
+        else { row.appendChild(btn("mini", "View", function(){ viewDoc(co, per, f, it, st, FILE[k]); })); }
         sb.appendChild(row);
       });
       if (f.id !== "books" && f.id !== "ybooks"){
-        var af = el("div", "after"), complete = !(fs.miss + fs.ask);
+        var af = el("div", "after"), complete = !(fs.miss + fs.ask + fs.open);
         if (!fs.filed){
-          var fb = el("button", "btn"); fb.type = "button"; fb.textContent = "Mark " + f.short + " as filed"; fb.disabled = !complete; if (!complete) fb.title = "Collect every document first";
-          fb.addEventListener("click", function(){ FILED[sel + mode + f.id] = 1; toast(f.short + " marked as filed"); render(); }); af.appendChild(fb);
+          var fb = btn("btn", "Mark " + f.short + " as filed", function(){ FILED[K(co.id, per, f.id)] = 1; toast(f.short + " marked as filed"); render(); }); fb.disabled = !complete; if (!complete) fb.title = "Collect every document first"; af.appendChild(fb);
           af.appendChild(el("span", "", complete ? "Then collect the filing proof." : "Available once every document is in."));
         } else {
           af.appendChild(el("span", "", "After filing:"));
           AFTER.forEach(function(a, ai){
-            var k2 = sel + mode + f.id + ai, on = !!AFT[k2], p = el("button", "pill " + (on ? "done" : "miss")); p.type = "button"; p.innerHTML = ico(on ? "i-check" : "i-x"); p.appendChild(document.createTextNode(a));
-            p.setAttribute("aria-pressed", String(on)); p.addEventListener("click", function(){ AFT[k2] = !on; renderDetail(); }); af.appendChild(p);
+            var on = aftOn(co, per, f, ai), p = el("button", "pill " + (on ? "done" : "miss")); p.type = "button"; p.innerHTML = ico(on ? "i-check" : "i-x"); p.appendChild(document.createTextNode(a));
+            p.setAttribute("aria-pressed", String(on)); p.addEventListener("click", function(){ AFT[K(co.id, per, f.id, "a" + ai)] = !on; persist(); renderDetail(); }); af.appendChild(p);
           });
+          if (has(FILED, K(co.id, per, f.id))) af.appendChild(btn("mini", "Undo filed", function(){ FILED[K(co.id, per, f.id)] = 0; render(); }));
         }
         sb.appendChild(af);
       }
@@ -420,36 +772,55 @@
     if (S.trig.length){
       root.appendChild(el("div", "grp", "Only when triggered"));
       S.trig.forEach(function(f){
-        var k = sel + mode + f.id, on = !!TRIGON[k];
+        var k = K(co.id, per, f.id), on = trigOn(co, per, f);
         var row = el("div", "trig"), t = el("div"); t.appendChild(document.createTextNode(f.name)); t.appendChild(el("small", "", f.sub)); row.appendChild(t);
         var sw = el("button", "sw"); sw.type = "button"; sw.setAttribute("role", "switch"); sw.setAttribute("aria-checked", String(on)); sw.setAttribute("aria-label", f.name + " applies this month");
-        sw.addEventListener("click", function(){ TRIGON[k] = !on; if (!on) open[f.id] = true; render(); }); row.appendChild(sw); root.appendChild(row);
-        if (on){ var sc = section(f, true); sc.style.borderTop = "0"; root.appendChild(sc); }
+        sw.addEventListener("click", function(){ TRIG[k] = !on; if (!on) open[f.id] = true; render(); }); row.appendChild(sw); root.appendChild(row);
+        if (on){ var sc = section(f); sc.style.borderTop = "0"; root.appendChild(sc); }
       });
     }
   }
-  function render(){ persist(); renderStats(); renderQueue(); renderDetail(); }
-  function viewDoc(co, f, d, st, file){
-    var m = $("#view"); if (!m){ m = el("div", "vw"); m.id = "view"; m.setAttribute("role", "dialog"); m.setAttribute("aria-modal", "true"); document.body.appendChild(m); m.addEventListener("click", function(ev){ if (ev.target === m) m.hidden = true; }); document.addEventListener("keydown", function(ev){ if (ev.key === "Escape") m.hidden = true; }); }
+  // the owner's app learns who their auditor is (shown once the live backend carries it)
+  function setOwnerAuditor(co, email){
+    if (!co.real) return; var db2 = readOwners(), u = (db2.users || {})[co.real]; if (!u) return;
+    if (email && AU[email]) u.auditor = { name: AU[email].name, cpa: AU[email].cpa || "" }; else delete u.auditor; store("tg.v2", db2);
+  }
+  function viewDoc(co, per, f, it, st, file){
+    var m = $("#view"); if (!m){ m = el("div", "vw"); m.id = "view"; m.setAttribute("role", "dialog"); m.setAttribute("aria-modal", "true"); document.body.appendChild(m); m.addEventListener("click", function(ev){ if (ev.target === m) m.hidden = true; }); }
     m.textContent = ""; m.hidden = false;
-    var c = el("div", "vw-c"), x = el("button", "btn", "Close"); x.type = "button"; x.addEventListener("click", function(){ m.hidden = true; });
-    c.appendChild(el("small", "", co.n + " · " + f.name)); c.appendChild(el("h3", "", d));
+    var c = el("div", "vw-c"), x = btn("btn", "Close", function(){ m.hidden = true; });
+    c.appendChild(el("small", "", co.n + " · " + f.name + (it.g ? " · " + it.g : ""))); c.appendChild(el("h3", "", it.d));
     var dl = el("dl", "vw-d");
-    [["Source", st === "auto" ? "Pulled by ThuraGirl from the books" : "Sent by the client"], ["File", file ? file.name : st === "auto" ? (f.id === "books" ? "ledger-" : "") + (f.short || "doc").replace(/[^\w]+/g, "").toLowerCase() + "-" + (mode === "month" ? PMON.toLowerCase() : "fy") + ".pdf" : "Not kept in this test build"], ["Received", file && file.at ? new Date(file.at).toLocaleDateString("en-GB") : "This period"]].forEach(function(r){ dl.appendChild(el("dt", "", r[0])); dl.appendChild(el("dd", "", r[1])); });
+    [["Source", st === "auto" ? "Pulled by ThuraGirl from the books" : "Sent by the client"], ["Period", isMonth(per) ? mlabel(per) : "Year ending " + fmt(fyEnd(co))], ["File", file ? file.name : "Not kept in this test build"], ["Received", file && file.at ? new Date(file.at).toLocaleDateString("en-GB") : "This period"]].forEach(function(r){ dl.appendChild(el("dt", "", r[0])); dl.appendChild(el("dd", "", r[1])); });
     c.appendChild(dl);
     c.appendChild(el("p", "", "Test build: files stay on the client's device, so there is nothing to preview here. In the live app the file opens in this panel."));
-    var mk = el("button", "btn", "Mark as missing"); mk.type = "button"; mk.addEventListener("click", function(){ var k = sel + mode + f.id + f.docs.indexOf(d); ST[k] = "miss"; m.hidden = true; render(); });
-    var row = el("div", "acts"); row.appendChild(mk); row.appendChild(x); c.appendChild(row);
+    var row = el("div", "acts"); row.appendChild(btn("btn", "Mark as missing", function(){ ST[K(co.id, per, f.id, it.id)] = "miss"; m.hidden = true; render(); })); row.appendChild(x); c.appendChild(row);
     m.appendChild(c); setTimeout(function(){ x.focus(); }, 0);
   }
-  window.addEventListener("storage", function(ev){ if (ev.key === "tg.v2"){ syncReal(); render(); } });
-  function who(n){ return n.replace(/\.$/, ""); }
-  [].forEach.call(document.querySelectorAll("#mode button"), function(b){
-    b.addEventListener("click", function(){ mode = b.getAttribute("data-m"); open = {}; [].forEach.call(document.querySelectorAll("#mode button"), function(x){ x.setAttribute("aria-pressed", String(x === b)); }); render(); });
-  });
+  function renderMe(){ $("#me-i").textContent = initials(ME.name); $("#me-n").textContent = ME.name + (ME.cpa ? ", CPA" : ""); }
+  function syncModeUI(){
+    [].forEach.call(document.querySelectorAll("#mode button"), function(x){ x.setAttribute("aria-pressed", String(x.getAttribute("data-m") === mode)); });
+    $("#perw").hidden = mode !== "month"; $("#per").value = mper;
+  }
+  function render(){ persist(); refreshCos(); syncReal(); renderMe(); renderScope(); renderStats(); renderQueue(); renderDetail(); }
+
+  // month picker: the last 12 months that have ended
+  (function(){ var s = $("#per"); for (var i = 1; i <= 12; i++){ var k = mkey(NOW.getFullYear(), NOW.getMonth() - i); s.appendChild(new Option(mlabel(k), k)); } s.value = PM; s.addEventListener("change", function(){ mper = s.value; open = {}; render(); }); })();
+  [].forEach.call(document.querySelectorAll("#mode button"), function(b){ b.addEventListener("click", function(){ mode = b.getAttribute("data-m"); open = {}; syncModeUI(); render(); }); });
   $("#search").addEventListener("input", function(){ term = this.value.trim().toLowerCase(); renderQueue(); });
-  var resetB = $("#reset-aud"); if (resetB) resetB.addEventListener("click", function(){ try { localStorage.removeItem(SAVEKEY); } catch (e) {} location.reload(); });
-  render();
+  $("#me").addEventListener("click", accountDlg);
+  $("#samples").checked = !!showSamples; $("#samples").addEventListener("change", function(){ showSamples = this.checked; store("tg.aud.samples", showSamples); render(); });
+  window.addEventListener("storage", function(ev){ if (!ME) return; if (ev.key === "tg.v2" || ev.key === "tg.aud.assign"){ if (ev.key === "tg.aud.assign") ASSIGN = load("tg.aud.assign", {}); render(); } });
+
+  function boot(){
+    AU = load("tg.aud.users", {});
+    var ses = load("tg.aud.session", null);
+    ME = ses && AU[ses.email] && Date.now() - ses.at < SESSION_H * 3600e3 ? AU[ses.email] : null;
+    if (LOGIN && ME){ location.replace("../auditor/"); return; }
+    if (!ME){ if (!LOGIN){ location.replace("../auditorlogin/"); return; } if (!Object.keys(AU).length) setupScreen(); else signInScreen(ses ? "You were signed out after " + SESSION_H + " hours. Sign in again." : ""); return; }
+    $("#gate").hidden = true; $("#app").hidden = false; syncModeUI(); render();
+  }
+  boot();
 })();
 </script>
 </body>
