@@ -12,6 +12,7 @@ Decided by the product owner during v2 design. Build to these unless they are ch
 | New companies | ThuraGirl registers the company with DBD (included in every plan). **No bank statement upload until the company is registered.** |
 | No accounting software | Users without accounting software pick **"Let ThuraGirl keep your books"** instead of syncing. Behind the scenes ThuraGirl processes their books on its own FlowAccount account. This is hidden: the UI never mentions FlowAccount for this option. |
 | Syncing new users | New users are nudged until they sync, because syncing is what fills the app. A Get started card (bank, books, sales apps) stays on Home, Finance and the Brief until the bank and the books are connected, with a daily reminder from day 2. It is hidden once they have synced. |
+| Charts | Keep Finance clean: one "Sales by channel" donut (Month/Year). P&L detail is tap-to-drill (a donut plus top payees per line), not more charts on the page. Anything custom goes through chat, which answers with a chart that can be pinned to Finance. |
 | Design | Option B: neutral greys plus one teal accent; red only for overdue text; amber only for stale items; pink only in the logo; thin line icons; no emoji. EN and TH, day and night. |
 | Security | Passkey offered as the recommended sign-in; authenticator-app 2FA with backup codes for owners and auditors. Auditor sessions last 12 hours. |
 | Versions | v1 lives in the `thuragirl` repository and is not touched. v2 is this repository. |

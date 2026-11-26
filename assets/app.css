@@ -1549,5 +1549,43 @@
   .gsB-r .pill{flex:none}
   .pg.brf > .gsB,#b-money > .gsB{margin:4px 0 16px}
   .gsB{text-align:left} .emptyP > .gsB{width:100%;max-width:520px;margin:18px auto 6px}
+  /* sales by channel (Finance), chat charts, pinned charts, P&L drill-down */
+  .chanB .cardh,.pinB .cardh{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+  .chanB .cardh h2,.pinB .cardh h2{flex:1;min-width:0}
+  .chanB .cardh .sub,.pinB .cardh .sub{flex-basis:100%}
+  .chseg{display:inline-flex;background:var(--m-soft);border-radius:99px;padding:3px}
+  .chseg button{border:0;background:none;color:var(--m-mute);font:700 12.5px var(--font-display);height:30px;padding:0 14px;border-radius:99px;cursor:pointer}
+  .chseg button[aria-pressed="true"]{background:var(--m-surface);color:var(--m-ink);box-shadow:0 1px 3px rgba(15,21,20,.12)}
+  html.night .chseg button[aria-pressed="true"]{background:#2A3130}
+  .chbody,.drill{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;margin-top:12px}
+  .chring{position:relative;display:grid;place-items:center}
+  .chring .dn{transform:rotate(0deg);display:block}
+  .chmid{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+  .chmid b{font:800 19px var(--font-display);color:var(--m-ink);letter-spacing:-.02em}
+  .chmid small{font-size:12px;color:var(--m-mute)}
+  .chleg{display:grid;min-width:0}
+  .chrow{display:flex;align-items:center;gap:10px;padding:8px 0;min-width:0}
+  .chrow + .chrow{border-top:1px solid var(--m-line)}
+  .chsw{width:10px;height:10px;border-radius:3px;flex:none;display:inline-block}
+  .chn{flex:1;min-width:0;font-size:14px;color:var(--m-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .chv{display:grid;justify-items:end;line-height:1.2}
+  .chv b{font-size:14px;color:var(--m-ink)} .chv small{font-size:11.5px;color:var(--m-mute)}
+  .chnote{font-size:13.5px;color:var(--m-mute);margin:12px 0 0;padding-top:10px;border-top:1px solid var(--m-line)}
+  .chask{margin-top:10px;font-size:13px;text-align:left;color:var(--m-hint)}
+  html.night .chask{color:#8ED9D0}
+  @media (max-width:520px){ .chbody,.drill{grid-template-columns:1fr;justify-items:center} .chleg{width:100%} }
+  .chq{margin-top:10px;background:var(--m-soft);border-radius:16px;padding:12px}
+  .chq-plot{display:flex;align-items:flex-end;gap:10px;height:120px}
+  .chq-g{flex:1;display:grid;grid-template-rows:1fr auto;height:100%;gap:4px;text-align:center}
+  .chq-g span{font-size:11.5px;color:var(--m-mute)}
+  .chq-b{display:flex;align-items:flex-end;justify-content:center;gap:3px;height:100%}
+  .chq-b i{flex:1;max-width:22px;border-radius:5px 5px 2px 2px}
+  .chq-l{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12.5px;color:var(--m-mute)}
+  .chq-l span{display:inline-flex;align-items:center;gap:6px} .chq-l b{color:var(--m-ink)}
+  .pinB .chq{background:none;padding:0}
+  .pl-r.tap{cursor:pointer;position:relative;padding-right:22px}
+  .pl-r.tap:hover{background:color-mix(in srgb,var(--m-soft) 70%,transparent)}
+  .pl-go{position:absolute;right:0;top:50%;transform:translateY(-50%);color:var(--m-mute);display:grid}
+  .pl-go .i{width:14px;height:14px}
 
   .dockB[hidden],.toast[hidden],.alt[hidden]{display:none}

@@ -419,7 +419,7 @@ function ask(q){
   if (chat.flow){ $("#b-in").value = ""; $("#b-send").disabled = true; return flowAnswer(q); }
   var inp = $("#b-in"), pop = $("#b-pop"); inp.value = ""; $("#b-send").disabled = true; $("#b-sug").hidden = true; pop.hidden = false; $("#b-me").textContent = q;
   var r = $("#b-reply"); r.innerHTML = '<span class="dotsT" aria-label="ThuraGirl is typing"><i></i><i></i><i></i></span>';
-  clearTimeout(chat.timer); chat.timer = setTimeout(function(){ r.textContent = brain(q); }, calm ? 0 : 650);
+  popOpts([]); var cq = chQuery(q); clearTimeout(chat.timer); chat.timer = setTimeout(function(){ if (cq) chAnswer(q, cq); else r.textContent = brain(q); }, calm ? 0 : 650);
 }
 function say(me2, reply){ var pop = $("#b-pop"); pop.hidden = false; $("#b-sug").hidden = true; $("#b-me").textContent = me2; $("#b-reply").textContent = reply; }
 function chips(){

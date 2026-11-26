@@ -26,6 +26,7 @@ Live test build: https://carmochest.github.io/thuragirlv2/ (GitHub Pages, `main`
 - **Get started card.** Until the bank and the books are both connected, a "Get started · n of 3" card sits at the top of Home and inside the empty Finance and Brief pages. From the day after sign-up it is labelled "Reminder" and a once-a-day reminder pops up. It disappears when the bank and the books are both in.
 - **Sample data.** "Try it with sample data" (or "Use the sample" in the upload sheet) loads a sample restaurant statement, so every screen fills in.
 - **Morning Brief.** A short summary in icon rows, up to three urgent items with details behind a tap, things worth knowing, what was handled, and time saved (with "How I work this out"). The greeting and sign-off rotate daily.
+- **Charts.** Finance has a "Sales by channel" donut with a Month/Year toggle. Tap any P&L line (for example Stock and supplies or Wages) to open a breakdown with a donut and the top payees. In chat, ask "Compare GrabFood vs LINE MAN for 3 months" or "sales by channel this year" to get a bar chart, and "Pin to Finance" keeps it on the Finance page (pins are stored in `u.pins`, up to 4).
 - **Auditor.** Create the first auditor at `/auditorlogin/` (that account becomes the lead), then open `/auditor/`. Companies signed up in the same browser appear with a "Signed up" badge. You can switch on sample companies.
 
 ## Build and run
@@ -61,6 +62,7 @@ src/                 Source. Edit only here.
                        app85 Thai pattern rules for generated sentences
                        app86 PDF export (Review Pack, P&L)
                        app87 "Get started" sync card (bank, books, sales apps) and daily reminder
+                       app88 Sales by channel donut (Finance), chat charts with "Pin to Finance", P&L drill-down
                        app9  boot
   auditor.html       Auditor desk and auditor sign-in (one standalone page).
   vendor/            qrcode.js (2FA QR), SheetJS xlsx (statement upload).

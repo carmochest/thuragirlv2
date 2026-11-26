@@ -39,6 +39,14 @@ General rules for the real build:
 - Figures shown on Home, Money and the Brief (cash, in/out, kept, month trend, top categories, overdue bills) are computed in the browser from `u.tx` (`src/app4.js`). In production compute them server-side from the ledger, or keep the same functions and feed them API data.
 - Categorising rules today are regexes in `src/app4.js` (`INC`, `EXP`). The real app needs the AI categoriser plus owner corrections stored per company.
 
+## 4b. Analytics: channels, drill-downs and chat charts
+**Today:** `src/app88.js` works out sales channels from bank line text (`CHANNELS` regexes: GrabFood, LINE MAN, Shopee, Lazada, TikTok Shop, in-store card, in-store QR, invoices and transfers). It totals them in the browser for the Finance donut, the P&L drill-down (top payees in a category, from `payee()` text clean-up) and chat charts. Chat recognises chart requests with keywords (`chQuery`). Pinned charts are kept in `u.pins`.
+**Needs:**
+- `GET /companies/:id/analytics/sales-by-channel?from=&to=` returns `[{ channel, amount, count }]`. In production, take channels from connected POS and marketplace data (Shopee, Lazada, Grab, LINE MAN payouts with fees split out), not only from bank text.
+- `GET /companies/:id/analytics/breakdown?category=&from=&to=&by=payee|month` for the P&L drill-down. Use the counterparty or vendor from the ledger, with owner renames.
+- `POST /companies/:id/chat` should return structured chart specs (`{ type: "bar"|"donut", series, labels, summary }`) that the front end draws, so the AI can answer any custom breakdown.
+- `GET/POST/DELETE /companies/:id/pinned-charts` to store pins per user.
+
 ## 5. DBD lookup (existing companies)
 **Today:** `DBDDEMO` in `src/app8.js` returns records only for the demo tax ID `0105561023456`. Sign-up step "company tax ID" fills name and address from a fixed sample (`src/app1.js`).
 **Needs:**

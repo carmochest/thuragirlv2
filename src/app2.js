@@ -182,7 +182,7 @@ function plCard(F){
     var h = el("div", "pl-h " + cls); h.appendChild(el("span", "", title)); h.appendChild(el("b", "num", baht(total))); root.appendChild(h);
     var list = rows.slice(0, 6), rest = rows.slice(6).reduce(function(a, r){ return a + r[1]; }, 0);
     if (rest > 0) list = list.concat([["Everything else", rest]]);
-    list.forEach(function(r){ var d = el("div", "pl-r"); d.appendChild(el("span", "", cap(r[0]))); d.appendChild(el("em", "num", total ? Math.round(r[1] / total * 100) + "%" : "")); d.appendChild(el("span", "num", baht(r[1]))); root.appendChild(d); });
+    list.forEach(function(r){ var d = el("div", "pl-r"); d.appendChild(el("span", "", cap(r[0]))); d.appendChild(el("em", "num", total ? Math.round(r[1] / total * 100) + "%" : "")); d.appendChild(el("span", "num", baht(r[1]))); if (r[0] !== "Everything else") plTap(d, r[0], F, cls === "in"); root.appendChild(d); });
     if (!list.length) root.appendChild(el("div", "pl-r", "Nothing yet"));
   }
   block("Money in", F.revMix, F.rev, "in"); block("Money out", F.expMix, F.exp, "out");
@@ -224,6 +224,7 @@ function renderMoney(){
   });
   plCard(F);
   $("#m-vat").previousElementSibling.lastChild.textContent = me().setup.vat === "No" ? "Not VAT registered" : "Monthly VAT, net payable (estimate)";
+  chCard(me());
   $("#m-vat").textContent = baht(F.tax[0]); $("#m-wht").textContent = baht(F.tax[1]); $("#m-corp").textContent = baht(F.tax[2]); $("#m-tax").textContent = baht(F.tax[0] + F.tax[1] + F.tax[2]);
 }
 
