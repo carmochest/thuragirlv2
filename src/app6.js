@@ -172,11 +172,24 @@ function connList(u, again, compact){
       if (on) b.insertAdjacentHTML("beforeend", '<svg class="i ck"><use href="#i-check"/></svg>');
       b.addEventListener("click", function(){
         if (bank){ closeGS(); var have = (u.banks || []).filter(function(x){ return x.bank === BANKMAP[a[0]]; })[0]; openUpload(have || { bank: BANKMAP[a[0]], acct: "" }); return; }
-        if (on) delete u.setup.conn[a[0]]; else u.setup.conn[a[0]] = Date.now(); save(); if (again) again();
+        if (on) delete u.setup.conn[a[0]]; else { u.setup.conn[a[0]] = Date.now(); if (gi === 1) delete u.setup.conn.tgbooks; } save(); if (again) again();
         if (!on) toast(a[2] + " connected (test). I start reading it once the live link is on.");
       });
       list.appendChild(b);
     });
+    if (gi === 1){
+      /* no accounting software: ThuraGirl keeps the books instead of syncing */
+      var tgOn = !!u.setup.conn.tgbooks, tb = el("button", "app tgb" + (tgOn ? " on" : "")); tb.type = "button"; tb.setAttribute("aria-pressed", String(tgOn));
+      tb.innerHTML = '<span class="ob-av ic"><svg class="i"><use href="#i-doc"/></svg></span>';
+      var tt = el("span", "tx"); tt.appendChild(el("b", "", tgOn ? "ThuraGirl keeps your books" : "No accounting software?")); tt.appendChild(el("small", "", tgOn ? "Nothing to sync. I do it for you." : "Let ThuraGirl keep your books instead")); tb.appendChild(tt);
+      if (tgOn) tb.insertAdjacentHTML("beforeend", '<svg class="i ck"><use href="#i-check"/></svg>');
+      tb.addEventListener("click", function(){
+        if (tgOn) delete u.setup.conn.tgbooks; else { u.setup.conn.tgbooks = Date.now(); ["flow", "peak", "xero"].forEach(function(k){ delete u.setup.conn[k]; }); }
+        save(); if (again) again();
+        if (!tgOn) toast(L("Done. I keep your books, so there is nothing to sync.", "เรียบร้อย หนูดูแลบัญชีให้เอง ไม่ต้องเชื่อมต่อโปรแกรมใด"));
+      });
+      list.appendChild(tb);
+    }
     sec.appendChild(list); w.appendChild(sec);
   });
   if (!compact) w.appendChild(el("p", "tnote", "Banks: live feeds need each bank's approval, so for now upload a CSV or Excel statement from your banking app. Other apps: tapping Connect marks them in this test build. The live link is set up on ThuraGirl's server."));

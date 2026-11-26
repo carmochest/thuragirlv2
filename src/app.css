@@ -787,3 +787,9 @@
   @media (max-width:420px){ .mb-why span{display:none} .mb-why{padding:0 9px;width:32px;justify-content:center} }
   html:not(.night),html:not(.night) body{background:#E9EDEC}
   html.night,html.night body{background:#0B0E0E}
+  /* "No accounting software?" spans the row so it reads as the alternative to syncing */
+  .apps-l .app.tgb{grid-column:1/-1;border-style:dashed}
+  .apps-l .app.tgb.on{border-style:solid}
+  .app.tgb .ob-av{background:color-mix(in srgb,var(--m-accent) 16%,transparent);color:var(--m-hint)}
+  .app.tgb .ob-av .i{width:16px;height:16px}
+  .app.tgb b,.app.tgb small{white-space:normal}
