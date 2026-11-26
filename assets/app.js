@@ -827,7 +827,8 @@ document.addEventListener("keydown", function(ev){
   if (ev.key !== "Escape") return;
   if (!$("#kyc").hidden) return closeKyc();
   if ($("#gs") && !$("#gs").hidden) return closeGS();
-  ["#up-sheet", "#b-setup", "#b-sheet"].forEach(function(s){ $(s).hidden = true; });
+  var open1 = ["#up-sheet", "#b-setup", "#b-sheet"].some(function(s){ return !$(s).hidden; }); ["#up-sheet", "#b-setup", "#b-sheet"].forEach(function(s){ $(s).hidden = true; });
+  if (!open1 && !$("#b-pop").hidden) $("#b-popx").click();
 });
 // review pack
 $("#b-review").addEventListener("click", openSheet);
@@ -865,7 +866,7 @@ function diffDays(a, b){ return Math.round((day(a) - day(b)) / 864e5); }
 function nice(s){ var d = day(s); return d.getDate() + " " + MONTH[d.getMonth()]; }
 function niceY(s){ var d = day(s); return d.getDate() + " " + MONTH[d.getMonth()].slice(0, 3) + " " + d.getFullYear(); }
 function pct(a, b){ return b ? (a - b) / Math.abs(b) * 100 : null; }
-function pctTxt(p){ return p == null ? "" : Math.abs(p).toFixed(1) + "%"; }
+function pctTxt(p){ return p == null ? "" : p >= 200 ? ((p + 100) / 100).toFixed(1) + "×" : Math.abs(p).toFixed(1) + "%"; }
 
 /* reading a statement: CSV text or a spreadsheet, in English or Thai */
 function splitCsv(text){
@@ -1586,14 +1587,14 @@ function chatFile(f){ anyUpload(f); }
 var dataArmed = false;
 function dataCard(u, root){
   var c = card("Your data");
-  c.appendChild(el("p", "st-p", u.tx && u.tx.length ? u.tx.length + " bank lines from " + u.banks.length + (u.banks.length === 1 ? " account" : " accounts") + ", " + (u.invoices || []).length + " invoices, " + (u.bills || []).length + " bills and " + Object.keys(u.rcpt || {}).length + " receipts are saved in this browser." : "Nothing is loaded yet. Upload a statement or try the sample."));
+  c.appendChild(el("p", "st-p", u.tx && u.tx.length ? L(u.tx.length + " bank lines from " + u.banks.length + (u.banks.length === 1 ? " account" : " accounts") + ", " + (u.invoices || []).length + " invoices, " + (u.bills || []).length + " bills and " + Object.keys(u.rcpt || {}).length + " receipts are saved in this browser.", "รายการเดินบัญชี " + u.tx.length + " รายการจาก " + u.banks.length + " บัญชี ใบแจ้งหนี้ " + (u.invoices || []).length + " ใบ บิล " + (u.bills || []).length + " ใบ และใบเสร็จ " + Object.keys(u.rcpt || {}).length + " ใบ บันทึกอยู่ในเบราว์เซอร์นี้") : "Nothing is loaded yet. Upload a statement or try the sample."));
   var r = el("div", "chips");
   r.appendChild(btn("pill soft act", "Download a copy", function(){
     var copy = JSON.parse(JSON.stringify(u)); delete copy.salt; delete copy.hash;
     var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(copy, null, 2)], { type: "application/json" })); a.download = "thuragirl-" + today() + ".json"; document.body.appendChild(a); a.click(); a.remove();
   }));
   if (!u.tx || !u.tx.length) r.appendChild(btn("pill soft act", "Load the sample", function(){ useSample(); }));
-  else r.appendChild(btn("pill soft act danger", dataArmed ? "Tap again to clear" : "Clear statements and invoices", function(){
+  else r.appendChild(btn("pill soft act danger", dataArmed ? L("Tap again to clear", "แตะอีกครั้งเพื่อล้าง") : L("Clear statements and invoices", "ล้างรายการเดินบัญชีและใบแจ้งหนี้"), function(){
     if (!dataArmed){ dataArmed = true; renderSettings(); return; }
     dataArmed = false; u.tx = []; u.banks = []; u.invoices = []; u.bills = []; u.rcpt = {}; u.done = {}; u.hasData = false; u.matched = 0; u.sample = false; save(); BK_CACHE.key = ""; renderSettings(); toast("Cleared");
   }));
@@ -1886,7 +1887,7 @@ function teamCard(u, root){
   c.appendChild(el("p", "st-p", (u.team || []).length ? R.rows.length + " people · " + baht(R.gross) + " a month before SSO and tax." : "Add the people you pay each month. I work out SSO and withholding tax, and ask you to approve payroll before the 25th."));
   var rows = el("div", "ob-rows");
   (u.team || []).forEach(function(p, i){
-    var r = el("div", "ob-row"); r.appendChild(el("span", "ob-av", initials(p.name)));
+    var r = el("div", "ob-row tm"); r.appendChild(el("span", "ob-av", initials(p.name)));
     var t = el("div", "tx"); t.appendChild(el("b", "", p.name)); t.appendChild(el("span", "", p.role + " · " + baht(p.pay) + " a month")); r.appendChild(t);
     r.appendChild(btn("pill soft act", "Edit", function(){ editPerson(u, p, i); })); rows.appendChild(r);
   });
@@ -3000,11 +3001,11 @@ var RULES = [
   [/^(\d+) more things? coming up this month$/, "เดือนนี้มีอีก $1 เรื่องที่ใกล้ถึง"], [/^(\d+) on file$/, "มีแล้ว $1"], [/^(\d+) open$/, "ค้างอยู่ $1"],
   [/^paid on (.+)$/, function(m){ return "จ่ายวันที่ " + dates(m[1]); }],
   [/^(฿[\d,]+) a month before SSO and tax\.$/, "$1 ต่อเดือน ก่อนหักประกันสังคมและภาษี"], [/^(฿[\d,]+) a month$/, "$1 ต่อเดือน"], [/^(฿[\d,]+) a month, VAT included$/, "$1 ต่อเดือน รวม VAT"],
-  [/^(Up|Down) ([\d.]+)% (?:on|vs) last month$/, function(m){ return UPD(m[1]) + " " + m[2] + "% จากเดือนก่อน"; }],
-  [/^(Up|Down) ([\d.]+)% (?:on|vs) last quarter$/, function(m){ return UPD(m[1]) + " " + m[2] + "% จากไตรมาสก่อน"; }],
-  [/^(Up|Down) ([\d.]+)% (?:on|vs) last year$/, function(m){ return UPD(m[1]) + " " + m[2] + "% จากปีก่อน"; }],
-  [/^(Up|Down) ([\d.]+)% since (.+)$/, function(m){ return UPD(m[1]) + " " + m[2] + "% ตั้งแต่ " + dates(m[3]); }],
-  [/^(Up|Down) ([\d.]+)% this (month|quarter|year)$/, function(m){ return UPD(m[1]) + " " + m[2] + "% " + { month: "เดือนนี้", quarter: "ไตรมาสนี้", year: "ปีนี้" }[m[3]]; }],
+  [/^(Up|Down) ([\d.]+[%×]) (?:on|vs) last month$/, function(m){ return UPD(m[1]) + " " + m[2] + " จากเดือนก่อน"; }],
+  [/^(Up|Down) ([\d.]+[%×]) (?:on|vs) last quarter$/, function(m){ return UPD(m[1]) + " " + m[2] + " จากไตรมาสก่อน"; }],
+  [/^(Up|Down) ([\d.]+[%×]) (?:on|vs) last year$/, function(m){ return UPD(m[1]) + " " + m[2] + " จากปีก่อน"; }],
+  [/^(Up|Down) ([\d.]+[%×]) since (.+)$/, function(m){ return UPD(m[1]) + " " + m[2] + " ตั้งแต่ " + dates(m[3]); }],
+  [/^(Up|Down) ([\d.]+[%×]) this (month|quarter|year)$/, function(m){ return UPD(m[1]) + " " + m[2] + " " + { month: "เดือนนี้", quarter: "ไตรมาสนี้", year: "ปีนี้" }[m[3]]; }],
   [/^Cash is (up|down) ([\d.]+)%\.$/, function(m){ return "เงินสด" + UPD(m[1]) + " " + m[2] + "%"; }],
   [/^(Revenue|Expenses|Profit|Money in|Money out), ([\d,.-]+) baht\. Open (?:Money|Finance)$/, function(m){ return T(m[1]) + " " + m[2] + " บาท เปิดหน้าการเงิน"; }],
   [/^([^.]+): in (฿[\d,]+), out (฿[\d,]+), kept (-?฿[\d,-]+)$/, function(m){ return T(m[1]) + ": เข้า " + m[2] + " ออก " + m[3] + " เหลือ " + m[4]; }],

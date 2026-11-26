@@ -444,14 +444,14 @@ function chatFile(f){ anyUpload(f); }
 var dataArmed = false;
 function dataCard(u, root){
   var c = card("Your data");
-  c.appendChild(el("p", "st-p", u.tx && u.tx.length ? u.tx.length + " bank lines from " + u.banks.length + (u.banks.length === 1 ? " account" : " accounts") + ", " + (u.invoices || []).length + " invoices, " + (u.bills || []).length + " bills and " + Object.keys(u.rcpt || {}).length + " receipts are saved in this browser." : "Nothing is loaded yet. Upload a statement or try the sample."));
+  c.appendChild(el("p", "st-p", u.tx && u.tx.length ? L(u.tx.length + " bank lines from " + u.banks.length + (u.banks.length === 1 ? " account" : " accounts") + ", " + (u.invoices || []).length + " invoices, " + (u.bills || []).length + " bills and " + Object.keys(u.rcpt || {}).length + " receipts are saved in this browser.", "รายการเดินบัญชี " + u.tx.length + " รายการจาก " + u.banks.length + " บัญชี ใบแจ้งหนี้ " + (u.invoices || []).length + " ใบ บิล " + (u.bills || []).length + " ใบ และใบเสร็จ " + Object.keys(u.rcpt || {}).length + " ใบ บันทึกอยู่ในเบราว์เซอร์นี้") : "Nothing is loaded yet. Upload a statement or try the sample."));
   var r = el("div", "chips");
   r.appendChild(btn("pill soft act", "Download a copy", function(){
     var copy = JSON.parse(JSON.stringify(u)); delete copy.salt; delete copy.hash;
     var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(copy, null, 2)], { type: "application/json" })); a.download = "thuragirl-" + today() + ".json"; document.body.appendChild(a); a.click(); a.remove();
   }));
   if (!u.tx || !u.tx.length) r.appendChild(btn("pill soft act", "Load the sample", function(){ useSample(); }));
-  else r.appendChild(btn("pill soft act danger", dataArmed ? "Tap again to clear" : "Clear statements and invoices", function(){
+  else r.appendChild(btn("pill soft act danger", dataArmed ? L("Tap again to clear", "แตะอีกครั้งเพื่อล้าง") : L("Clear statements and invoices", "ล้างรายการเดินบัญชีและใบแจ้งหนี้"), function(){
     if (!dataArmed){ dataArmed = true; renderSettings(); return; }
     dataArmed = false; u.tx = []; u.banks = []; u.invoices = []; u.bills = []; u.rcpt = {}; u.done = {}; u.hasData = false; u.matched = 0; u.sample = false; save(); BK_CACHE.key = ""; renderSettings(); toast("Cleared");
   }));

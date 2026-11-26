@@ -266,7 +266,8 @@ document.addEventListener("keydown", function(ev){
   if (ev.key !== "Escape") return;
   if (!$("#kyc").hidden) return closeKyc();
   if ($("#gs") && !$("#gs").hidden) return closeGS();
-  ["#up-sheet", "#b-setup", "#b-sheet"].forEach(function(s){ $(s).hidden = true; });
+  var open1 = ["#up-sheet", "#b-setup", "#b-sheet"].some(function(s){ return !$(s).hidden; }); ["#up-sheet", "#b-setup", "#b-sheet"].forEach(function(s){ $(s).hidden = true; });
+  if (!open1 && !$("#b-pop").hidden) $("#b-popx").click();
 });
 // review pack
 $("#b-review").addEventListener("click", openSheet);

@@ -10,7 +10,7 @@ function diffDays(a, b){ return Math.round((day(a) - day(b)) / 864e5); }
 function nice(s){ var d = day(s); return d.getDate() + " " + MONTH[d.getMonth()]; }
 function niceY(s){ var d = day(s); return d.getDate() + " " + MONTH[d.getMonth()].slice(0, 3) + " " + d.getFullYear(); }
 function pct(a, b){ return b ? (a - b) / Math.abs(b) * 100 : null; }
-function pctTxt(p){ return p == null ? "" : Math.abs(p).toFixed(1) + "%"; }
+function pctTxt(p){ return p == null ? "" : p >= 200 ? ((p + 100) / 100).toFixed(1) + "×" : Math.abs(p).toFixed(1) + "%"; }
 
 /* reading a statement: CSV text or a spreadsheet, in English or Thai */
 function splitCsv(text){

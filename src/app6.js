@@ -269,7 +269,7 @@ function teamCard(u, root){
   c.appendChild(el("p", "st-p", (u.team || []).length ? R.rows.length + " people · " + baht(R.gross) + " a month before SSO and tax." : "Add the people you pay each month. I work out SSO and withholding tax, and ask you to approve payroll before the 25th."));
   var rows = el("div", "ob-rows");
   (u.team || []).forEach(function(p, i){
-    var r = el("div", "ob-row"); r.appendChild(el("span", "ob-av", initials(p.name)));
+    var r = el("div", "ob-row tm"); r.appendChild(el("span", "ob-av", initials(p.name)));
     var t = el("div", "tx"); t.appendChild(el("b", "", p.name)); t.appendChild(el("span", "", p.role + " · " + baht(p.pay) + " a month")); r.appendChild(t);
     r.appendChild(btn("pill soft act", "Edit", function(){ editPerson(u, p, i); })); rows.appendChild(r);
   });

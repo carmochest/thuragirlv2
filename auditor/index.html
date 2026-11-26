@@ -153,7 +153,7 @@
 
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   [hidden]{display:none!important}
-  .per select{border:0;background:var(--surface);color:var(--ink);font:700 13px var(--font);border-radius:99px;padding:9px 34px 9px 15px;cursor:pointer;-webkit-appearance:none;appearance:none;
+  .per select{border:0;background-color:var(--surface);color:var(--ink);font:700 13px var(--font);border-radius:99px;padding:9px 34px 9px 15px;cursor:pointer;-webkit-appearance:none;appearance:none;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667270' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6.5 9.5 5.5 5.5 5.5-5.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:14px}
   button.me{border:0;cursor:pointer}
   .scope{display:flex;margin-bottom:8px;background:var(--soft);width:100%}
@@ -169,7 +169,9 @@
   .doc.open .ic{background:var(--soft);color:var(--mute)}
   .assign{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--mute)}
   .assign label{display:flex;align-items:center;gap:8px}
-  .assign select{border:0;background:var(--soft);color:var(--ink);font:700 13px var(--font);border-radius:12px;padding:8px 12px;max-width:240px}
+  .assign select{border:0;background-color:var(--soft);color:var(--ink);font:700 13px var(--font);border-radius:12px;padding:9px 38px 9px 13px;max-width:260px;cursor:pointer}
+  .assign select,.per select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667270' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6.5 9.5 5.5 5.5 5.5-5.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;background-size:14px}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .assign select,:root:not([data-theme="light"]) .per select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2398A4A1' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6.5 9.5 5.5 5.5 5.5-5.5'/%3E%3C/svg%3E")} }
   .gate{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
   .gc{background:var(--surface);border-radius:28px;padding:26px 24px;width:min(440px,100%);display:grid;gap:14px;box-shadow:var(--shadow)}
   .gc h1{font-size:26px;font-weight:800;letter-spacing:-.03em;margin-top:6px}
@@ -610,7 +612,7 @@
       var a = AU[k], n = ALL.filter(function(co){ return owner(co) === k; }).length, r = el("div", "srow"), t = el("div");
       t.appendChild(el("b", "", a.name + (k === ME.email ? " (you)" : ""))); t.appendChild(el("small", "", k + " · " + (a.role === "lead" ? "Lead" : "Auditor") + " · " + n + (n === 1 ? " company" : " companies") + (a.hash ? "" : " · hasn't signed in yet"))); r.appendChild(t); c.appendChild(r);
     });
-    var f = el("form", "gf row"), n = field("Name", "text", "off"), e = field("Email", "email", "off"), cpa = field("Registration number", "text", "off");
+    var f = el("form", "gf row"), n = field("Name", "text", "off"), e = field("Email", "email", "off"), cpa = field("CPA number", "text", "off");
     [n, e, cpa].forEach(function(x){ f.appendChild(x[0]); }); var b = el("button", "btn", "Add auditor"); b.type = "submit"; f.appendChild(b); var err = el("div", "ge"); f.appendChild(err); c.appendChild(f);
     f.addEventListener("submit", function(ev){ ev.preventDefault(); var em = e[1].value.trim().toLowerCase();
       if (!n[1].value.trim() || !/^\S+@\S+\.\S+$/.test(em)){ err.textContent = "Add a name and an email."; return; } if (AU[em]){ err.textContent = "That auditor is already on the desk."; return; }
