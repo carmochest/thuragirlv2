@@ -36,7 +36,7 @@ function renderBrief(){
   var mT = th ? mth(mName) : mName, K = F.rev - F.exp;
   function P(cls, html){ var x = el("p", cls); x.innerHTML = html; x.setAttribute("data-noi18n", ""); return x; }
   function n(v){ return '<b class="num">' + esc(v) + "</b>"; }
-  function card(kick, title, cls){ var c = el("section", "cf-card " + (cls || "")), h = el("div", "cf-h"); h.appendChild(el("span", "cf-k", kick)); if (title) h.appendChild(el("h2", "", title)); c.appendChild(h); return c; }
+  function card(ic, title, sub, cls){ var c = el("section", "cf-card " + (cls || "")), h = el("div", "cf-h"); h.innerHTML = '<i class="cf-bub"><svg class="i"><use href="#' + ic + '"/></svg></i>'; var tt = el("div", "cf-tt"); tt.appendChild(el("h2", "", title)); if (sub) tt.appendChild(el("span", "cf-sub", sub)); h.appendChild(tt); c.appendChild(h); return c; }
 
   // what needs a yes, most pressing first
   var urgent = [];
@@ -45,15 +45,17 @@ function renderBrief(){
   var top = urgent.slice(0, 6), restN = TK.filter(function(x){ return x.k.indexOf("rev") !== 0; }).length - top.filter(function(x){ return x.k !== "rev"; }).length;
 
   var wrap = el("div", "cf");
-  var mast = el("div", "cf-mast"); mast.innerHTML = '<svg class="tg" width="30" height="31"><use href="#tg"/></svg>';
-  var mt = el("div", "cf-mt"); mt.appendChild(el("b", "", "The Morning Brief")); mt.appendChild(el("span", "", (th ? now.toLocaleDateString("th-TH", { weekday: "long", day: "numeric", month: "long" }) : now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })) + " · " + L("about 5 minutes", "อ่านราว 5 นาที")));
-  mt.lastChild.setAttribute("data-noi18n", ""); mast.appendChild(mt); wrap.appendChild(mast);
-  var hi = el("h1", "cf-hi", (hr < 12 ? L("Good morning, ", "อรุณสวัสดิ์ คุณ ") : hr < 18 ? L("Good afternoon, ", "สวัสดีตอนบ่าย คุณ ") : L("Good evening, ", "สวัสดีตอนเย็น คุณ ")) + nm + L(".", "")); hi.setAttribute("data-noi18n", ""); wrap.appendChild(hi);
-
+  var hello = el("header", "cf-hello");
+  hello.innerHTML = '<svg class="cf-cup" viewBox="0 0 120 110" aria-hidden="true"><path class="st" d="M44 30c-6-7 6-11 0-19M60 30c-6-7 6-11 0-19M76 30c-6-7 6-11 0-19"/><path d="M26 44h68v18a30 30 0 0 1-30 30h-8a30 30 0 0 1-30-30z"/><path d="M94 50h6a11 11 0 0 1 0 22h-8"/><path d="M14 98h92"/></svg>';
+  var hd = el("span", "cf-date", (th ? now.toLocaleDateString("th-TH", { weekday: "long", day: "numeric", month: "long" }) : now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })));
+  hd.setAttribute("data-noi18n", ""); hello.appendChild(hd);
+  var hi = el("h1", "cf-hi", (hr < 12 ? L("Good morning, ", "อรุณสวัสดิ์ คุณ ") : hr < 18 ? L("Good afternoon, ", "สวัสดีตอนบ่าย คุณ ") : L("Good evening, ", "สวัสดีตอนเย็น คุณ ")) + nm); hi.setAttribute("data-noi18n", ""); hello.appendChild(hi);
+  hello.appendChild(el("p", "cf-intro", "Pour yourself a coffee. Here is your business this morning, in about five minutes."));
+  wrap.appendChild(hello);
   // 1. the short version
-  var sv = card("The short version", "", "lead");
+  var sv = card("i-chat", "Here's the gist", "", "lead");
   var cashS = B.cashD == null ? "" : B.cashD >= 0 ? L(", up " + pctTxt(B.cashD) + " since 1 " + mName, " เพิ่มขึ้น " + pctTxt(B.cashD) + " ตั้งแต่ 1 " + mT) : L(", down " + pctTxt(B.cashD) + " since 1 " + mName, " ลดลง " + pctTxt(B.cashD) + " ตั้งแต่ 1 " + mT);
-  sv.appendChild(P("cf-big", L("You have " + n(baht(B.cash)) + " in the bank" + cashS + ".", "ตอนนี้มีเงินในบัญชี " + n(baht(B.cash)) + cashS)));
+  sv.appendChild(P("cf-big", L((B.cashD == null || B.cashD >= 0 ? "Good news first: you have " : "A quick heads-up: you have ") + n(baht(B.cash)) + " in the bank" + cashS + ".", (B.cashD == null || B.cashD >= 0 ? "ข่าวดีก่อนเลย ตอนนี้มีเงินในบัญชี " : "แจ้งไว้ก่อนนะคะ ตอนนี้มีเงินในบัญชี ") + n(baht(B.cash)) + cashS)));
   var mS = L(mName + " has brought in " + n(baht(F.rev)) + " so far. After " + n(baht(F.exp)) + " of costs, you have " + (K >= 0 ? "kept " + n(baht(K)) : "spent " + n(baht(-K)) + " more than came in") + ".",
     mT + " มีเงินเข้าแล้ว " + n(baht(F.rev)) + " หักค่าใช้จ่าย " + n(baht(F.exp)) + (K >= 0 ? " เหลือเก็บ " + n(baht(K)) : " ใช้เกินรายรับ " + n(baht(-K))));
   if (F.d != null && K > 0 && Math.abs(F.d) >= 200) mS += L(" That is well " + (F.d >= 0 ? "ahead of" : "behind") + " this point last month.", " " + (F.d >= 0 ? "ดีกว่า" : "น้อยกว่า") + "ช่วงเดียวกันของเดือนก่อนมาก");
@@ -65,7 +67,7 @@ function renderBrief(){
   wrap.appendChild(sv);
 
   // 2. what's urgent
-  var ur = card("Needs you", top.length ? "What's urgent" : "Nothing urgent");
+  var ur = card("i-alert", top.length ? "First, the bits that need you" : "Nothing needs you today", top.length ? (top.length === 1 ? "Just one thing" : top.length + " things, most pressing first") : "");
   if (!top.length) ur.appendChild(el("p", "cf-calm", "Nothing is late and nothing needs signing. I will tell you here when something does."));
   top.forEach(function(s, i){
     var it = el("div", "cf-item"); it.appendChild(el("span", "cf-no num", String(i + 1)));
@@ -77,7 +79,7 @@ function renderBrief(){
   wrap.appendChild(ur);
 
   // 3. what I did for you
-  var dn = card("Done for you", "What I did while you slept"), ul = el("ul", "cf-done");
+  var dn = card("i-check", "What I took care of", "While you were busy"), ul = el("ul", "cf-done");
   var rc = Object.keys(u.rcpt || {}).length, items = [B.n + " bank lines read and sorted into " + F.expMix.length + " kinds of cost"];
   if (u.matched) items.push(u.matched + " payments matched to invoices and bills");
   if (rc) items.push(rc + (rc === 1 ? " receipt" : " receipts") + " filed");
@@ -94,12 +96,12 @@ function renderBrief(){
   var ns = noticed(u, B), big = F.expMix[0];
   if (big && F.exp) ns.unshift(L("Your biggest cost this month is " + big[0].toLowerCase() + ": " + baht(big[1]) + ", or " + Math.round(big[1] / F.exp * 100) + "% of everything that went out.", "ค่าใช้จ่ายก้อนใหญ่สุดเดือนนี้คือ" + T(cap(big[0])) + " " + baht(big[1]) + " หรือ " + Math.round(big[1] / F.exp * 100) + "% ของเงินออกทั้งหมด"));
   if (ns.length){
-    var ob = card("Worth a look", "What I noticed");
+    var ob = card("i-trend", "A few things I noticed", "Nothing to do, just good to know");
     ns.slice(0, 4).forEach(function(s){ var r = el("div", "cf-note"); r.innerHTML = '<i><svg class="i"><use href="#i-trend"/></svg></i>'; r.appendChild(el("p", "", s)); ob.appendChild(r); });
     wrap.appendChild(ob);
   }
 
-  var end = el("div", "cf-end"); end.innerHTML = '<svg class="tg" width="26" height="27"><use href="#tg"/></svg>'; end.appendChild(el("p", "", "That is everything for today. Enjoy your coffee. Ask me anything below.")); wrap.appendChild(end);
+  var end = el("div", "cf-end"); end.innerHTML = '<svg class="tg" width="40" height="42"><use href="#tg"/></svg>'; var et = el("div", "cf-et"); var es = el("p", "cf-sign", L("That's all for today. Enjoy your coffee, " + nm + ".", "วันนี้มีแค่นี้ ดื่มกาแฟให้อร่อยนะคะ คุณ " + nm)); es.setAttribute("data-noi18n", ""); et.appendChild(es); et.appendChild(el("p", "", "ThuraGirl, your bookkeeper. Ask me anything below.")); end.appendChild(et); wrap.appendChild(end);
   pg.appendChild(wrap);
 }
 function T_(s){ return lang() === "th" ? T(s) : s; }

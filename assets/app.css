@@ -1250,5 +1250,38 @@
   .ctB.open .ct-head{margin-bottom:10px}
   .docrow > b.num{font:800 14px var(--font-num);white-space:nowrap}
   .docrow > b.num{margin-left:auto}
+  /* morning brief, warmer */
+  .cf{gap:18px}
+  .cf-hello{position:relative;overflow:hidden;border-radius:32px;padding:26px 24px 24px;display:grid;gap:8px;
+    background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--m-accent) 30%,transparent),transparent 60%),radial-gradient(90% 80% at 0% 100%,color-mix(in srgb,var(--m-accent) 14%,transparent),transparent 65%),var(--m-surface)}
+  .cf-cup{position:absolute;right:14px;top:14px;width:96px;height:88px;fill:none;stroke:var(--m-hint);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+  .cf-cup .st{stroke-dasharray:4 5;animation:steam 3.2s linear infinite;opacity:.7}
+  @keyframes steam{to{stroke-dashoffset:-36}}
+  @media (prefers-reduced-motion:reduce){.cf-cup .st{animation:none}}
+  .cf-date{font:700 13px var(--font-display);color:var(--m-hint);position:relative}
+  .cf-hi{font:400 44px/1.05 "Instrument Serif","Noto Sans Thai",serif;font-style:italic;letter-spacing:-.01em;margin:4px 110px 2px 0;position:relative}
+  .cf-intro{font-size:16px;line-height:1.55;color:var(--m-mute);max-width:420px;position:relative}
+  .cf-card{border-radius:28px;padding:22px 22px 22px}
+  .cf-h{display:flex;align-items:center;gap:12px;margin-bottom:2px}
+  .cf-bub{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--m-accent) 16%,var(--m-surface));color:var(--m-hint)}
+  .cf-bub .i{width:20px;height:20px}
+  .cf-tt{display:grid;gap:1px;min-width:0}
+  .cf-tt h2{font:800 19px/1.25 var(--font-display);letter-spacing:-.02em}
+  .cf-sub{font:600 13px var(--font-display);color:var(--m-mute)}
+  .cf-card.lead{background:linear-gradient(150deg,color-mix(in srgb,var(--m-accent) 12%,var(--m-surface)),var(--m-surface) 75%);box-shadow:none}
+  .cf-card.lead .cf-bub{background:var(--m-accent);color:#fff}
+  .cf-card.lead p.cf-big{font:700 20px/1.5 var(--font-display)}
+  .cf-card.lead p.cf-big b{color:var(--m-hint)}
+  .cf-item{background:var(--m-soft);border-radius:20px;padding:14px!important;border:0!important;margin-top:8px}
+  .cf-no{background:var(--m-surface)}
+  .cf-item:first-of-type .cf-no{background:var(--m-accent);color:#fff}
+  .cf-done li{background:color-mix(in srgb,var(--m-accent) 7%,var(--m-surface));border-radius:16px;padding:11px 12px}
+  .cf-done{gap:8px}
+  .cf-note{background:var(--m-soft);border-radius:18px;padding:12px!important;border:0!important}
+  .cf-card > .cf-note + .cf-note{margin-top:0}
+  .cf-end{flex-direction:column;gap:8px;padding:14px 12px 8px}
+  .cf-et{display:grid;gap:2px}
+  .cf-sign{font:400 26px/1.2 "Instrument Serif","Noto Sans Thai",serif;font-style:italic;color:var(--m-ink)}
+  @media (max-width:600px){ .cf-hi{font-size:38px;margin-right:84px} .cf-cup{width:78px;height:72px} .cf-hello{padding:22px 18px 20px;border-radius:28px} }
 
   .dockB[hidden],.toast[hidden],.alt[hidden]{display:none}

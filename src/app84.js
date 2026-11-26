@@ -236,4 +236,8 @@ var TH = {
   "PDF": "PDF", "Share": "แชร์", "Print": "พิมพ์", "A statement in the standard TFRS for NPAEs layout: revenue, cost of sales, gross profit, expenses, tax and net profit.": "งบตามรูปแบบมาตรฐาน TFRS for NPAEs: รายได้ ต้นทุนขาย กำไรขั้นต้น ค่าใช้จ่าย ภาษี และกำไรสุทธิ",
   "Sharing isn't available here, so I saved the PDF instead": "อุปกรณ์นี้แชร์ไม่ได้ หนูเลยบันทึกเป็น PDF ให้แทน",
   "Customer": "ลูกค้า", "Supplier": "ซัพพลายเออร์", "Open": "ค้างอยู่", "Settled": "ชำระแล้ว", "New invoice": "ออกใบแจ้งหนี้ใหม่", "New bill": "เพิ่มบิลใหม่",
+  "Pour yourself a coffee. Here is your business this morning, in about five minutes.": "ชงกาแฟสักแก้ว แล้วมาดูธุรกิจเช้านี้ด้วยกัน ใช้เวลาราว 5 นาที",
+  "Here's the gist": "สรุปสั้น ๆ", "First, the bits that need you": "เรื่องแรก ๆ ที่รอคุณอยู่", "Nothing needs you today": "วันนี้ไม่มีอะไรรอคุณ", "Just one thing": "มีแค่เรื่องเดียว",
+  "What I took care of": "สิ่งที่หนูจัดการให้แล้ว", "While you were busy": "ระหว่างที่คุณยุ่งอยู่", "A few things I noticed": "สิ่งที่หนูสังเกตเห็น", "Nothing to do, just good to know": "ไม่ต้องทำอะไร แค่น่ารู้ไว้",
+  "ThuraGirl, your bookkeeper. Ask me anything below.": "ThuraGirl ผู้ช่วยทำบัญชีของคุณ ถามหนูได้ทุกเรื่องด้านล่างเลย",
 };

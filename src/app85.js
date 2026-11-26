@@ -231,6 +231,7 @@ var RULES = [
   [/^(\d+) (invoices?|bills?) · (฿[\d,.]+) in total$/, function(m){ return (/^i/.test(m[2]) ? "ใบแจ้งหนี้ " : "บิล ") + m[1] + " ใบ · รวม " + m[3]; }],
   [/^Paid (\d{1,2} [A-Z][a-z]{2} \d{4})$/, function(m){ return "จ่ายแล้ว " + dates(m[1]); }],
   [/^(\d+) customers?$/, "ลูกค้า $1 ราย"], [/^(\d+) suppliers?$/, "ซัพพลายเออร์ $1 ราย"], [/^(฿[\d,.]+) in total$/, "รวม $1"],
+  [/^(\d+) things, most pressing first$/, "$1 เรื่อง เรียงจากเรื่องด่วนที่สุด"],
 ];
 var TCACHE = {};
 function T(s){
