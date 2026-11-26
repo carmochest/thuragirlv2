@@ -745,3 +745,45 @@
   .fbox select,.dp-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667270' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6.5 9.5 5.5 5.5 5.5-5.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-size:14px;background-position:right 12px center;padding-right:36px}
   .fbox select{background-position:right 2px center;padding-right:28px}
   html.night .fbox select,html.night .dp-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2398A4A1' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6.5 9.5 5.5 5.5 5.5-5.5'/%3E%3C/svg%3E")}
+
+  /* ── v5 structure: clear card edges, row dividers, section headers. Day and night. ── */
+  .mock[data-dir="b"][data-mode="day"]{--m-bg:#E9EDEC;--m-line:#DCE2E0;--m-soft:#EEF1F0}
+  .mock[data-dir="b"]:not([data-mode="day"]){--m-line:#2B3231;--m-soft:#1D2222}
+  html:not(.night){background:#E9EDEC}
+  .mock[data-dir="b"] :is(.card,.setc,.mini,.bkpanel,.plan,.regc,.pb-card,.pb-tile,.pb-box,.pb-hero,.welB,.dcard,.tile,.su-choice,.ob-type,.co-row,.mb-task,.mb-ins,.mb-rcpt,.mb-stat,.ob-found){
+    box-shadow:0 0 0 1px var(--m-line),0 1px 2px rgba(15,21,20,.04),0 6px 18px -10px rgba(15,21,20,.10)}
+  html.night .mock[data-dir="b"] :is(.card,.setc,.mini,.bkpanel,.plan,.regc,.pb-card,.pb-tile,.pb-box,.pb-hero,.welB,.dcard,.tile,.su-choice,.ob-type,.co-row,.mb-task,.mb-ins,.mb-rcpt,.mb-stat,.ob-found){box-shadow:0 0 0 1px var(--m-line)}
+  .mock[data-dir="b"] .mb-task.lead{box-shadow:0 0 0 1.5px color-mix(in srgb,var(--m-accent) 55%,transparent),0 6px 18px -10px rgba(15,21,20,.12)}
+  /* rows inside a card are split by a hairline, so each item reads on its own */
+  .mock[data-dir="b"] .needB .tk:not([hidden]) ~ .tk:not([hidden]),.mock[data-dir="b"] .listB .row + .row,.mock[data-dir="b"] .ob-rows .ob-row + .ob-row{border-top:1px solid var(--m-line)}
+  .mock[data-dir="b"] .needB .row,.mock[data-dir="b"] .listB .row{border-radius:0}
+  .mock[data-dir="b"] .listB .row:hover,.mock[data-dir="b"] .needB .row:hover{background:color-mix(in srgb,var(--m-soft) 70%,transparent)}
+  .mb-rl + .mb-rl{border-top:1px solid var(--m-line)}
+  .mb-rl{padding:11px 0}
+  /* section headers: a short accent bar so each block starts clearly */
+  .mb-sh h2{display:flex;align-items:center;gap:10px}
+  .mb-sh h2::before{content:"";width:4px;height:20px;border-radius:4px;background:var(--m-accent);flex:none}
+  .mb-kick{padding-left:14px}
+  .needB > h2,.listB > h2,.setc > h2,.card > h2{letter-spacing:-.015em}
+  /* the morning summary as three short icon rows */
+  ul.mb-blurb{list-style:none;padding:0;margin:2px 0 0;display:grid;gap:0;font-size:15px;line-height:1.5;opacity:1;background:color-mix(in srgb,var(--m-surface) 70%,transparent);border-radius:20px;box-shadow:0 0 0 1px var(--m-line)}
+  html.night ul.mb-blurb{background:rgba(255,255,255,.04)}
+  ul.mb-blurb li{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;color:var(--m-ink)}
+  ul.mb-blurb li + li{border-top:1px solid var(--m-line)}
+  ul.mb-blurb li span{opacity:.88} ul.mb-blurb b{opacity:1}
+  .mb-bi{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--m-accent) 16%,transparent);color:var(--m-hint)}
+  html.night .mb-bi{color:#8ED9D0}
+  .mb-bi .i{width:15px;height:15px;stroke-width:2}
+  /* brief tasks: title, status and action up front; detail behind a tap */
+  .mb-th{align-items:center}
+  .mb-tx{flex:1}
+  .mb-why{border:0;background:var(--m-soft);color:var(--m-mute);border-radius:99px;height:32px;padding:0 10px 0 12px;display:inline-flex;align-items:center;gap:4px;font:700 12.5px var(--font-display);cursor:pointer;flex:none;align-self:flex-start;margin-top:4px}
+  .mb-why .i{width:14px;height:14px;transition:transform .2s}
+  .mb-why[aria-expanded="true"] .i{transform:rotate(180deg)}
+  .mb-task .mb-p[hidden]{display:none}
+  .mb-task .mb-p{background:var(--m-soft);border-radius:14px;padding:10px 12px;font-size:14px}
+  .mb-tf{border-top:1px solid var(--m-line);padding-top:12px;margin-top:2px}
+  .mb-ins p{font-size:14px}
+  @media (max-width:420px){ .mb-why span{display:none} .mb-why{padding:0 9px;width:32px;justify-content:center} }
+  html:not(.night),html:not(.night) body{background:#E9EDEC}
+  html.night,html.night body{background:#0B0E0E}

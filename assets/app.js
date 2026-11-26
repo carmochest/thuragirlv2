@@ -2137,12 +2137,14 @@ function renderBrief(){
   var mgP = F.rev ? K / F.rev * 100 : 0, nb = (u.bills || []).filter(function(v){ return !v.paid && v.due >= today() && diffDays(v.due, today()) <= 7 && !top.some(function(t){ return t.k === "bill:" + v.id; }); }).sort(function(a, z){ return a.due < z.due ? -1 : 1; })[0];
   function bb(v){ return "<b>" + esc(v) + "</b>"; }
   function dTH(s2){ var d2 = day(s2); return d2.getDate() + " " + mth(MONTH[d2.getMonth()]); }
-  var blurb = L(esc(mName) + " so far: " + bb(baht(F.rev)) + " in and " + bb(baht(F.exp)) + " out, so you have " + (K >= 0 ? "kept " + bb(baht(K)) + " (" + bb(mgP.toFixed(1) + "%") + " of sales)" : "spent " + bb(baht(-K)) + " more than came in") + (F.d != null && Math.abs(F.d) < 200 && K > 0 ? ", " + bb((F.d >= 0 ? "+" : "−") + pctTxt(F.d)) + " on last month" : "") + ". ",
-    esc(mT) + " ถึงวันนี้ เงินเข้า " + bb(baht(F.rev)) + " เงินออก " + bb(baht(F.exp)) + (K >= 0 ? " เหลือเก็บ " + bb(baht(K)) + " (" + bb(mgP.toFixed(1) + "%") + " ของยอดขาย)" : " ใช้เกินรายรับ " + bb(baht(-K))) + (F.d != null && Math.abs(F.d) < 200 && K > 0 ? " " + bb((F.d >= 0 ? "+" : "−") + pctTxt(F.d)) + " เทียบเดือนก่อน" : "") + " ");
-  if (top.length) blurb += L("First up: " + esc(top[0].h.charAt(0).toLowerCase() + top[0].h.slice(1)) + ". ", "เรื่องแรก: " + esc(T_(top[0].h)) + " ");
-  else blurb += L("Nothing needs you today. ", "วันนี้ไม่มีอะไรต้องทำ ");
-  if (nb) blurb += L("Next bill: " + esc(nb.to) + ", " + bb(baht(nb.amount)) + " on " + bb(nice(nb.due)) + ".", "บิลถัดไป: " + esc(T_(nb.to)) + " " + bb(baht(nb.amount)) + " วันที่ " + bb(dTH(nb.due)));
-  var bl = NI(el("p", "mb-blurb")); bl.innerHTML = blurb; hero.appendChild(bl);
+  var bparts = []; bparts.push(["i-trend", L(esc(mName) + " so far: " + bb(baht(F.rev)) + " in, " + bb(baht(F.exp)) + " out, " + (K >= 0 ? "kept " + bb(baht(K)) + " (" + bb(mgP.toFixed(1) + "%") + " of sales)" : "spent " + bb(baht(-K)) + " more than came in") + (F.d != null && Math.abs(F.d) < 200 && K > 0 ? ", " + bb((F.d >= 0 ? "+" : "−") + pctTxt(F.d)) + " on last month" : "") + ". ",
+    esc(mT) + " ถึงวันนี้ เงินเข้า " + bb(baht(F.rev)) + " เงินออก " + bb(baht(F.exp)) + (K >= 0 ? " เหลือเก็บ " + bb(baht(K)) + " (" + bb(mgP.toFixed(1) + "%") + " ของยอดขาย)" : " ใช้เกินรายรับ " + bb(baht(-K))) + (F.d != null && Math.abs(F.d) < 200 && K > 0 ? " " + bb((F.d >= 0 ? "+" : "−") + pctTxt(F.d)) + " เทียบเดือนก่อน" : "") + "")]);
+  if (top.length) bparts.push(["i-check", L("First up: " + esc(top[0].h.charAt(0).toLowerCase() + top[0].h.slice(1)), "เรื่องแรก: " + esc(T_(top[0].h)))]);
+  else bparts.push(["i-check", L("Nothing needs you today", "วันนี้ไม่มีอะไรต้องทำ")]);
+  if (nb) bparts.push(["i-clock", L("Next bill: " + esc(nb.to) + ", " + bb(baht(nb.amount)) + " on " + bb(nice(nb.due)), "บิลถัดไป: " + esc(T_(nb.to)) + " " + bb(baht(nb.amount)) + " วันที่ " + bb(dTH(nb.due)))]);
+  var bl = NI(el("ul", "mb-blurb"));
+  bparts.forEach(function(x){ var li = el("li"); li.innerHTML = '<i class="mb-bi"><svg class="i"><use href="#' + x[0] + '"/></svg></i><span>' + x[1].replace(/\.\s*$/, "") + '</span>'; bl.appendChild(li); });
+  hero.appendChild(bl);
   var st = el("div", "mb-stats");
   [[L("Cash", "เงินสด"), baht(B.cash), B.cashD == null ? "" : (B.cashD >= 0 ? "↑ " : "↓ ") + pctTxt(B.cashD)],
    [L("Money in", "เงินเข้า"), baht(F.rev), F.dIn == null ? mT : (F.dIn >= 0 ? "↑ " : "↓ ") + pctTxt(F.dIn)],
@@ -2164,7 +2166,10 @@ function renderBrief(){
     if (i === 0) c.appendChild(el("span", "mb-rib", "Start here"));
     var hd = el("div", "mb-th"); hd.innerHTML = '<i class="mb-ic"><svg class="i"><use href="#' + s.ic + '"/></svg></i>';
     var tx = el("div", "mb-tx"); tx.appendChild(el("h3", "", s.h)); if (s.late && s.late.txt) tx.appendChild(el("span", "mb-tag " + (s.late.cls || ""), s.late.txt)); hd.appendChild(tx); c.appendChild(hd);
-    c.appendChild(el("p", "mb-p", s.p));
+    var more = el("p", "mb-p"); more.textContent = s.p; more.hidden = true; c.appendChild(more);
+    var tg = el("button", "mb-why"); tg.type = "button"; tg.setAttribute("aria-expanded", "false"); tg.innerHTML = '<span>Details</span><svg class="i"><use href="#i-chev"/></svg>';
+    tg.addEventListener("click", function(){ var o = more.hidden; more.hidden = !o; tg.setAttribute("aria-expanded", String(o)); c.classList.toggle("open", o); });
+    hd.appendChild(tg);
     var ft = el("div", "mb-tf"); ft.appendChild(el("b", "num mb-amt", s.amt ? baht(s.amt) : "")); ft.appendChild(btn("pill soft act", s.btn, s.fn)); c.appendChild(ft);
     ls.appendChild(c);
   });
@@ -2865,6 +2870,7 @@ var TH = {
   "This month at a glance": "ภาพรวมเดือนนี้", "Where the money went": "เงินไปไหนบ้าง",
   "Needs you today": "วันนี้ต้องทำ", "Nothing urgent today": "วันนี้ไม่มีเรื่องด่วน", "Nothing is late and nothing is due today.": "ไม่มีอะไรเลยกำหนดหรือครบกำหนดวันนี้",
   "How I work this out": "หนูคำนวณอย่างไร", "Typical times for a small business doing this by hand. An estimate, not a measurement.": "เวลาโดยประมาณที่ธุรกิจเล็ก ๆ ใช้ทำเองด้วยมือ เป็นค่าประมาณ ไม่ใช่การวัดจริง",
+  "Details": "รายละเอียด",
 };
 
 /* ── several companies under one sign-in ── */

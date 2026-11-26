@@ -245,4 +245,5 @@ var TH = {
   "This month at a glance": "ภาพรวมเดือนนี้", "Where the money went": "เงินไปไหนบ้าง",
   "Needs you today": "วันนี้ต้องทำ", "Nothing urgent today": "วันนี้ไม่มีเรื่องด่วน", "Nothing is late and nothing is due today.": "ไม่มีอะไรเลยกำหนดหรือครบกำหนดวันนี้",
   "How I work this out": "หนูคำนวณอย่างไร", "Typical times for a small business doing this by hand. An estimate, not a measurement.": "เวลาโดยประมาณที่ธุรกิจเล็ก ๆ ใช้ทำเองด้วยมือ เป็นค่าประมาณ ไม่ใช่การวัดจริง",
+  "Details": "รายละเอียด",
 };
