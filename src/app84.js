@@ -242,4 +242,5 @@ var TH = {
   "ThuraGirl, your bookkeeper. Ask me anything below.": "ThuraGirl ผู้ช่วยทำบัญชีของคุณ ถามหนูได้ทุกเรื่องด้านล่างเลย",
   "Today's list": "เรื่องที่ต้องทำวันนี้", "Nothing on today's list": "วันนี้ไม่มีเรื่องต้องทำ", "Start here": "เริ่มตรงนี้", "Worth knowing": "เรื่องน่ารู้",
   "Time saved, about": "ช่วยประหยัดเวลาไปราว",
+  "This month at a glance": "ภาพรวมเดือนนี้", "Where the money went": "เงินไปไหนบ้าง",
 };

@@ -36,7 +36,8 @@ function renderBrief(){
   var mT = th ? mth(mName) : mName, K = F.rev - F.exp;
   function NI(e){ e.setAttribute("data-noi18n", ""); return e; }
   function shortB(v){ var a = Math.abs(v), s = a >= 1e6 ? (a / 1e6).toFixed(2).replace(/\.?0+$/, "") + L("M", " ล้าน") : a >= 1e4 ? Math.round(a / 1e3) + L("K", " พัน") : money(a); return (v < 0 ? "−" : "") + "฿" + s; }
-  function sec(title, kick){ var s = el("section", "mb-sec"), h = el("div", "mb-sh"); if (kick) h.appendChild(el("span", "mb-kick", kick)); h.appendChild(el("h2", "", title)); s.appendChild(h); return s; }
+  function NIS(t){ return { ni: t }; }
+  function sec(title, kick){ if (kick && kick.ni != null){ var s0 = sec(title, " "); var kk = $(".mb-kick", s0); kk.textContent = kick.ni; NI(kk); return s0; } var s = el("section", "mb-sec"), h = el("div", "mb-sh"); if (kick) h.appendChild(el("span", "mb-kick", kick)); h.appendChild(el("h2", "", title)); s.appendChild(h); return s; }
 
   // what needs a yes, most pressing first
   var urgent = [];
@@ -65,6 +66,10 @@ function renderBrief(){
    [L("Needs you", "รอคุณ"), String(top.length), restN > 0 ? L("+" + restN + " later", "+" + restN + " รอได้") : L("then all clear", "แล้วก็ว่าง")]].forEach(function(x){
     var t = NI(el("div", "mb-stat")); t.appendChild(el("span", "", x[0])); t.appendChild(el("b", "num", x[1])); if (x[2]) t.appendChild(el("small", "num", x[2])); st.appendChild(t);
   });
+  var tiles = $$(".mb-stat", st), mg = F.rev ? Math.max(0, Math.min(100, K / F.rev * 100)) : 0;
+  tiles[0].insertAdjacentHTML("beforeend", sparkSvg(B.series.map(function(z){ return z[1]; }), 120, 26).replace("br-spk", "br-spk mb-spk"));
+  var ring = el("i", "mb-ring"); ring.style.setProperty("--p", mg.toFixed(1)); ring.appendChild(el("em", "num", Math.round(mg) + "%")); tiles[1].appendChild(ring);
+  var dots = el("div", "mb-dots"); for (var di = 0; di < Math.min(8, top.length + Math.max(0, restN)); di++) dots.appendChild(el("i", di < top.length ? "on" : "")); tiles[2].appendChild(dots);
   hero.appendChild(st); wrap.appendChild(hero);
 
   // ── today's list
@@ -83,6 +88,25 @@ function renderBrief(){
   if (restN > 0){ var lk = btn("mb-more", restN + (restN === 1 ? " smaller thing can wait" : " smaller things can wait"), function(){ go(""); }); lk.insertAdjacentHTML("beforeend", '<svg class="i"><use href="#i-chevr"/></svg>'); ls.appendChild(lk); }
   wrap.appendChild(ls);
 
+  // ── this month at a glance
+  var gl = sec("This month at a glance", NIS(L("1 to " + day(B.asOf).getDate() + " " + mName, "1 ถึง " + day(B.asOf).getDate() + " " + mT)));
+  var gc = el("div", "mb-glance"), mx = Math.max(F.rev, F.exp, 1);
+  [["in", L("Money in", "เงินเข้า"), F.rev], ["out", L("Money out", "เงินออก"), F.exp]].forEach(function(r){
+    var row = NI(el("div", "mb-bar " + r[0])), lab = el("div", "mb-bl"); lab.appendChild(el("span", "", r[1])); lab.appendChild(el("b", "num", baht(r[2]))); row.appendChild(lab);
+    var tr2 = el("div", "mb-track"), fl = el("i"); fl.style.width = Math.max(3, r[2] / mx * 100) + "%"; tr2.appendChild(fl); row.appendChild(tr2); gc.appendChild(row);
+  });
+  var kp = NI(el("div", "mb-kept" + (K < 0 ? " neg" : ""))); kp.appendChild(el("span", "", K < 0 ? L("Spent more than came in", "ใช้เกินรายรับ") : L("Kept", "เหลือเก็บ")));
+  kp.appendChild(el("b", "num", (K < 0 ? "−" : "") + baht(Math.abs(K)))); if (F.rev) kp.appendChild(el("small", "num", (K / F.rev * 100).toFixed(1) + L("% margin", "% อัตรากำไร"))); gc.appendChild(kp);
+  var cm = F.expMix.slice(0, 4), other = F.exp - cm.reduce(function(a, r){ return a + r[1]; }, 0); if (other > 0) cm = cm.concat([["Everything else", other]]);
+  if (cm.length && F.exp){
+    gc.appendChild(el("span", "mb-gk", "Where the money went"));
+    var stk = el("div", "mb-stack"), lg = el("div", "mb-lg");
+    cm.forEach(function(r, ci){ var seg = el("i", "s" + ci); seg.style.width = (r[1] / F.exp * 100) + "%"; stk.appendChild(seg);
+      var li = el("div", "mb-li"); li.appendChild(el("i", "s" + ci)); li.appendChild(el("span", "", cap(r[0]))); var v = NI(el("b", "num", baht(r[1]))); li.appendChild(v); li.appendChild(NI(el("em", "num", Math.round(r[1] / F.exp * 100) + "%"))); lg.appendChild(li); });
+    gc.appendChild(stk); gc.appendChild(lg);
+  }
+  gl.appendChild(gc); wrap.appendChild(gl);
+
   // ── insights, a swipeable rail
   var ns = noticed(u, B), big = F.expMix[0];
   if (big && F.exp) ns.unshift("Your biggest cost this month is " + big[0].toLowerCase() + ": " + baht(big[1]) + ", or " + Math.round(big[1] / F.exp * 100) + "% of everything that went out.");
@@ -93,7 +117,7 @@ function renderBrief(){
       var m = s.match(/covers about ([\d.]+) months?/), fig, unit = "";
       if (m){ fig = m[1]; unit = L("months of cash", "เดือน ที่เงินสดพอใช้"); }
       else { var q = s.match(/(\d[\d.]*)%/) || s.match(/฿[\d,]+/); fig = q ? (q[1] ? q[1] + "%" : q[0]) : ""; if (/ down /.test(s) && q && q[1]) fig = "−" + fig; else if (/ up /.test(s) && q && q[1]) fig = "+" + fig; }
-      var c = el("article", "mb-ins t" + (i % 3)); c.innerHTML = '<i class="mb-ic sm"><svg class="i"><use href="#i-trend"/></svg></i>';
+      var c = el("article", "mb-ins t" + (i % 3) + (/^−/.test(fig || "") ? " dn" : "")); c.innerHTML = '<i class="mb-ic sm"><svg class="i"><use href="#i-trend"/></svg></i>';
       if (fig){ var f = NI(el("b", "num mb-fig", fig)); c.appendChild(f); if (unit) c.appendChild(NI(el("span", "mb-unit", unit))); }
       c.appendChild(el("p", "", s)); rail.appendChild(c);
     });
@@ -124,6 +148,25 @@ function renderBrief(){
   end.appendChild(el("p", "mb-by", "ThuraGirl, your bookkeeper. Ask me anything below."));
   wrap.appendChild(end);
   pg.appendChild(wrap);
+  setTimeout(function(){ mbBold(wrap); }, 140);
+}
+var MB_RX = null;
+function mbBold(root){
+  if (!MB_RX){
+    var en = "January|February|March|April|May|June|July|August|September|October|November|December", thm = Object.keys(MF).map(function(k){ return MF[k]; }).join("|");
+    MB_RX = new RegExp("(−?฿[\\d,]+(?:\\.\\d+)?(?:\\s?(?:M|K|ล้าน|พัน))?|[+−-]?\\d[\\d.,]*\\s?%|#?INV-[\\w-]+|\\d{1,2} (?:" + en + "|" + thm + ")(?: \\d{4})?|\\d[\\d,.]*\\s?(?:days?|people|months?|things?|bank lines|kinds|payments?|receipts?|reminders?|slips?|วัน|คน|เดือน|เรื่อง|รายการ|ประเภท|ครั้ง|ใบ))", "g");
+  }
+  $$(".mb-p, .mb-tx h3, .mb-ins p, .mb-rl span, .mb-calm", root).forEach(function(e){
+    var w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT), list = [], n;
+    while ((n = w.nextNode())) if (!n.parentNode.closest("b,em")) list.push(n);
+    list.forEach(function(t){
+      var v = t.nodeValue; MB_RX.lastIndex = 0; if (!MB_RX.test(v)) return; MB_RX.lastIndex = 0;
+      var f = document.createDocumentFragment(), last = 0, m;
+      while ((m = MB_RX.exec(v))){ if (m.index > last) f.appendChild(document.createTextNode(v.slice(last, m.index))); var b = el("b", "kd num", m[0]); b.setAttribute("data-noi18n", ""); f.appendChild(b); last = m.index + m[0].length; }
+      if (last < v.length) f.appendChild(document.createTextNode(v.slice(last)));
+      e.setAttribute("data-noi18n", ""); t.parentNode.replaceChild(f, t);
+    });
+  });
 }
 function T_(s){ return lang() === "th" ? T(s) : s; }
 function dayRow(e){
