@@ -4,12 +4,13 @@ Decided by the product owner during v2 design. Build to these unless they are ch
 
 | Area | Decision |
 |---|---|
-| Identity checks | Use **Sumsub** for ID verification of directors and shareholders (Thai ID or passport, liveness). |
+| Identity checks | Use **Didit** (replaced Sumsub on 27 Nov 2026) for ID verification of directors and shareholders (Thai ID or passport, liveness). |
 | Payments | Use **Beam** for subscription billing (card and PromptPay, hosted checkout). Omise and 2C2P were compared; Beam was chosen. |
 | Plans | Standard ฿1,999 a month and Pro ฿3,999 a month, 14-day free trial, no charge until the trial ends. |
 | Auditor | **ThuraGirl assigns the auditor.** Owners do not pick one, and the new-company registration form has no auditor fields. The lead auditor assigns companies on the auditor desk. |
 | Existing companies | **Auto-pull company records from DBD** using the tax ID; the owner checks and confirms each line. |
 | New companies | ThuraGirl registers the company with DBD (included in every plan). **No bank statement upload until the company is registered.** |
+| Accounting sync | Sync only to accounting software, **FlowAccount and PEAK** at launch. **No Odoo** and **no custom ERP sync**, because of the complexity. |
 | No accounting software | Users without accounting software pick **"Let ThuraGirl keep your books"** instead of syncing. Behind the scenes ThuraGirl processes their books on its own FlowAccount account. This is hidden: the UI never mentions FlowAccount for this option. |
 | Syncing new users | New users are nudged until they sync, because syncing is what fills the app. A Get started card (bank, books, sales apps) stays on Home, Finance and the Brief until the bank and the books are connected, with a daily reminder from day 2. It is hidden once they have synced. |
 | Charts | Keep Finance clean: one "Sales by channel" donut (Month/Year). P&L detail is tap-to-drill (a donut plus top payees per line), not more charts on the page. Anything custom goes through chat, which answers with a chart that can be pinned to Finance. |

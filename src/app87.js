@@ -1,5 +1,5 @@
 /* ── get started: keep nudging new users to sync, because syncing is what fills the app ── */
-var BOOKS_K = ["flow", "peak", "xero", "tgbooks"], SALES_K = ["loyverse", "ocha", "foodstory", "wongnai", "grab", "lineman", "shopee", "lazada", "tiktok"];
+var BOOKS_K = ["flow", "peak", "tgbooks"], SALES_K = ["loyverse", "ocha", "foodstory", "wongnai", "grab", "lineman", "shopee", "lazada", "tiktok"];
 function syncSteps(u){
   var c = u.setup.conn || {}, has = function(ks){ return ks.some(function(k){ return !!c[k]; }); };
   return [

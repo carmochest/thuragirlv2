@@ -66,14 +66,14 @@ General rules for the real build:
 **Needs:**
 - `POST /companies/:id/statements` (file upload) with server-side parsing for K-Bank, SCB, Bangkok Bank, Krungsri, Krungthai, ttb formats (CSV, XLSX and PDF), de-duplication across overlapping uploads.
 - Later: direct bank feeds (bank APIs or an aggregator) with `POST /companies/:id/bank-connections` and webhooks for new lines.
-- Accounting connectors listed in Settings > Apps (FlowAccount, PEAK, Xero) and delivery platforms (GrabFood, LINE MAN, Shopee etc.) are UI only.
-- **"No accounting software? Let ThuraGirl keep your books"** sits under Accounting wherever apps are listed (the connect sheet after sign-in, the setup checklist, Settings > Apps). Today it sets `u.setup.conn.tgbooks` and clears FlowAccount, PEAK and Xero (they are mutually exclusive). In production, choosing it means ThuraGirl processes the company's books on **ThuraGirl's own FlowAccount account**, as a hidden backend: create the company there, push categorised transactions, invoices and bills, and read back reports. Store `bookkeepingMode: "thuragirl" | "flowaccount" | "peak" | "xero"` per company (`PUT /companies/:id/bookkeeping-mode`). Never show FlowAccount to the user for this option.
+- Accounting connectors listed in Settings > Apps (FlowAccount and PEAK only; no Odoo and no custom ERP sync, because of the complexity) and delivery platforms (GrabFood, LINE MAN, Shopee etc.) are UI only.
+- **"No accounting software? Let ThuraGirl keep your books"** sits under Accounting wherever apps are listed (the connect sheet after sign-in, the setup checklist, Settings > Apps). Today it sets `u.setup.conn.tgbooks` and clears FlowAccount and PEAK (they are mutually exclusive). In production, choosing it means ThuraGirl processes the company's books on **ThuraGirl's own FlowAccount account**, as a hidden backend: create the company there, push categorised transactions, invoices and bills, and read back reports. Store `bookkeepingMode: "thuragirl" | "flowaccount" | "peak"` per company (`PUT /companies/:id/bookkeeping-mode`). Never show FlowAccount to the user for this option.
 
-## 8. Identity check: Sumsub
+## 8. Identity check: Didit
 **Today:** not wired. Company verification is a certificate upload that keeps only the file name and size (`verifyBlock` in `src/app2.js`, shown in Settings by `src/app8.js`). Registration collects ID or passport numbers as text.
-**Needs:** Sumsub WebSDK for directors and shareholders (Thai ID card or passport, liveness).
-- `POST /kyc/token` returns a Sumsub access token for the SDK.
-- `POST /webhooks/sumsub` receives review results; store status per person, show it in Settings and the registration flow.
+**Needs:** Didit hosted verification for directors and shareholders (Thai ID card or passport, liveness).
+- `POST /kyc/token` creates a Didit verification session and returns its URL.
+- `POST /webhooks/didit` receives review results; store status per person, show it in Settings and the registration flow.
 
 ## 9. Billing: Beam
 **Today:** Settings > Plan shows Standard ฿1,999 and Pro ฿3,999, 14-day trial. "Continue to payment" only sets `u.plan` and `u.planPending` (`src/app8.js`).

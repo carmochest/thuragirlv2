@@ -150,7 +150,7 @@ function securityCard(u, root){
 /* ── apps to connect ── */
 var APPS = [
   ["Banks", "Your money in and out", [["kbank", "KB", "K-Bank"], ["scb", "SC", "SCB"], ["bbl", "BB", "Bangkok Bank"], ["bay", "KS", "Krungsri"], ["ktb", "KT", "Krungthai"], ["ttb", "TT", "ttb"]]],
-  ["Accounting", "Books you already keep", [["flow", "FA", "FlowAccount"], ["peak", "PK", "PEAK"], ["xero", "XE", "Xero"]]],
+  ["Accounting", "Books you already keep", [["flow", "FA", "FlowAccount"], ["peak", "PK", "PEAK"]]],
   ["Point of sale", "Card, cash and QR sales", [["loyverse", "LV", "Loyverse POS"], ["ocha", "OC", "Ocha"], ["foodstory", "FS", "FoodStory"], ["wongnai", "WN", "Wongnai POS"]]],
   ["Delivery and marketplaces", "Payouts and fees", [["grab", "GF", "GrabFood"], ["lineman", "LM", "LINE MAN"], ["shopee", "SH", "Shopee"], ["lazada", "LZ", "Lazada"], ["tiktok", "TS", "TikTok Shop"]]],
   ["Messaging", "Send receipts from chat", [["line", "LN", "LINE"]]]
@@ -184,7 +184,7 @@ function connList(u, again, compact){
       var tt = el("span", "tx"); tt.appendChild(el("b", "", tgOn ? "ThuraGirl keeps your books" : "No accounting software?")); tt.appendChild(el("small", "", tgOn ? "Nothing to sync. I do it for you." : "Let ThuraGirl keep your books instead")); tb.appendChild(tt);
       if (tgOn) tb.insertAdjacentHTML("beforeend", '<svg class="i ck"><use href="#i-check"/></svg>');
       tb.addEventListener("click", function(){
-        if (tgOn) delete u.setup.conn.tgbooks; else { u.setup.conn.tgbooks = Date.now(); ["flow", "peak", "xero"].forEach(function(k){ delete u.setup.conn[k]; }); }
+        if (tgOn) delete u.setup.conn.tgbooks; else { u.setup.conn.tgbooks = Date.now(); ["flow", "peak"].forEach(function(k){ delete u.setup.conn[k]; }); }
         save(); if (again) again(); var gsd2 = $("#gs"); if (gsd2 && !gsd2.hidden) gsd2.setAttribute("data-dirty", "1"); paintSync(u);
         if (!tgOn) toast(L("Done. I keep your books, so there is nothing to sync.", "เรียบร้อย หนูดูแลบัญชีให้เอง ไม่ต้องเชื่อมต่อโปรแกรมใด"));
       });

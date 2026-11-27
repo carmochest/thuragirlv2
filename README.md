@@ -2,7 +2,7 @@
 
 ThuraGirl is an AI bookkeeper for Thai SMEs. This repository holds the v2 front end: every screen, flow and piece of copy (English and Thai, day and night), working end to end in the browser.
 
-**This is a front-end prototype, not a production app.** Accounts, books and settings are stored in the tester's browser (`localStorage`). Nothing is sent to a server. Every outside service (DBD, banks, Sumsub, Beam, LINE, email, file storage) is mocked. See [docs/BACKEND-TODO.md](docs/BACKEND-TODO.md) for what a backend must supply, and [docs/DECISIONS.md](docs/DECISIONS.md) for product decisions made so far.
+**This is a front-end prototype, not a production app.** Accounts, books and settings are stored in the tester's browser (`localStorage`). Nothing is sent to a server. Every outside service (DBD, banks, Didit, Beam, LINE, email, file storage) is mocked. See [docs/BACKEND-TODO.md](docs/BACKEND-TODO.md) for what a backend must supply, and [docs/DECISIONS.md](docs/DECISIONS.md) for product decisions made so far.
 
 Last updated 26 November 2026.
 
@@ -22,7 +22,7 @@ Live test build: https://carmochest.github.io/thuragirlv2/ (GitHub Pages, `main`
 ## Key flows to try
 
 - **Sign up** at `/signup/` with a made-up email, choose "Yes, it is registered", and use the demo tax ID `0105561023456`. Or pick "Not yet" to go through new-company registration. Statements stay locked until the registration is submitted.
-- **Connect apps.** After sign-in a sheet lists banks, accounting apps (FlowAccount, PEAK, Xero), POS and delivery apps, and LINE. Under Accounting, **"No accounting software? Let ThuraGirl keep your books"** is the alternative to syncing. It and the three accounting apps cancel each other out. The same list is shown in the setup checklist and in Settings → Apps.
+- **Connect apps.** After sign-in a sheet lists banks, accounting apps (FlowAccount and PEAK, the only two at launch; there is no Odoo or custom ERP sync), POS and delivery apps, and LINE. Under Accounting, **"No accounting software? Let ThuraGirl keep your books"** is the alternative to syncing. It and the two accounting apps cancel each other out. The same list is shown in the setup checklist and in Settings → Apps.
 - **Get started card.** Until the bank and the books are both connected, a "Get started · n of 3" card sits at the top of Home and inside the empty Finance and Brief pages. From the day after sign-up it is labelled "Reminder" and a once-a-day reminder pops up. It disappears when the bank and the books are both in.
 - **Sample data.** "Try it with sample data" (or "Use the sample" in the upload sheet) loads a sample restaurant statement, so every screen fills in.
 - **Morning Brief.** A short summary in icon rows, up to three urgent items with details behind a tap, things worth knowing, what was handled, and time saved (with "How I work this out"). The greeting and sign-off rotate daily.
