@@ -1642,5 +1642,6 @@
   #m-contacts{margin-top:12px}
   .ct-rows{display:grid}
   @media (min-width:760px){ .ct-rows{grid-template-columns:1fr 1fr;column-gap:28px} }
+  @media (min-width:760px){ .ct-rows .row:nth-child(2){border-top:0} }
 
   .dockB[hidden],.toast[hidden],.alt[hidden]{display:none}
