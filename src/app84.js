@@ -107,7 +107,7 @@ var TH = {
   "Payroll approvals": "อนุมัติเงินเดือน", "When the month's payroll is ready": "เมื่อเงินเดือนของเดือนพร้อม",
 
   // settings
-  "Account": "บัญชีผู้ใช้", "Company": "บริษัท", "Team": "ทีม", "Apps": "แอป", "Files": "ไฟล์", "Security": "ความปลอดภัย", "Plan": "แพ็กเกจ",
+  "Account": "บัญชีผู้ใช้", "Profile": "โปรไฟล์", "Your account": "บัญชีของคุณ", "Company settings": "ตั้งค่าบริษัท", "Company": "บริษัท", "Team": "ทีม", "Apps": "แอป", "Files": "ไฟล์", "Security": "ความปลอดภัย", "Plan": "แพ็กเกจ",
   "Your profile": "โปรไฟล์ของคุณ", "Your name": "ชื่อของคุณ", "What I call you": "ชื่อที่ให้หนูเรียก", "Email": "อีเมล", "Phone": "โทรศัพท์", "Language": "ภาษา", "Time zone": "เขตเวลา",
   "Appearance": "การแสดงผล", "Theme": "ธีม", "Auto": "อัตโนมัติ", "Day": "กลางวัน", "Night": "กลางคืน", "Changes save as you type.": "บันทึกให้อัตโนมัติขณะพิมพ์",
   "Notifications": "การแจ้งเตือน", "Tax filing reminders": "เตือนยื่นภาษี", "3 days and 1 day before every deadline": "ก่อนครบกำหนด 3 วันและ 1 วัน", "Overdue 1 day": "เลยกำหนด 1 วัน",

@@ -111,6 +111,7 @@ function setCount(){
   $("#b-clear-t").textContent = u.hasData ? "You're all caught up" : "Nothing needs you yet";
   $("#b-clear-m").textContent = u.hasData ? "Nothing else needs you today." : "Upload a bank statement and I will find what does.";
   $("#b-reset").hidden = true;
+  if (tab === "home" && u.hasData) briefStrip(u);
 }
 function paintSetup(){
   var u = me(), isNew = u.path === "new", n = isNew ? regLeft(u) : setupLeft(u), things = n === 1 ? "1 quick thing" : n + " quick things";

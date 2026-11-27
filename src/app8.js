@@ -145,10 +145,14 @@ function regFees(cap){ var u = Math.ceil(cap / 100000); return Math.min(25000, M
 function chipRow(items, on){ var c = el("div", "chips qch"); items.forEach(function(x){ var b2 = el("button", "", x[0]); b2.type = "button"; if (x[2]) b2.setAttribute("aria-pressed", "true"); b2.addEventListener("click", function(){ on(x[1]); }); c.appendChild(b2); }); return c; }
 
 /* ── settings, in tabs so nothing crowds ── */
-var setTab = "account", STABS = [["account", "Account"], ["company", "Company"], ["team", "Team"], ["apps", "Apps"], ["files", "Files"], ["security", "Security"], ["billing", "Plan"]];
+/* two pages: Company settings (this company only) and Your account (you, whichever company is open) */
+var setTab = "account", PTABS = [["account", "Profile"], ["notif", "Notifications"], ["security", "Security"]], CTABS = [["company", "Company"], ["team", "Team"], ["apps", "Apps"], ["files", "Files"], ["billing", "Plan"]];
+function setScope(){ return PTABS.some(function(t){ return t[0] === setTab; }) ? "you" : "co"; }
 function renderSettings(){
   var u = me(), root = $("#b-settings"), oldNav = $(".stabs", root), keepX = oldNav ? oldNav.scrollLeft : 0; root.textContent = ""; root.classList.remove("in");
-  var h = el("div", "pgh"); h.appendChild(el("h1", "", "Settings")); h.appendChild(el("p", "", "Changes save as you type.")); root.appendChild(h);
+  var you = setScope() === "you", STABS = you ? PTABS : CTABS;
+  var h = el("div", "pgh"); h.appendChild(el("h1", "", you ? "Your account" : "Company settings"));
+  var hp = el("p", "", you ? L("Your profile, sign-in and preferences. Changes save as you type.", "โปรไฟล์ การเข้าสู่ระบบ และการตั้งค่าของคุณ บันทึกให้อัตโนมัติขณะพิมพ์") : coLabel(u) + L(" · Changes save as you type.", " · บันทึกให้อัตโนมัติขณะพิมพ์")); hp.setAttribute("data-noi18n", ""); h.appendChild(hp); root.appendChild(h);
   var nav = el("div", "chips stabs"); nav.setAttribute("role", "tablist");
   STABS.forEach(function(t){ var b = el("button", "", t[1]); b.type = "button"; b.setAttribute("role", "tab"); b.setAttribute("aria-selected", String(setTab === t[0])); b.setAttribute("aria-pressed", String(setTab === t[0])); b.addEventListener("click", function(){ setTab = t[0]; renderSettings(); }); nav.appendChild(b); });
   root.appendChild(nav);
@@ -156,13 +160,19 @@ function renderSettings(){
   var on = $('[aria-selected="true"]', nav);
   if (on) requestAnimationFrame(function(){ var l = on.offsetLeft - nav.offsetLeft, r = l + on.offsetWidth; if (l < nav.scrollLeft + 16 || r > nav.scrollLeft + nav.clientWidth - 16) nav.scrollTo({ left: Math.max(0, l - (nav.clientWidth - on.offsetWidth) / 2), behavior: keepX ? "smooth" : "auto" }); });
   var T = setTab;
-  if (T === "account"){ profileCard(u, root); notifCard(u, root); appearanceCard(u, root); accountCard(u, root); }
+  if (T === "account"){ profileCard(u, root); appearanceCard(u, root); accountCard(u, root); }
+  else if (T === "notif") notifCard(u, root);
   else if (T === "company"){ companyCard(u, root); recordsCard(u, root); }
   else if (T === "team"){ teamCard(u, root); accessCard(u, root); }
   else if (T === "apps"){ var cn = card("Connected apps"); cn.appendChild(connList(u, function(){ renderSettings(); })); root.appendChild(cn); if (!gated(u)) banksCard(u, root); }
   else if (T === "files"){ filesCard(u, root); if (!gated(u)) dataCard(u, root); }
   else if (T === "security"){ securityCard(u, root); tfaCard(u, root); deleteCard(u, root); }
   else if (T === "billing") billingCard(u, root);
+  /* a quiet way across to the other page */
+  var sw = el("button", "set-sw"); sw.type = "button"; sw.setAttribute("data-noi18n", "");
+  sw.appendChild(document.createTextNode(you ? L("Settings for ", "ตั้งค่าของ ") + coLabel(u) : L("Your account settings", "ตั้งค่าบัญชีของคุณ")));
+  sw.insertAdjacentHTML("beforeend", '<svg class="i"><use href="#i-chevr"/></svg>');
+  sw.addEventListener("click", function(){ setTab = you ? "company" : "account"; renderSettings(); scrollTo(0, 0); }); root.appendChild(sw);
 }
 function profileCard(u, root){
   var c = card("Your profile"), g = el("div", "fgrid");

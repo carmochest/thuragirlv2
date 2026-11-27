@@ -11,7 +11,7 @@ function gsInit(){
 }
 function openGS(k, title, sub){
   gsInit(); $("#gs-k").textContent = k; $("#gs-t").textContent = title; $("#gs-sub").textContent = sub || ""; $("#gs-sub").hidden = !sub;
-  var b = $("#gs-b"); b.textContent = ""; var s = $("#gs"); s.hidden = false;
+  var b = $("#gs-b"); b.textContent = ""; var s = $("#gs"); s.hidden = false; s.classList.remove("comenu");
   try { $("#gs-x").focus({ preventScroll: true }); $(".shB-card", s).scrollIntoView({ block: "nearest" }); } catch (e) {}
   return b;
 }

@@ -45,20 +45,21 @@ function openCoMenu(){
     list.appendChild(row);
   });
   var add = el("button", "co-row co-add"); add.type = "button"; add.innerHTML = '<b class="co-av"><svg class="i"><use href="#i-plus"/></svg></b>';
-  var at = el("span", "co-tx"); at.appendChild(el("strong", "", L("Add a company", "เพิ่มบริษัท"))); at.appendChild(el("small", "", L("Registered already, or one I register for you", "จดทะเบียนแล้ว หรือให้หนูจดให้"))); add.appendChild(at);
+  var at = el("span", "co-tx"); at.appendChild(el("strong", "", L("Add a company", "เพิ่มบริษัท"))); at.appendChild(el("small", "", L("Own books and team, same sign-in", "แยกบัญชีและทีม ใช้บัญชีเข้าสู่ระบบเดียวกัน"))); add.appendChild(at);
   add.addEventListener("click", addCo); list.appendChild(add);
   b.appendChild(list);
-  b.appendChild(el("p", "tnote", L("Each company keeps its own books, bank statements, team and tasks. Same sign-in, same plan price per company.", "แต่ละบริษัทแยกบัญชี รายการเดินบัญชี ทีม และงานของตัวเอง ใช้บัญชีเข้าสู่ระบบเดียวกัน ราคาแพ็กเกจต่อบริษัทเท่าเดิม")));
+  /* compact, so the whole menu fits one phone screen without scrolling */
+  $("#gs").classList.add("comenu");
   /* two clearly scoped groups, so nobody reads one settings button as "settings for every company" */
   var cn = coLabel(u);
-  var cs = el("div", "co-sec"); cs.appendChild(el("h3", "", L("This company", "บริษัทนี้"))); cs.appendChild(el("p", "", cn));
+  var cs = el("div", "co-sec"), ch = el("h3", "", cn); ch.setAttribute("data-noi18n", ""); cs.appendChild(ch);
   cs.appendChild(coLink(L("Company settings", "ตั้งค่าบริษัท"), L("Records, team, apps, files and plan", "ข้อมูลบริษัท ทีม แอป ไฟล์ และแพ็กเกจ"), "company")); b.appendChild(cs);
-  var ys = el("div", "co-sec"); ys.appendChild(el("h3", "", L("You, on every company", "ตัวคุณ ใช้กับทุกบริษัท")));
+  var ys = el("div", "co-sec"); ys.appendChild(el("h3", "", L("Your account", "บัญชีของคุณ")));
   var prefs = el("div", "co-prefs");
   prefs.appendChild(prefRow(L("Language", "ภาษา"), langSeg()));
   prefs.appendChild(prefRow(L("Theme", "ธีม"), themeSeg()));
   ys.appendChild(prefs);
-  ys.appendChild(coLink(L("My account", "บัญชีของฉัน"), L("Name, sign-in, notifications and security", "ชื่อ การเข้าสู่ระบบ การแจ้งเตือน และความปลอดภัย"), "account")); b.appendChild(ys);
+  ys.appendChild(coLink(L("Account settings", "ตั้งค่าบัญชี"), L("Profile, notifications and security", "โปรไฟล์ การแจ้งเตือน และความปลอดภัย"), "account")); b.appendChild(ys);
 }
 function coLink(t, sub, tabKey){
   var r = el("button", "co-link"); r.type = "button"; r.setAttribute("data-noi18n", "");

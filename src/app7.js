@@ -180,9 +180,11 @@ function renderBrief(){
     : pick(BYE, 3);
   end.appendChild(NI(el("p", "mb-sign", L(bye[0], bye[1]).replace("{n}", nm))));
   end.appendChild(el("p", "mb-by", "ThuraGirl, your bookkeeper. Ask me anything below."));
+  /* the one way to put it away: back to Home, where it folds into the strip */
+  var gi = btn("pill mb-done", L("Got it", "รับทราบ"), function(){ go(""); }, "i-check"); gi.setAttribute("data-noi18n", ""); end.appendChild(gi);
   wrap.appendChild(end);
   pastBriefs(u, wrap);
-  briefSave(u, { cash: B.cash, inc: F.rev, exp: F.exp, done: PG.done, total: PG.total, left: PG.left });
+  briefSave(u, { cash: B.cash, inc: F.rev, exp: F.exp, done: PG.done, total: PG.total, left: PG.left, items: PG.items || [] });
   var bd = briefDay(u); if (!bd.seen){ bd.seen = Date.now(); u.briefSeen = true; save(); }
   pg.appendChild(wrap);
   setTimeout(function(){ mbBold(wrap); }, 140);

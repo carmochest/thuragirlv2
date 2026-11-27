@@ -390,6 +390,7 @@ function setCount(){
   $("#b-clear-t").textContent = u.hasData ? "You're all caught up" : "Nothing needs you yet";
   $("#b-clear-m").textContent = u.hasData ? "Nothing else needs you today." : "Upload a bank statement and I will find what does.";
   $("#b-reset").hidden = true;
+  if (tab === "home" && u.hasData) briefStrip(u);
 }
 function paintSetup(){
   var u = me(), isNew = u.path === "new", n = isNew ? regLeft(u) : setupLeft(u), things = n === 1 ? "1 quick thing" : n + " quick things";
@@ -1171,7 +1172,7 @@ function gsInit(){
 }
 function openGS(k, title, sub){
   gsInit(); $("#gs-k").textContent = k; $("#gs-t").textContent = title; $("#gs-sub").textContent = sub || ""; $("#gs-sub").hidden = !sub;
-  var b = $("#gs-b"); b.textContent = ""; var s = $("#gs"); s.hidden = false;
+  var b = $("#gs-b"); b.textContent = ""; var s = $("#gs"); s.hidden = false; s.classList.remove("comenu");
   try { $("#gs-x").focus({ preventScroll: true }); $(".shB-card", s).scrollIntoView({ block: "nearest" }); } catch (e) {}
   return b;
 }
@@ -2328,9 +2329,11 @@ function renderBrief(){
     : pick(BYE, 3);
   end.appendChild(NI(el("p", "mb-sign", L(bye[0], bye[1]).replace("{n}", nm))));
   end.appendChild(el("p", "mb-by", "ThuraGirl, your bookkeeper. Ask me anything below."));
+  /* the one way to put it away: back to Home, where it folds into the strip */
+  var gi = btn("pill mb-done", L("Got it", "รับทราบ"), function(){ go(""); }, "i-check"); gi.setAttribute("data-noi18n", ""); end.appendChild(gi);
   wrap.appendChild(end);
   pastBriefs(u, wrap);
-  briefSave(u, { cash: B.cash, inc: F.rev, exp: F.exp, done: PG.done, total: PG.total, left: PG.left });
+  briefSave(u, { cash: B.cash, inc: F.rev, exp: F.exp, done: PG.done, total: PG.total, left: PG.left, items: PG.items || [] });
   var bd = briefDay(u); if (!bd.seen){ bd.seen = Date.now(); u.briefSeen = true; save(); }
   pg.appendChild(wrap);
   setTimeout(function(){ mbBold(wrap); }, 140);
@@ -2506,10 +2509,14 @@ function regFees(cap){ var u = Math.ceil(cap / 100000); return Math.min(25000, M
 function chipRow(items, on){ var c = el("div", "chips qch"); items.forEach(function(x){ var b2 = el("button", "", x[0]); b2.type = "button"; if (x[2]) b2.setAttribute("aria-pressed", "true"); b2.addEventListener("click", function(){ on(x[1]); }); c.appendChild(b2); }); return c; }
 
 /* ── settings, in tabs so nothing crowds ── */
-var setTab = "account", STABS = [["account", "Account"], ["company", "Company"], ["team", "Team"], ["apps", "Apps"], ["files", "Files"], ["security", "Security"], ["billing", "Plan"]];
+/* two pages: Company settings (this company only) and Your account (you, whichever company is open) */
+var setTab = "account", PTABS = [["account", "Profile"], ["notif", "Notifications"], ["security", "Security"]], CTABS = [["company", "Company"], ["team", "Team"], ["apps", "Apps"], ["files", "Files"], ["billing", "Plan"]];
+function setScope(){ return PTABS.some(function(t){ return t[0] === setTab; }) ? "you" : "co"; }
 function renderSettings(){
   var u = me(), root = $("#b-settings"), oldNav = $(".stabs", root), keepX = oldNav ? oldNav.scrollLeft : 0; root.textContent = ""; root.classList.remove("in");
-  var h = el("div", "pgh"); h.appendChild(el("h1", "", "Settings")); h.appendChild(el("p", "", "Changes save as you type.")); root.appendChild(h);
+  var you = setScope() === "you", STABS = you ? PTABS : CTABS;
+  var h = el("div", "pgh"); h.appendChild(el("h1", "", you ? "Your account" : "Company settings"));
+  var hp = el("p", "", you ? L("Your profile, sign-in and preferences. Changes save as you type.", "โปรไฟล์ การเข้าสู่ระบบ และการตั้งค่าของคุณ บันทึกให้อัตโนมัติขณะพิมพ์") : coLabel(u) + L(" · Changes save as you type.", " · บันทึกให้อัตโนมัติขณะพิมพ์")); hp.setAttribute("data-noi18n", ""); h.appendChild(hp); root.appendChild(h);
   var nav = el("div", "chips stabs"); nav.setAttribute("role", "tablist");
   STABS.forEach(function(t){ var b = el("button", "", t[1]); b.type = "button"; b.setAttribute("role", "tab"); b.setAttribute("aria-selected", String(setTab === t[0])); b.setAttribute("aria-pressed", String(setTab === t[0])); b.addEventListener("click", function(){ setTab = t[0]; renderSettings(); }); nav.appendChild(b); });
   root.appendChild(nav);
@@ -2517,13 +2524,19 @@ function renderSettings(){
   var on = $('[aria-selected="true"]', nav);
   if (on) requestAnimationFrame(function(){ var l = on.offsetLeft - nav.offsetLeft, r = l + on.offsetWidth; if (l < nav.scrollLeft + 16 || r > nav.scrollLeft + nav.clientWidth - 16) nav.scrollTo({ left: Math.max(0, l - (nav.clientWidth - on.offsetWidth) / 2), behavior: keepX ? "smooth" : "auto" }); });
   var T = setTab;
-  if (T === "account"){ profileCard(u, root); notifCard(u, root); appearanceCard(u, root); accountCard(u, root); }
+  if (T === "account"){ profileCard(u, root); appearanceCard(u, root); accountCard(u, root); }
+  else if (T === "notif") notifCard(u, root);
   else if (T === "company"){ companyCard(u, root); recordsCard(u, root); }
   else if (T === "team"){ teamCard(u, root); accessCard(u, root); }
   else if (T === "apps"){ var cn = card("Connected apps"); cn.appendChild(connList(u, function(){ renderSettings(); })); root.appendChild(cn); if (!gated(u)) banksCard(u, root); }
   else if (T === "files"){ filesCard(u, root); if (!gated(u)) dataCard(u, root); }
   else if (T === "security"){ securityCard(u, root); tfaCard(u, root); deleteCard(u, root); }
   else if (T === "billing") billingCard(u, root);
+  /* a quiet way across to the other page */
+  var sw = el("button", "set-sw"); sw.type = "button"; sw.setAttribute("data-noi18n", "");
+  sw.appendChild(document.createTextNode(you ? L("Settings for ", "ตั้งค่าของ ") + coLabel(u) : L("Your account settings", "ตั้งค่าบัญชีของคุณ")));
+  sw.insertAdjacentHTML("beforeend", '<svg class="i"><use href="#i-chevr"/></svg>');
+  sw.addEventListener("click", function(){ setTab = you ? "company" : "account"; renderSettings(); scrollTo(0, 0); }); root.appendChild(sw);
 }
 function profileCard(u, root){
   var c = card("Your profile"), g = el("div", "fgrid");
@@ -2828,7 +2841,7 @@ var TH = {
   "Payroll approvals": "อนุมัติเงินเดือน", "When the month's payroll is ready": "เมื่อเงินเดือนของเดือนพร้อม",
 
   // settings
-  "Account": "บัญชีผู้ใช้", "Company": "บริษัท", "Team": "ทีม", "Apps": "แอป", "Files": "ไฟล์", "Security": "ความปลอดภัย", "Plan": "แพ็กเกจ",
+  "Account": "บัญชีผู้ใช้", "Profile": "โปรไฟล์", "Your account": "บัญชีของคุณ", "Company settings": "ตั้งค่าบริษัท", "Company": "บริษัท", "Team": "ทีม", "Apps": "แอป", "Files": "ไฟล์", "Security": "ความปลอดภัย", "Plan": "แพ็กเกจ",
   "Your profile": "โปรไฟล์ของคุณ", "Your name": "ชื่อของคุณ", "What I call you": "ชื่อที่ให้หนูเรียก", "Email": "อีเมล", "Phone": "โทรศัพท์", "Language": "ภาษา", "Time zone": "เขตเวลา",
   "Appearance": "การแสดงผล", "Theme": "ธีม", "Auto": "อัตโนมัติ", "Day": "กลางวัน", "Night": "กลางคืน", "Changes save as you type.": "บันทึกให้อัตโนมัติขณะพิมพ์",
   "Notifications": "การแจ้งเตือน", "Tax filing reminders": "เตือนยื่นภาษี", "3 days and 1 day before every deadline": "ก่อนครบกำหนด 3 วันและ 1 วัน", "Overdue 1 day": "เลยกำหนด 1 วัน",
@@ -3017,20 +3030,21 @@ function openCoMenu(){
     list.appendChild(row);
   });
   var add = el("button", "co-row co-add"); add.type = "button"; add.innerHTML = '<b class="co-av"><svg class="i"><use href="#i-plus"/></svg></b>';
-  var at = el("span", "co-tx"); at.appendChild(el("strong", "", L("Add a company", "เพิ่มบริษัท"))); at.appendChild(el("small", "", L("Registered already, or one I register for you", "จดทะเบียนแล้ว หรือให้หนูจดให้"))); add.appendChild(at);
+  var at = el("span", "co-tx"); at.appendChild(el("strong", "", L("Add a company", "เพิ่มบริษัท"))); at.appendChild(el("small", "", L("Own books and team, same sign-in", "แยกบัญชีและทีม ใช้บัญชีเข้าสู่ระบบเดียวกัน"))); add.appendChild(at);
   add.addEventListener("click", addCo); list.appendChild(add);
   b.appendChild(list);
-  b.appendChild(el("p", "tnote", L("Each company keeps its own books, bank statements, team and tasks. Same sign-in, same plan price per company.", "แต่ละบริษัทแยกบัญชี รายการเดินบัญชี ทีม และงานของตัวเอง ใช้บัญชีเข้าสู่ระบบเดียวกัน ราคาแพ็กเกจต่อบริษัทเท่าเดิม")));
+  /* compact, so the whole menu fits one phone screen without scrolling */
+  $("#gs").classList.add("comenu");
   /* two clearly scoped groups, so nobody reads one settings button as "settings for every company" */
   var cn = coLabel(u);
-  var cs = el("div", "co-sec"); cs.appendChild(el("h3", "", L("This company", "บริษัทนี้"))); cs.appendChild(el("p", "", cn));
+  var cs = el("div", "co-sec"), ch = el("h3", "", cn); ch.setAttribute("data-noi18n", ""); cs.appendChild(ch);
   cs.appendChild(coLink(L("Company settings", "ตั้งค่าบริษัท"), L("Records, team, apps, files and plan", "ข้อมูลบริษัท ทีม แอป ไฟล์ และแพ็กเกจ"), "company")); b.appendChild(cs);
-  var ys = el("div", "co-sec"); ys.appendChild(el("h3", "", L("You, on every company", "ตัวคุณ ใช้กับทุกบริษัท")));
+  var ys = el("div", "co-sec"); ys.appendChild(el("h3", "", L("Your account", "บัญชีของคุณ")));
   var prefs = el("div", "co-prefs");
   prefs.appendChild(prefRow(L("Language", "ภาษา"), langSeg()));
   prefs.appendChild(prefRow(L("Theme", "ธีม"), themeSeg()));
   ys.appendChild(prefs);
-  ys.appendChild(coLink(L("My account", "บัญชีของฉัน"), L("Name, sign-in, notifications and security", "ชื่อ การเข้าสู่ระบบ การแจ้งเตือน และความปลอดภัย"), "account")); b.appendChild(ys);
+  ys.appendChild(coLink(L("Account settings", "ตั้งค่าบัญชี"), L("Profile, notifications and security", "โปรไฟล์ การแจ้งเตือน และความปลอดภัย"), "account")); b.appendChild(ys);
 }
 function coLink(t, sub, tabKey){
   var r = el("button", "co-link"); r.type = "button"; r.setAttribute("data-noi18n", "");
@@ -3703,6 +3717,7 @@ function startDemo(){
     sampleBooks(u); u.sample = true;
   }
   if (u.company && u.company.type === "rest") u.company.type = "Restaurant";
+  demoBriefs(u);
   db.session = email; u.justIn = false; save();
 }
 function demoBar(u){
@@ -3721,7 +3736,7 @@ function briefName(ph){ return ph === "morning" ? L("The Morning Brief", "สร
 function briefDay(u){
   var d = today(), b = u.brief;
   if (!b || b.day !== d){
-    if (b && b.sum){ u.briefs = [b].concat(u.briefs || []).slice(0, 14); }
+    if (b && b.sum){ u.briefs = [b].concat((u.briefs || []).filter(function(x){ return x.day !== b.day; })).slice(0, 14); }
     b = u.brief = { day: d, seen: 0, keys: null, sum: null };
     save();
   }
@@ -3731,15 +3746,17 @@ function briefSeenToday(u){ var b = u.brief; return !!(b && b.day === today() &&
 /* first look of the day fixes the morning list; later views count what got done since */
 function briefProgress(u, top){
   var b = briefDay(u);
-  if (!b.keys){ b.keys = top.map(function(t){ return t.k; }); save(); }
+  if (!b.keys){ b.keys = top.map(function(t){ return t.k; }); b.heads = {}; top.forEach(function(t){ b.heads[t.k] = t.h; }); save(); }
   return briefLive(u);
 }
 /* progress against this morning's list, worked out live so the Home strip is right without reopening the brief */
 function briefLive(u){
   var b = briefDay(u); if (!b.keys) return null;
   var TK = tasks(u), B = books(u), p = B && B.pack;
-  var done = b.keys.filter(function(k){ return k === "rev" ? !!(p && u.done["rev:" + p.key]) || !p : !TK.some(function(x){ return x.k === k; }); }).length;
-  return { done: done, total: b.keys.length, left: b.keys.length - done };
+  function isDone(k){ return k === "rev" ? !!(p && u.done["rev:" + p.key]) || !p : !TK.some(function(x){ return x.k === k; }); }
+  var items = b.keys.map(function(k){ return { h: (b.heads || {})[k] || "", d: isDone(k) }; }).filter(function(x){ return x.h; });
+  var done = b.keys.filter(isDone).length;
+  return { done: done, total: b.keys.length, left: b.keys.length - done, items: items };
 }
 function briefSave(u, sum){ var b = briefDay(u); b.sum = sum; save(); }
 
@@ -3748,12 +3765,21 @@ function briefStrip(u){
   var home = $("#b-home"), s = $("#b-tbrief"); if (!home) return;
   var B = u.hasData && books(u); if (!B || gated(u)){ if (s) s.remove(); return; }
   var b = briefDay(u), ph = briefPhase(), seen = !!b.seen, sum = briefLive(u) || b.sum || {};
+  /* once everything on today's list is done, the strip says so once and then leaves Home. The Brief button still opens it */
+  var allDone = seen && (!sum.total || !sum.left);
+  if (allDone && b.doneShown){ if (s) s.remove(); return; }
   if (!s){ s = el("button", "tbrief"); s.type = "button"; s.id = "b-tbrief"; s.addEventListener("click", function(){ go("brief"); }); var w = $("#b-wel"); w.parentNode.insertBefore(s, w.nextSibling); }
   s.setAttribute("data-noi18n", ""); s.classList.toggle("fresh", !seen); s.textContent = "";
   var now = new Date(), th = lang() === "th";
   var dt = el("span", "tb-dt"); dt.appendChild(el("small", "", th ? now.toLocaleDateString("th-TH", { weekday: "short" }) : now.toLocaleDateString("en-GB", { weekday: "short" }).toUpperCase())); dt.appendChild(el("b", "num", String(now.getDate()))); s.appendChild(dt);
   var tx = el("span", "tb-tx");
-  if (!seen){
+  if (allDone){
+    s.classList.add("alldone");
+    tx.appendChild(el("b", "", sum.total ? L("All done for today", "วันนี้เรียบร้อยหมดแล้ว") : L("Nothing needs you today", "วันนี้ไม่มีอะไรต้องทำ")));
+    tx.appendChild(el("small", "", L("Your brief stays under Brief", "ดูสรุปได้ที่ปุ่มสรุป")));
+    b.doneShown = Date.now(); save();
+    setTimeout(function(){ s.classList.add("gone"); setTimeout(function(){ if (s.parentNode) s.remove(); }, calm ? 0 : 480); }, 2600);
+  } else if (!seen){
     tx.appendChild(el("b", "", ph === "morning" ? L("Your Morning Brief is ready", "สรุปยามเช้าพร้อมแล้ว") : ph === "midday" ? L("Your brief, so far today", "สรุปของวันนี้ถึงตอนนี้") : L("Your day wrap is ready", "สรุปท้ายวันพร้อมแล้ว")));
     tx.appendChild(el("small", "", L("Two minutes, the day at a glance", "สองนาที เห็นภาพรวมของวัน")));
   } else {
@@ -3765,25 +3791,52 @@ function briefStrip(u){
     tx.appendChild(el("small", "num", bits.join(" · ")));
   }
   s.appendChild(tx);
-  if (seen && sum.total){ var ring = el("i", "tb-ring"); ring.style.setProperty("--p", Math.round(sum.done / sum.total * 100)); ring.appendChild(el("em", "num", sum.done + "/" + sum.total)); s.appendChild(ring); }
+  if (allDone){ var ok = el("i", "tb-ring ok"); ok.style.setProperty("--p", 100); ok.innerHTML = '<em><svg class="i"><use href="#i-check"/></svg></em>'; s.appendChild(ok); }
+  else if (seen && sum.total){ var ring = el("i", "tb-ring"); ring.style.setProperty("--p", Math.round(sum.done / sum.total * 100)); ring.appendChild(el("em", "num", sum.done + "/" + sum.total)); s.appendChild(ring); }
   s.insertAdjacentHTML("beforeend", '<svg class="i tb-go"><use href="#i-chevr"/></svg>');
   s.setAttribute("aria-label", tx.textContent);
 }
 /* coming back from the brief, the page folds itself into the strip */
 function briefTuck(){ var s = $("#b-tbrief"); if (!s || calm) return; s.classList.remove("tuck"); void s.offsetWidth; s.classList.add("tuck"); }
 
-/* yesterday and before, short and read-only */
+/* yesterday and before: a row of dates, tap one to see that day's list and numbers. Read-only */
 function pastBriefs(u, wrap){
   var list = (u.briefs || []).filter(function(b){ return b.sum; }); if (!list.length) return;
-  var sec = el("details", "mb-past"); sec.appendChild(el("summary", "", L("Past briefs", "สรุปย้อนหลัง")));
-  list.forEach(function(b){
-    var d = day(b.day), th = lang() === "th", row = el("div", "mb-pr"), sm = b.sum;
-    row.appendChild(el("b", "num", th ? d.getDate() + " " + mth(MONTH[d.getMonth()]) : d.getDate() + " " + MONTH[d.getMonth()].slice(0, 3)));
-    row.appendChild(el("span", "", sm.total ? L(sm.done + " of " + sm.total + " done", "ทำแล้ว " + sm.done + " จาก " + sm.total) : L("Nothing urgent", "ไม่มีเรื่องด่วน")));
-    row.appendChild(el("span", "num", L("Cash ", "เงินสด ") + baht(sm.cash || 0)));
-    sec.appendChild(row);
+  var th = lang() === "th", sec = el("section", "mb-sec mb-past"), hd = el("div", "mb-sh");
+  hd.appendChild(el("span", "mb-kick", L("The last " + list.length + (list.length === 1 ? " day" : " days"), "ย้อนหลัง " + list.length + " วัน"))); hd.appendChild(el("h2", "", L("Past briefs", "สรุปย้อนหลัง"))); sec.appendChild(hd);
+  var dates = el("div", "mb-pdates"), panel = el("div", "mb-pday");
+  function lbl(d, long){ return th ? (long ? d.toLocaleDateString("th-TH", { weekday: "long" }) + " " : "") + d.getDate() + " " + mth(MONTH[d.getMonth()]) : (long ? d.toLocaleDateString("en-GB", { weekday: "long" }) + " " : "") + d.getDate() + " " + MONTH[d.getMonth()].slice(0, 3); }
+  function show(ix){
+    $$("button", dates).forEach(function(x, j){ x.setAttribute("aria-pressed", String(j === ix)); });
+    var b = list[ix], sm = b.sum, d = day(b.day); panel.textContent = "";
+    var top = el("div", "mb-pdh"); top.appendChild(el("b", "", lbl(d, true)));
+    top.appendChild(el("span", "num", sm.total ? L(sm.done + " of " + sm.total + " done", "ทำแล้ว " + sm.done + " จาก " + sm.total) : L("Nothing urgent", "ไม่มีเรื่องด่วน"))); panel.appendChild(top);
+    if (sm.total){ var pr = el("div", "mb-prog"); pr.style.setProperty("--p", Math.round(sm.done / sm.total * 100)); pr.appendChild(el("i")); panel.appendChild(pr); }
+    (sm.items || []).forEach(function(it){ var r = el("div", "mb-pit" + (it.d ? " d" : "")); r.innerHTML = '<svg class="i"><use href="#' + (it.d ? "i-check" : "i-clock") + '"/></svg>'; r.appendChild(el("span", "", T_(it.h))); r.appendChild(el("small", "", it.d ? L("Done", "เสร็จแล้ว") : L("Carried over", "ยกไปวันถัดไป"))); panel.appendChild(r); });
+    var nums = el("div", "mb-pnum");
+    [[L("Cash", "เงินสด"), sm.cash], [L("In this month", "รับเดือนนี้"), sm.inc], [L("Out this month", "จ่ายเดือนนี้"), sm.exp]].forEach(function(x){ if (x[1] == null) return; var c = el("div"); c.appendChild(el("small", "", x[0])); c.appendChild(el("b", "num", baht(x[1] || 0))); nums.appendChild(c); });
+    panel.appendChild(nums);
+  }
+  list.forEach(function(b, ix){
+    var d = day(b.day), bt = el("button", "mb-pd"); bt.type = "button";
+    bt.appendChild(el("small", "", th ? d.toLocaleDateString("th-TH", { weekday: "short" }) : d.toLocaleDateString("en-GB", { weekday: "short" }).toUpperCase()));
+    bt.appendChild(el("b", "num", String(d.getDate())));
+    var sm = b.sum; bt.appendChild(el("i", "mb-pdot" + (sm.total && sm.done < sm.total ? " part" : "")));
+    bt.setAttribute("aria-label", lbl(d, true)); bt.addEventListener("click", function(){ show(ix); }); dates.appendChild(bt);
   });
+  sec.appendChild(dates); sec.appendChild(panel); show(0);
   sec.setAttribute("data-noi18n", ""); wrap.appendChild(sec);
+}
+/* the demo comes with a few past days, so Past briefs has something to show */
+function demoBriefs(u){
+  if (u.briefs && u.briefs.length) return;
+  var B = books(u); if (!B) return;
+  var TK = tasks(u), heads = TK.slice(0, 3).map(function(x){ return x.story ? x.story.h : x.t; }); if (!heads.length) return;
+  var pat = [[1, 1, 1], [1, 0, 1], [1, 1, 0], [1, 1, 1]];
+  u.briefs = pat.map(function(dn, ix){
+    var items = heads.map(function(h, j){ return { h: h, d: !!dn[j] }; }), done = items.filter(function(x){ return x.d; }).length;
+    return { day: addDays(today(), -(ix + 1)), seen: 1, keys: [], sum: { cash: Math.round(B.cash - (ix + 1) * 8150), inc: Math.round(B.fin.mtd.rev * (1 - (ix + 1) * 0.06)), exp: Math.round(B.fin.mtd.exp * (1 - (ix + 1) * 0.05)), done: done, total: items.length, left: items.length - done, items: items } };
+  });
 }
 
 /* ── start ── */

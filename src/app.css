@@ -934,3 +934,55 @@
   .mb-pr{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:10px;padding:10px 0;border-top:1px solid var(--m-line);font-size:13px;color:var(--m-mute)}
   .mb-pr b{color:var(--m-ink);font-weight:700}
   @media (prefers-reduced-motion:reduce){ .tbrief.tuck{animation:none} }
+
+  /* the brief: all done, Got it, past briefs by date; settings switch link */
+  .tbrief.alldone{background:var(--m-surface)}
+  .tb-ring.ok em .i{width:16px;height:16px;color:var(--m-accent)}
+  .tbrief.gone{transition:opacity .45s, transform .45s, max-height .45s, margin .45s, padding .45s;opacity:0;transform:scaleY(.6);max-height:0;margin:0;padding-top:0;padding-bottom:0;overflow:hidden}
+  .tbrief{max-height:120px}
+  .mb-done{margin:14px auto 0;display:inline-flex;align-items:center;gap:8px;background:var(--m-accent);color:#fff;border:0;padding:11px 26px;font-weight:700}
+  .mb-done .i{width:16px;height:16px}
+  .mb-end{text-align:center}
+  .mb-past{margin:8px 0 24px;background:none;padding:0;border-radius:0}
+  .mb-pdates{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
+  .mb-pdates::-webkit-scrollbar{display:none}
+  .mb-pd{flex:none;display:grid;justify-items:center;gap:3px;width:52px;padding:8px 0 7px;border-radius:14px;border:0;background:var(--m-surface);color:var(--m-ink);cursor:pointer;font:inherit;line-height:1}
+  html.night .mb-pd{box-shadow:0 0 0 1px var(--m-line)}
+  .mb-pd small{font:700 9.5px var(--font-display);letter-spacing:.06em;color:var(--m-hint)}
+  .mb-pd b{font:600 17px var(--font-display)}
+  .mb-pd[aria-pressed="true"]{background:var(--m-accent);color:#fff}
+  .mb-pd[aria-pressed="true"] small{color:rgba(255,255,255,.8)}
+  .mb-pdot{width:5px;height:5px;border-radius:50%;background:var(--m-accent)}
+  .mb-pdot.part{background:transparent;box-shadow:inset 0 0 0 1.5px var(--m-hint)}
+  .mb-pd[aria-pressed="true"] .mb-pdot{background:#fff;box-shadow:none}
+  .mb-pday{background:var(--m-surface);border-radius:22px;padding:16px;display:grid;gap:8px}
+  html.night .mb-pday{box-shadow:0 0 0 1px var(--m-line)}
+  .mb-pdh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .mb-pdh b{font:700 15px var(--font-display)}
+  .mb-pdh span{font-size:13px;color:var(--m-mute)}
+  .mb-pit{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--m-line);font-size:13.5px}
+  .mb-pit .i{width:16px;height:16px;color:var(--m-hint)}
+  .mb-pit.d .i{color:var(--m-accent)}
+  .mb-pit.d span{color:var(--m-mute)}
+  .mb-pit small{font-size:12px;color:var(--m-hint)}
+  .mb-pnum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border-top:1px solid var(--m-line);padding-top:10px}
+  .mb-pnum div{display:grid;gap:2px}
+  .mb-pnum small{font-size:11.5px;color:var(--m-hint)}
+  .mb-pnum b{font:700 14px var(--font-display)}
+  .set-sw{display:flex;align-items:center;justify-content:center;gap:6px;margin:18px auto 8px;border:0;background:none;color:var(--m-accent);font:600 14px var(--font-display);cursor:pointer;padding:10px}
+  .set-sw .i{width:14px;height:14px}
+
+  /* company menu: fits one phone screen, small phones included */
+  #gs.comenu .gs-b{gap:10px}
+  #gs.comenu .co-list{gap:6px;margin:0}
+  #gs.comenu .co-row{padding:8px 12px}
+  #gs.comenu .co-av{width:34px;height:34px}
+  #gs.comenu .co-sec{gap:6px;padding-top:10px;margin-top:0}
+  #gs.comenu .co-prefs{gap:6px;margin:0 0 2px}
+  #gs.comenu .co-link{padding:10px 14px}
+  #gs.comenu .co-prefs .seg button{padding-top:6px;padding-bottom:6px}
+  @media (max-height:720px){
+    #gs.comenu #gs-sub{display:none}
+    #gs.comenu .co-row small,#gs.comenu .co-link small{font-size:12px}
+    #gs.comenu .co-add small{display:none}
+  }
