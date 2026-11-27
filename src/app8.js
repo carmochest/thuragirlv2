@@ -105,6 +105,7 @@ function anyUpload(f){
     $("#b-pop").hidden = true; openUpload(); takeFile(f); return;
   }
   if (f.size > MAX) return tgSays(f.name, "That file is " + size(f.size) + ". The limit is 10 MB.");
+  if (!f.size) return tgSays(f.name, L("That file is empty. Try it again.", "ไฟล์นี้ว่างเปล่า ลองใหม่อีกครั้งนะคะ"));
   if (!(/^image\//.test(f.type) || ext === "pdf" || /^(heic|heif|jpg|jpeg|png|webp)$/.test(ext))) return tgSays(f.name, "I can read photos, PDFs, and CSV or Excel statements. That file type doesn't work here.");
   var keep = function(kind){ u.docs = (u.docs || []).concat([{ name: f.name, size: f.size, at: Date.now(), kind: kind }]); save(); };
   var opts = [

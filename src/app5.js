@@ -266,20 +266,21 @@ function openInvoice(v){
   b.appendChild(del);
 }
 function printInvoice(v){
+  var TH = lang() === "th", B2 = function(en, th){ return TH ? th + " / " + en : en; }, D = function(s){ return TH && typeof dates === "function" ? dates(s) : s; };
   var u = me(), tot = invTotal(v), sub = Math.round(tot / (v.vat ? 1.07 : 1) * 100) / 100, c = u.company || {};
   var rows = v.items.map(function(it){ return "<tr><td>" + esc(it[0]) + "</td><td class=r>" + esc(it[1]) + "</td><td class=r>" + baht(it[2]) + "</td><td class=r>" + baht(it[1] * it[2]) + "</td></tr>"; }).join("");
-  var h = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + esc(v.id) + "</title><style>" +
+  var h = '<!doctype html><html lang="' + (TH ? "th" : "en") + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + esc(v.id) + "</title><style>" +
     "body{font:15px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:#0F1514;margin:0;background:#F4F5F5}main{max-width:760px;margin:24px auto;background:#fff;border-radius:18px;padding:40px}" +
     "h1{font-size:30px;letter-spacing:-.03em;margin:0}.top{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.mute{color:#667270}table{width:100%;border-collapse:collapse;margin:28px 0}" +
     "th,td{text-align:left;padding:10px 6px;border-bottom:1px solid #E2E6E5}th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#667270}.r{text-align:right}.tot td{border:0;padding:6px}.tot .big td{font-size:19px;font-weight:700}" +
     ".bar{display:flex;gap:10px;justify-content:flex-end;max-width:760px;margin:24px auto 0}button{border:0;border-radius:99px;padding:11px 18px;font:700 14px system-ui;background:#0FBFB6;color:#04201D;cursor:pointer}" +
     ".note{font-size:12.5px;color:#667270;margin-top:28px}@media print{body{background:#fff}main{margin:0;padding:0}.bar{display:none}}</style></head><body>" +
-    '<div class="bar"><button onclick="print()">Print or save as PDF</button></div><main><div class="top"><div><h1>' + (v.vat ? "Tax invoice" : "Invoice") + '</h1><div class="mute">' + esc(v.id) + "</div></div><div><b>" + esc(coName(u)) + "</b><br>" +
-    (c.addr ? esc(c.addr) + "<br>" : "") + (c.taxid ? "Tax ID " + esc(c.taxid) : "") + "</div></div>" +
-    '<div class="top" style="margin-top:26px"><div><div class="mute">Bill to</div><b>' + esc(v.to) + "</b>" + (v.email ? "<br>" + esc(v.email) : "") + '</div><div><div class="mute">Issued</div>' + niceY(v.issued) + '<div class="mute" style="margin-top:6px">Due</div>' + niceY(v.due) + "</div></div>" +
-    "<table><tr><th>Description</th><th class=r>Qty</th><th class=r>Price</th><th class=r>Amount</th></tr>" + rows + "</table>" +
-    '<table class="tot"><tr><td class=r>Subtotal</td><td class=r style="width:160px">' + baht(sub) + "</td></tr><tr><td class=r>" + (v.vat ? "VAT 7%" : "No VAT") + "</td><td class=r>" + baht(tot - sub) + '</td></tr><tr class="big"><td class=r>Total</td><td class=r>' + baht(tot) + "</td></tr></table>" +
-    (v.paid ? "<p><b>Paid on " + niceY(v.paid) + ".</b></p>" : "") + '<p class="note">Made with ThuraGirl (test build).</p></main></body></html>';
+    '<div class="bar"><button onclick="print()">' + (TH ? "พิมพ์หรือบันทึกเป็น PDF" : "Print or save as PDF") + '</button></div><main><div class="top"><div><h1>' + (v.vat ? B2("Tax invoice", "ใบกำกับภาษี") : B2("Invoice", "ใบแจ้งหนี้")) + '</h1><div class="mute">' + esc(v.id) + "</div></div><div><b>" + esc(coName(u)) + "</b><br>" +
+    (c.addr ? esc(c.addr) + "<br>" : "") + (c.taxid ? B2("Tax ID", "เลขประจำตัวผู้เสียภาษี") + " " + esc(c.taxid) : "") + "</div></div>" +
+    '<div class="top" style="margin-top:26px"><div><div class="mute">' + B2("Bill to", "ลูกค้า") + '</div><b>' + esc(v.to) + "</b>" + (v.email ? "<br>" + esc(v.email) : "") + '</div><div><div class="mute">' + B2("Issued", "วันที่ออก") + '</div>' + D(niceY(v.issued)) + '<div class="mute" style="margin-top:6px">' + B2("Due", "ครบกำหนด") + '</div>' + D(niceY(v.due)) + "</div></div>" +
+    "<table><tr><th>" + B2("Description", "รายการ") + "</th><th class=r>" + B2("Qty", "จำนวน") + "</th><th class=r>" + B2("Price", "ราคา") + "</th><th class=r>" + B2("Amount", "จำนวนเงิน") + "</th></tr>" + rows + "</table>" +
+    '<table class="tot"><tr><td class=r>' + B2("Subtotal", "รวมก่อน VAT") + '</td><td class=r style="width:160px">' + baht(sub) + "</td></tr><tr><td class=r>" + (v.vat ? B2("VAT 7%", "ภาษีมูลค่าเพิ่ม 7%") : B2("No VAT", "ไม่มี VAT")) + "</td><td class=r>" + baht(tot - sub) + '</td></tr><tr class="big"><td class=r>' + B2("Total", "รวมทั้งสิ้น") + '</td><td class=r>' + baht(tot) + "</td></tr></table>" +
+    (v.paid ? "<p><b>" + (TH ? "ชำระแล้วเมื่อ " + D(niceY(v.paid)) : "Paid on " + niceY(v.paid) + ".") + "</b></p>" : "") + '<p class="note">' + (TH ? "จัดทำด้วย ThuraGirl (เวอร์ชันทดสอบ)" : "Made with ThuraGirl (test build).") + '</p></main></body></html>';
   var url = URL.createObjectURL(new Blob([h], { type: "text/html" })), w = window.open(url, "_blank");
   if (!w){ var a = document.createElement("a"); a.href = url; a.download = v.id + ".html"; document.body.appendChild(a); a.click(); a.remove(); toast("Saved the invoice as a file"); }
   setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
@@ -480,11 +481,11 @@ function micToggle(){
   if (!SR){ toast("Voice input doesn't work in this browser. Try Chrome, Edge or Safari."); return; }
   if (chat.on && chat.rec){ chat.rec.stop(); return; }
   var r = new SR(), got = "";
-  r.lang = /^th/i.test(navigator.language || "") ? "th-TH" : "en-US"; r.interimResults = true; r.continuous = false;
-  r.onstart = function(){ chat.on = true; mic.classList.add("rec"); mic.setAttribute("aria-pressed", "true"); inp.placeholder = "Listening…"; };
+  r.lang = lang() === "th" ? "th-TH" : "en-US"; r.interimResults = true; r.continuous = false;
+  r.onstart = function(){ chat.on = true; mic.classList.add("rec"); mic.setAttribute("aria-pressed", "true"); inp.placeholder = L("Listening…", "กำลังฟัง…"); };
   r.onresult = function(ev){ var s = ""; for (var i = 0; i < ev.results.length; i++) s += ev.results[i][0].transcript; inp.value = s; $("#b-send").disabled = !s.trim(); if (ev.results[ev.results.length - 1].isFinal) got = s; };
-  r.onerror = function(ev){ if (ev.error === "not-allowed" || ev.error === "service-not-allowed") toast("Microphone access is blocked. Allow it for this site to talk to me."); else if (ev.error === "no-speech") toast("I didn't hear anything. Tap the mic and try again."); else if (ev.error !== "aborted") toast("Voice input stopped: " + ev.error); };
-  r.onend = function(){ chat.on = false; mic.classList.remove("rec"); mic.setAttribute("aria-pressed", "false"); inp.placeholder = "Ask ThuraGirl"; if (got.trim()) ask(got); };
+  r.onerror = function(ev){ if (ev.error === "not-allowed" || ev.error === "service-not-allowed") toast("Microphone access is blocked. Allow it for this site to talk to me."); else if (ev.error === "no-speech") toast("I didn't hear anything. Tap the mic and try again."); else if (ev.error !== "aborted") toast(L("Voice input stopped. Tap the mic to try again.", "การรับเสียงหยุดไป แตะไมค์เพื่อลองอีกครั้ง")); };
+  r.onend = function(){ chat.on = false; mic.classList.remove("rec"); mic.setAttribute("aria-pressed", "false"); inp.placeholder = L("Ask ThuraGirl", "ถาม ThuraGirl"); if (got.trim()) ask(got); };
   chat.rec = r; try { r.start(); } catch (e) { toast("Voice input could not start."); }
 }
 function chatFile(f){ anyUpload(f); }

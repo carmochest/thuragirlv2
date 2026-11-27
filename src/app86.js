@@ -57,7 +57,10 @@ function plPrint(F){
     '<div class="bar"><button onclick="print()">' + (M.th ? "พิมพ์หรือบันทึกเป็น PDF" : "Print or save as PDF") + "</button></div><main>" +
     '<div class="hd"><b>' + esc(M.co) + "</b>" + (M.taxid ? '<div class="mute">' + (M.th ? "เลขประจำตัวผู้เสียภาษี " : "Tax ID ") + esc(M.taxid) + "</div>" : "") + "<h1>" + esc(M.title) + '</h1><div class="mute">' + esc(M.period) + "</div></div>" +
     '<div class="unit mute">' + esc(M.unit) + "</div><table>" + rows + '</table><p class="note mute">' + esc(M.note) + "<br>" + esc(M.made) + "</p></main></body></html>";
-  if (w){ w.document.open(); w.document.write(h); w.document.close(); setTimeout(function(){ try { w.focus(); w.print(); } catch (e) {} }, 900); }
+  if (w){ w.document.open(); w.document.write(h); w.document.close();
+    var goP = function(){ try { w.focus(); w.print(); } catch (e) {} }, fired = false, once = function(){ if (!fired){ fired = true; goP(); } };
+    setTimeout(function(){ try { w.document.fonts.ready.then(function(){ setTimeout(once, 150); }); } catch (e) { once(); } }, 300);
+    setTimeout(once, 3000); }
   else { var url = URL.createObjectURL(new Blob([h], { type: "text/html" })), a = document.createElement("a"); a.href = url; a.download = M.file + ".html"; document.body.appendChild(a); a.click(); a.remove(); }
 }
 

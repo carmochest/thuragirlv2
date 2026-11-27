@@ -51,7 +51,7 @@ upload = '''        <div class="shB" id="up-sheet" hidden>
               <button type="button" class="cb-btn shB-x" id="up-x" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button>
             </div>
             <div class="upf" id="up-body"></div>
-            <input type="file" id="up-file" accept=".csv,.xlsx,.xls,.pdf,text/csv,application/pdf" hidden>
+            <input type="file" id="up-file" accept=".csv,.xlsx,.xls,.pdf,text/csv,text/comma-separated-values,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/pdf" hidden>
           </div>
         </div>
 '''

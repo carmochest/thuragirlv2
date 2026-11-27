@@ -1043,3 +1043,14 @@
   .txpaid summary b{font:600 14px var(--font-num);color:var(--m-mute)}
   .su-emh:empty{display:none}
   .su-emh{color:var(--m-bad,#C4203D);margin-top:-6px}
+
+  /* printing a screen: content only, day colours, cards not split across pages */
+  @media print{
+    @page{margin:12mm}
+    html,body,#app,.mock{background:#fff!important}
+    .demo-bar,.dockB,.chatB,#b-pop,#toast,#gs,.gsB,#b-setuprow,#b-wel,.kyc,.tbrief,.chask,.br-head button,.cardh .chseg,.pl-acts,.listB .pill,.listB .alt,.cardh .seg,.txs,.mb-done{display:none!important}
+    .card,.plB,.bsB,.taxB,.chanB,.flowB,.listB,.mb-ins,.mb-sec{break-inside:avoid;box-shadow:none!important}
+    .mb-rail{grid-auto-flow:row;grid-template-columns:repeat(2,1fr);overflow:visible}
+    .mb-ins{min-height:0}
+    *{animation:none!important;transition:none!important}
+  }

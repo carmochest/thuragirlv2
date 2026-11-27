@@ -39,7 +39,7 @@ function toast(msg){
   msg = String(msg || ""); var cut = msg.search(/[.!?] /), head = cut > 0 ? msg.slice(0, cut + 1) : msg, rest = cut > 0 ? msg.slice(cut + 2) : "";
   t.textContent = ""; t.className = "toast" + (rest || msg.length > 46 ? " card" : "");
   t.innerHTML = '<i class="tst-i"><svg class="i"><use href="#i-check"/></svg></i>';
-  var tx = el("div", "tst-t"); tx.appendChild(el("b", "", toastTr(head).replace(/\.$/, ""))); if (rest) tx.appendChild(el("span", "", toastTr(rest))); t.appendChild(tx);
+  var tx = el("div", "tst-t"); var hd = toastTr(head); if (hd === head) hd = toastTr(head.replace(/\.$/, "")); tx.appendChild(el("b", "", hd.replace(/\.$/, ""))); if (rest) tx.appendChild(el("span", "", toastTr(rest))); t.appendChild(tx);
   t.hidden = false; t.style.animation = "none"; void t.offsetWidth; t.style.animation = "";
   clearTimeout(toastT); toastT = setTimeout(function(){ t.hidden = true; }, rest ? 4200 : 2600);
 }
@@ -88,6 +88,9 @@ function applyTheme(){
   document.documentElement.classList.toggle("night", night);
 }
 try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme); } catch (e) {}
+/* paper is white: print in day colours, then put the theme back */
+window.addEventListener("beforeprint", function(){ var m = $("#mock"); if (m) m.setAttribute("data-mode", "day"); document.documentElement.classList.remove("night"); });
+window.addEventListener("afterprint", applyTheme);
 
 /* ── router ── */
 var tab = "home", lastTab = "", lastKey = "", PAGE = document.body.getAttribute("data-page") || "dashboard";
@@ -422,6 +425,7 @@ function takeFile(f){
   if (ext === "pdf") up.err = "I can't read PDF statements in this test build yet. Download a CSV or Excel file from your bank's app or website instead.";
   else if (["csv", "xlsx", "xls", "txt"].indexOf(ext) < 0) up.err = "That file type doesn't work here. Use CSV or Excel.";
   else if (f.size > MAX) up.err = "That file is " + size(f.size) + ". The limit is 10 MB.";
+  else if (!f.size) up.err = L("That file is empty. Download the statement again from your bank.", "ไฟล์นี้ว่างเปล่า ลองดาวน์โหลดรายการเดินบัญชีจากธนาคารอีกครั้ง");
   if (up.err){ up.file = null; renderUpload(); return; }
   up.file = { name: f.name, size: f.size, reading: true }; renderUpload();
   var done = function(p){ if (!up.file || up.file.name !== f.name) return; up.file.reading = false; if (p.err){ up.err = p.err; up.file = null; } else { up.parsed = p; if (p.acct && !up.acct) up.acct = p.acct; } renderUpload(); };
@@ -434,7 +438,7 @@ function renderUpload(){
   var body = $("#up-body"); body.textContent = "";
   var drop = el("button", "drop" + (up.file ? " has" : "")); drop.type = "button";
   if (up.file){
-    var P = up.parsed, extra = up.file.reading ? "Reading…" : P ? P.tx.length + " transactions, " + niceY(P.tx[0].d) + " to " + niceY(P.tx[P.tx.length - 1].d) + (P.hasBal ? ", closing balance " + baht(P.tx[P.tx.length - 1].b) : "") : size(up.file.size);
+    var P = up.parsed, extra = up.file.reading ? "Reading…" : P ? P.tx.length + (P.tx.length === 1 ? " transaction, " : " transactions, ") + niceY(P.tx[0].d) + " to " + niceY(P.tx[P.tx.length - 1].d) + (P.hasBal ? ", closing balance " + baht(P.tx[P.tx.length - 1].b) : "") : size(up.file.size);
     drop.innerHTML = '<svg class="i"><use href="#i-doc"/></svg>'; drop.appendChild(el("span", "", up.file.name)); drop.appendChild(el("small", "", extra + " · tap to change"));
   } else { drop.innerHTML = '<svg class="i"><use href="#i-up"/></svg><span>Choose a file or drop it here</span><small>CSV or Excel from your bank, up to 10 MB</small>'; }
   drop.addEventListener("click", function(){ $("#up-file").click(); });
@@ -871,7 +875,8 @@ $$("#m-per button").forEach(function(b){ b.addEventListener("click", function(){
   $("#b-chat").addEventListener("submit", function(ev){ ev.preventDefault(); if (chat.on && chat.rec) chat.rec.abort(); ask(inp.value); });
   $("#b-popx").addEventListener("click", function(){ clearTimeout(chat.timer); pop.hidden = true; });
   var mic = $('#b-chat [aria-label="Speak"]'); mic.id = "b-mic"; mic.setAttribute("aria-pressed", "false"); mic.addEventListener("click", micToggle);
-  var plus = $('#b-chat [aria-label="Upload a file"]'), fi = el("input"); fi.type = "file"; fi.hidden = true; fi.accept = ".csv,.xlsx,.xls,.pdf,image/*"; fi.id = "b-chatfile";
+  if (!(window.SpeechRecognition || window.webkitSpeechRecognition)) mic.hidden = true;
+  var plus = $('#b-chat [aria-label="Upload a file"]'), fi = el("input"); fi.type = "file"; fi.hidden = true; fi.accept = ".csv,.xlsx,.xls,.pdf,text/csv,text/comma-separated-values,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/pdf,image/*,.heic,.heif"; fi.id = "b-chatfile";
   plus.setAttribute("aria-label", "Add a statement or receipt"); plus.title = "Add a statement or receipt";
   $("#b-chat").appendChild(fi); plus.addEventListener("click", function(){ fi.click(); });
   fi.addEventListener("change", function(){ var f = fi.files && fi.files[0]; fi.value = ""; if (f) chatFile(f); });
@@ -1562,20 +1567,21 @@ function openInvoice(v){
   b.appendChild(del);
 }
 function printInvoice(v){
+  var TH = lang() === "th", B2 = function(en, th){ return TH ? th + " / " + en : en; }, D = function(s){ return TH && typeof dates === "function" ? dates(s) : s; };
   var u = me(), tot = invTotal(v), sub = Math.round(tot / (v.vat ? 1.07 : 1) * 100) / 100, c = u.company || {};
   var rows = v.items.map(function(it){ return "<tr><td>" + esc(it[0]) + "</td><td class=r>" + esc(it[1]) + "</td><td class=r>" + baht(it[2]) + "</td><td class=r>" + baht(it[1] * it[2]) + "</td></tr>"; }).join("");
-  var h = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + esc(v.id) + "</title><style>" +
+  var h = '<!doctype html><html lang="' + (TH ? "th" : "en") + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + esc(v.id) + "</title><style>" +
     "body{font:15px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:#0F1514;margin:0;background:#F4F5F5}main{max-width:760px;margin:24px auto;background:#fff;border-radius:18px;padding:40px}" +
     "h1{font-size:30px;letter-spacing:-.03em;margin:0}.top{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.mute{color:#667270}table{width:100%;border-collapse:collapse;margin:28px 0}" +
     "th,td{text-align:left;padding:10px 6px;border-bottom:1px solid #E2E6E5}th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#667270}.r{text-align:right}.tot td{border:0;padding:6px}.tot .big td{font-size:19px;font-weight:700}" +
     ".bar{display:flex;gap:10px;justify-content:flex-end;max-width:760px;margin:24px auto 0}button{border:0;border-radius:99px;padding:11px 18px;font:700 14px system-ui;background:#0FBFB6;color:#04201D;cursor:pointer}" +
     ".note{font-size:12.5px;color:#667270;margin-top:28px}@media print{body{background:#fff}main{margin:0;padding:0}.bar{display:none}}</style></head><body>" +
-    '<div class="bar"><button onclick="print()">Print or save as PDF</button></div><main><div class="top"><div><h1>' + (v.vat ? "Tax invoice" : "Invoice") + '</h1><div class="mute">' + esc(v.id) + "</div></div><div><b>" + esc(coName(u)) + "</b><br>" +
-    (c.addr ? esc(c.addr) + "<br>" : "") + (c.taxid ? "Tax ID " + esc(c.taxid) : "") + "</div></div>" +
-    '<div class="top" style="margin-top:26px"><div><div class="mute">Bill to</div><b>' + esc(v.to) + "</b>" + (v.email ? "<br>" + esc(v.email) : "") + '</div><div><div class="mute">Issued</div>' + niceY(v.issued) + '<div class="mute" style="margin-top:6px">Due</div>' + niceY(v.due) + "</div></div>" +
-    "<table><tr><th>Description</th><th class=r>Qty</th><th class=r>Price</th><th class=r>Amount</th></tr>" + rows + "</table>" +
-    '<table class="tot"><tr><td class=r>Subtotal</td><td class=r style="width:160px">' + baht(sub) + "</td></tr><tr><td class=r>" + (v.vat ? "VAT 7%" : "No VAT") + "</td><td class=r>" + baht(tot - sub) + '</td></tr><tr class="big"><td class=r>Total</td><td class=r>' + baht(tot) + "</td></tr></table>" +
-    (v.paid ? "<p><b>Paid on " + niceY(v.paid) + ".</b></p>" : "") + '<p class="note">Made with ThuraGirl (test build).</p></main></body></html>';
+    '<div class="bar"><button onclick="print()">' + (TH ? "พิมพ์หรือบันทึกเป็น PDF" : "Print or save as PDF") + '</button></div><main><div class="top"><div><h1>' + (v.vat ? B2("Tax invoice", "ใบกำกับภาษี") : B2("Invoice", "ใบแจ้งหนี้")) + '</h1><div class="mute">' + esc(v.id) + "</div></div><div><b>" + esc(coName(u)) + "</b><br>" +
+    (c.addr ? esc(c.addr) + "<br>" : "") + (c.taxid ? B2("Tax ID", "เลขประจำตัวผู้เสียภาษี") + " " + esc(c.taxid) : "") + "</div></div>" +
+    '<div class="top" style="margin-top:26px"><div><div class="mute">' + B2("Bill to", "ลูกค้า") + '</div><b>' + esc(v.to) + "</b>" + (v.email ? "<br>" + esc(v.email) : "") + '</div><div><div class="mute">' + B2("Issued", "วันที่ออก") + '</div>' + D(niceY(v.issued)) + '<div class="mute" style="margin-top:6px">' + B2("Due", "ครบกำหนด") + '</div>' + D(niceY(v.due)) + "</div></div>" +
+    "<table><tr><th>" + B2("Description", "รายการ") + "</th><th class=r>" + B2("Qty", "จำนวน") + "</th><th class=r>" + B2("Price", "ราคา") + "</th><th class=r>" + B2("Amount", "จำนวนเงิน") + "</th></tr>" + rows + "</table>" +
+    '<table class="tot"><tr><td class=r>' + B2("Subtotal", "รวมก่อน VAT") + '</td><td class=r style="width:160px">' + baht(sub) + "</td></tr><tr><td class=r>" + (v.vat ? B2("VAT 7%", "ภาษีมูลค่าเพิ่ม 7%") : B2("No VAT", "ไม่มี VAT")) + "</td><td class=r>" + baht(tot - sub) + '</td></tr><tr class="big"><td class=r>' + B2("Total", "รวมทั้งสิ้น") + '</td><td class=r>' + baht(tot) + "</td></tr></table>" +
+    (v.paid ? "<p><b>" + (TH ? "ชำระแล้วเมื่อ " + D(niceY(v.paid)) : "Paid on " + niceY(v.paid) + ".") + "</b></p>" : "") + '<p class="note">' + (TH ? "จัดทำด้วย ThuraGirl (เวอร์ชันทดสอบ)" : "Made with ThuraGirl (test build).") + '</p></main></body></html>';
   var url = URL.createObjectURL(new Blob([h], { type: "text/html" })), w = window.open(url, "_blank");
   if (!w){ var a = document.createElement("a"); a.href = url; a.download = v.id + ".html"; document.body.appendChild(a); a.click(); a.remove(); toast("Saved the invoice as a file"); }
   setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
@@ -1776,11 +1782,11 @@ function micToggle(){
   if (!SR){ toast("Voice input doesn't work in this browser. Try Chrome, Edge or Safari."); return; }
   if (chat.on && chat.rec){ chat.rec.stop(); return; }
   var r = new SR(), got = "";
-  r.lang = /^th/i.test(navigator.language || "") ? "th-TH" : "en-US"; r.interimResults = true; r.continuous = false;
-  r.onstart = function(){ chat.on = true; mic.classList.add("rec"); mic.setAttribute("aria-pressed", "true"); inp.placeholder = "Listening…"; };
+  r.lang = lang() === "th" ? "th-TH" : "en-US"; r.interimResults = true; r.continuous = false;
+  r.onstart = function(){ chat.on = true; mic.classList.add("rec"); mic.setAttribute("aria-pressed", "true"); inp.placeholder = L("Listening…", "กำลังฟัง…"); };
   r.onresult = function(ev){ var s = ""; for (var i = 0; i < ev.results.length; i++) s += ev.results[i][0].transcript; inp.value = s; $("#b-send").disabled = !s.trim(); if (ev.results[ev.results.length - 1].isFinal) got = s; };
-  r.onerror = function(ev){ if (ev.error === "not-allowed" || ev.error === "service-not-allowed") toast("Microphone access is blocked. Allow it for this site to talk to me."); else if (ev.error === "no-speech") toast("I didn't hear anything. Tap the mic and try again."); else if (ev.error !== "aborted") toast("Voice input stopped: " + ev.error); };
-  r.onend = function(){ chat.on = false; mic.classList.remove("rec"); mic.setAttribute("aria-pressed", "false"); inp.placeholder = "Ask ThuraGirl"; if (got.trim()) ask(got); };
+  r.onerror = function(ev){ if (ev.error === "not-allowed" || ev.error === "service-not-allowed") toast("Microphone access is blocked. Allow it for this site to talk to me."); else if (ev.error === "no-speech") toast("I didn't hear anything. Tap the mic and try again."); else if (ev.error !== "aborted") toast(L("Voice input stopped. Tap the mic to try again.", "การรับเสียงหยุดไป แตะไมค์เพื่อลองอีกครั้ง")); };
+  r.onend = function(){ chat.on = false; mic.classList.remove("rec"); mic.setAttribute("aria-pressed", "false"); inp.placeholder = L("Ask ThuraGirl", "ถาม ThuraGirl"); if (got.trim()) ask(got); };
   chat.rec = r; try { r.start(); } catch (e) { toast("Voice input could not start."); }
 }
 function chatFile(f){ anyUpload(f); }
@@ -2608,6 +2614,7 @@ function anyUpload(f){
     $("#b-pop").hidden = true; openUpload(); takeFile(f); return;
   }
   if (f.size > MAX) return tgSays(f.name, "That file is " + size(f.size) + ". The limit is 10 MB.");
+  if (!f.size) return tgSays(f.name, L("That file is empty. Try it again.", "ไฟล์นี้ว่างเปล่า ลองใหม่อีกครั้งนะคะ"));
   if (!(/^image\//.test(f.type) || ext === "pdf" || /^(heic|heif|jpg|jpeg|png|webp)$/.test(ext))) return tgSays(f.name, "I can read photos, PDFs, and CSV or Excel statements. That file type doesn't work here.");
   var keep = function(kind){ u.docs = (u.docs || []).concat([{ name: f.name, size: f.size, at: Date.now(), kind: kind }]); save(); };
   var opts = [
@@ -2940,6 +2947,49 @@ var TH = {
   // chat and guided flows
   "How's my cash?": "เงินสดเป็นยังไงบ้าง", "What's overdue?": "มีอะไรเลยกำหนดบ้าง", "Where did the money go?": "เงินไปไหนหมด", "Who owes me money?": "ใครค้างเงินเราบ้าง",
   "Show the full P&L": "ดูงบกำไรขาดทุนทั้งหมด",
+  "Microphone access is blocked": "ไมโครโฟนถูกบล็อกอยู่",
+  "Allow it for this site to talk to me.": "อนุญาตให้เว็บนี้ใช้ไมค์ก่อน แล้วค่อยพูดกับหนูนะคะ",
+  "I didn't hear anything": "หนูไม่ได้ยินอะไรเลย",
+  "Tap the mic and try again.": "แตะไมค์แล้วลองพูดอีกครั้งนะคะ",
+  "Voice input doesn't work in this browser": "เบราว์เซอร์นี้ใช้เสียงพิมพ์ไม่ได้",
+  "Try Chrome, Edge or Safari.": "ลองใช้ Chrome, Edge หรือ Safari",
+  "Voice input could not start": "เริ่มรับเสียงไม่ได้",
+  "Bank": "ธนาคาร",
+  "Choose a bank": "เลือกธนาคาร",
+  "Account number": "เลขที่บัญชี",
+  "Digits only": "ตัวเลขเท่านั้น",
+  "At least the last 4 digits": "อย่างน้อย 4 หลักสุดท้าย",
+  "Balance at the end of this statement": "ยอดคงเหลือ ณ วันสุดท้ายของรายการเดินบัญชีนี้",
+  "The file has no balance column": "ไฟล์นี้ไม่มีคอลัมน์ยอดคงเหลือ",
+  "Use the sample": "ใช้ข้อมูลตัวอย่าง",
+  "Your bank's app or website can export statements as CSV or Excel. The file is read here, in your browser, and is not sent anywhere.": "แอปหรือเว็บไซต์ของธนาคารส่งออกรายการเดินบัญชีเป็น CSV หรือ Excel ได้ ไฟล์จะถูกอ่านในเบราว์เซอร์นี้ ไม่ถูกส่งไปที่ไหน",
+  "Choose a file or drop it here": "เลือกไฟล์ หรือลากมาวางตรงนี้",
+  "CSV or Excel from your bank, up to 10 MB": "CSV หรือ Excel จากธนาคาร ไม่เกิน 10 MB",
+  "Reading…": "กำลังอ่าน…",
+  "Replace the file": "เปลี่ยนไฟล์",
+  "I can't read PDF statements in this test build yet. Download a CSV or Excel file from your bank's app or website instead.": "เวอร์ชันทดสอบนี้ยังอ่านรายการเดินบัญชีแบบ PDF ไม่ได้ ดาวน์โหลดไฟล์ CSV หรือ Excel จากแอปหรือเว็บไซต์ธนาคารแทนนะคะ",
+  "That file type doesn't work here. Use CSV or Excel.": "ไฟล์ประเภทนี้ใช้ไม่ได้ ใช้ CSV หรือ Excel นะคะ",
+  "I couldn't open that file. Check that it is a CSV or Excel statement.": "หนูเปิดไฟล์นี้ไม่ได้ ตรวจดูว่าเป็นรายการเดินบัญชีแบบ CSV หรือ Excel",
+  "Register the company first. Statements open after that.": "จดทะเบียนบริษัทก่อน แล้วจึงอัปโหลดรายการเดินบัญชีได้",
+  "Checking the document": "กำลังตรวจเอกสาร",
+  "This takes a few seconds.": "ใช้เวลาไม่กี่วินาที",
+  "Looks good": "เรียบร้อย",
+  "Only a PDF or an image works here.": "ใช้ได้เฉพาะไฟล์ PDF หรือรูปภาพ",
+  "A bill to pay": "บิลที่ต้องจ่าย",
+  "An invoice I sent": "ใบแจ้งหนี้ที่ฉันส่ง",
+  "A company paper": "เอกสารบริษัท",
+  "A bank statement": "รายการเดินบัญชี",
+  "Filed under Company in Settings, Files.": "เก็บไว้ในหมวดบริษัท ที่ตั้งค่า > ไฟล์ แล้ว",
+  "I can't read PDF or photo statements in this test build. Download the CSV or Excel version from your banking app and upload that.": "เวอร์ชันทดสอบนี้ยังอ่านรายการเดินบัญชีแบบ PDF หรือรูปภาพไม่ได้ ดาวน์โหลดแบบ CSV หรือ Excel จากแอปธนาคารแล้วอัปโหลดแทนนะคะ",
+  "Have a look around. Setup is complete.": "ลองดูรอบ ๆ ได้เลย ตั้งค่าเสร็จแล้ว",
+  "Your registration is in. Have a look around.": "ส่งคำขอจดทะเบียนแล้ว ลองดูรอบ ๆ ได้เลย",
+  "Ready to submit": "พร้อมส่ง",
+  "Not VAT registered": "ไม่ได้จดทะเบียน VAT",
+  "Voice input doesn't work in this browser. Try Chrome, Edge or Safari.": "เบราว์เซอร์นี้ใช้เสียงพิมพ์ไม่ได้ ลองใช้ Chrome, Edge หรือ Safari",
+  "Microphone access is blocked. Allow it for this site to talk to me.": "ไมโครโฟนถูกบล็อกอยู่ อนุญาตให้เว็บนี้ใช้ไมค์ก่อนนะคะ แล้วค่อยพูดกับหนู",
+  "I didn't hear anything. Tap the mic and try again.": "หนูไม่ได้ยินอะไรเลย แตะไมค์แล้วลองพูดอีกครั้งนะคะ",
+  "Voice input could not start.": "เริ่มรับเสียงไม่ได้",
+  "Saved the invoice as a file": "บันทึกใบแจ้งหนี้เป็นไฟล์แล้ว",
   "I don't have any numbers yet. Upload a bank statement, or try the sample, and I can answer that.": "หนูยังไม่มีตัวเลขเลย อัปโหลดรายการเดินบัญชี หรือลองข้อมูลตัวอย่าง แล้วหนูจะตอบได้",
   "I can't find an account with that email in this browser.": "ไม่พบบัญชีที่ใช้อีเมลนี้ในเบราว์เซอร์นี้", "What bills do I have?": "มีบิลอะไรต้องจ่ายบ้าง", "How much VAT should I set aside?": "ควรกัน VAT ไว้เท่าไหร่", "How was this month?": "เดือนนี้เป็นยังไง",
   "Ask ThuraGirl for the full profit and loss": "ขอดูงบกำไรขาดทุนทั้งหมดจาก ThuraGirl",
@@ -3346,6 +3396,9 @@ var RULES = [
   [new RegExp("^I don't see any ([^.]+?) in " + MO + "( so far)?\\.$"), function(m){ return "ไม่พบ" + (CATL[m[1]] || T(m[1])) + " ในเดือน" + mth(m[2]) + (m[3] ? " ถึงตอนนี้" : ""); }],
   [/^This quarter so far: revenue (-?฿[\d,]+), costs (-?฿[\d,]+), profit (-?฿[\d,]+)(?:, against (-?฿[\d,]+) at the same point last quarter)?\.$/, function(m){ return "ไตรมาสนี้ถึงตอนนี้: รายได้ " + m[1] + " ต้นทุน " + m[2] + " กำไร " + m[3] + (m[4] ? " เทียบกับ " + m[4] + " ช่วงเดียวกันของไตรมาสก่อน" : ""); }],
   [/^This year so far \(since your statements start on ([^)]+)\): revenue (-?฿[\d,]+), costs (-?฿[\d,]+), profit (-?฿[\d,]+)\.$/, function(m){ return "ปีนี้ถึงตอนนี้ (นับจากรายการเดินบัญชีแรก " + dates(m[1]) + "): รายได้ " + m[2] + " ต้นทุน " + m[3] + " กำไร " + m[4]; }],
+  [/^That file is ([\d.]+ [KM]B)\. The limit is 10 MB\.$/, "ไฟล์นี้ขนาด $1 เกินขนาดสูงสุด 10 MB"],
+  [/^(\d+) transactions?, (\d+ \w+ \d{4}) to (\d+ \w+ \d{4})(?:, closing balance (฿[\d,.]+))?$/, function(m){ return m[1] + " รายการ " + dates(m[2]) + " ถึง " + dates(m[3]) + (m[4] ? " ยอดคงเหลือ " + m[4] : ""); }],
+  [/^tap to change$/, "แตะเพื่อเปลี่ยน"],
   [/^The biggest cost was ([^.]+) at (฿[\d,]+)\.$/, function(m){ return "ค่าใช้จ่ายก้อนใหญ่สุดคือ" + (CATL[m[1]] || m[1]) + " " + m[2]; }],
   [new RegExp("^Costs in " + MO + "( so far)?: (฿[\\d,]+)\\.$"), function(m){ return "ต้นทุนเดือน" + mth(m[1]) + (m[2] ? " ถึงตอนนี้" : "") + " " + m[3]; }],
   [new RegExp("^([A-Z][^:]*) in " + MO + "( so far)?: (฿[\\d,]+), (\\d+)% of all costs\\.$"), function(m){ return (CATL[m[1].toLowerCase()] || T(m[1])) + " เดือน" + mth(m[2]) + (m[3] ? " ถึงตอนนี้" : "") + " " + m[4] + " คิดเป็น " + m[5] + "% ของต้นทุนทั้งหมด"; }],
@@ -3538,7 +3591,10 @@ function plPrint(F){
     '<div class="bar"><button onclick="print()">' + (M.th ? "พิมพ์หรือบันทึกเป็น PDF" : "Print or save as PDF") + "</button></div><main>" +
     '<div class="hd"><b>' + esc(M.co) + "</b>" + (M.taxid ? '<div class="mute">' + (M.th ? "เลขประจำตัวผู้เสียภาษี " : "Tax ID ") + esc(M.taxid) + "</div>" : "") + "<h1>" + esc(M.title) + '</h1><div class="mute">' + esc(M.period) + "</div></div>" +
     '<div class="unit mute">' + esc(M.unit) + "</div><table>" + rows + '</table><p class="note mute">' + esc(M.note) + "<br>" + esc(M.made) + "</p></main></body></html>";
-  if (w){ w.document.open(); w.document.write(h); w.document.close(); setTimeout(function(){ try { w.focus(); w.print(); } catch (e) {} }, 900); }
+  if (w){ w.document.open(); w.document.write(h); w.document.close();
+    var goP = function(){ try { w.focus(); w.print(); } catch (e) {} }, fired = false, once = function(){ if (!fired){ fired = true; goP(); } };
+    setTimeout(function(){ try { w.document.fonts.ready.then(function(){ setTimeout(once, 150); }); } catch (e) { once(); } }, 300);
+    setTimeout(once, 3000); }
   else { var url = URL.createObjectURL(new Blob([h], { type: "text/html" })), a = document.createElement("a"); a.href = url; a.download = M.file + ".html"; document.body.appendChild(a); a.click(); a.remove(); }
 }
 

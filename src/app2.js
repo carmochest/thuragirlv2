@@ -140,6 +140,7 @@ function takeFile(f){
   if (ext === "pdf") up.err = "I can't read PDF statements in this test build yet. Download a CSV or Excel file from your bank's app or website instead.";
   else if (["csv", "xlsx", "xls", "txt"].indexOf(ext) < 0) up.err = "That file type doesn't work here. Use CSV or Excel.";
   else if (f.size > MAX) up.err = "That file is " + size(f.size) + ". The limit is 10 MB.";
+  else if (!f.size) up.err = L("That file is empty. Download the statement again from your bank.", "ไฟล์นี้ว่างเปล่า ลองดาวน์โหลดรายการเดินบัญชีจากธนาคารอีกครั้ง");
   if (up.err){ up.file = null; renderUpload(); return; }
   up.file = { name: f.name, size: f.size, reading: true }; renderUpload();
   var done = function(p){ if (!up.file || up.file.name !== f.name) return; up.file.reading = false; if (p.err){ up.err = p.err; up.file = null; } else { up.parsed = p; if (p.acct && !up.acct) up.acct = p.acct; } renderUpload(); };
@@ -152,7 +153,7 @@ function renderUpload(){
   var body = $("#up-body"); body.textContent = "";
   var drop = el("button", "drop" + (up.file ? " has" : "")); drop.type = "button";
   if (up.file){
-    var P = up.parsed, extra = up.file.reading ? "Reading…" : P ? P.tx.length + " transactions, " + niceY(P.tx[0].d) + " to " + niceY(P.tx[P.tx.length - 1].d) + (P.hasBal ? ", closing balance " + baht(P.tx[P.tx.length - 1].b) : "") : size(up.file.size);
+    var P = up.parsed, extra = up.file.reading ? "Reading…" : P ? P.tx.length + (P.tx.length === 1 ? " transaction, " : " transactions, ") + niceY(P.tx[0].d) + " to " + niceY(P.tx[P.tx.length - 1].d) + (P.hasBal ? ", closing balance " + baht(P.tx[P.tx.length - 1].b) : "") : size(up.file.size);
     drop.innerHTML = '<svg class="i"><use href="#i-doc"/></svg>'; drop.appendChild(el("span", "", up.file.name)); drop.appendChild(el("small", "", extra + " · tap to change"));
   } else { drop.innerHTML = '<svg class="i"><use href="#i-up"/></svg><span>Choose a file or drop it here</span><small>CSV or Excel from your bank, up to 10 MB</small>'; }
   drop.addEventListener("click", function(){ $("#up-file").click(); });

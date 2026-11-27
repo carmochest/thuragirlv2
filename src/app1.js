@@ -39,7 +39,7 @@ function toast(msg){
   msg = String(msg || ""); var cut = msg.search(/[.!?] /), head = cut > 0 ? msg.slice(0, cut + 1) : msg, rest = cut > 0 ? msg.slice(cut + 2) : "";
   t.textContent = ""; t.className = "toast" + (rest || msg.length > 46 ? " card" : "");
   t.innerHTML = '<i class="tst-i"><svg class="i"><use href="#i-check"/></svg></i>';
-  var tx = el("div", "tst-t"); tx.appendChild(el("b", "", toastTr(head).replace(/\.$/, ""))); if (rest) tx.appendChild(el("span", "", toastTr(rest))); t.appendChild(tx);
+  var tx = el("div", "tst-t"); var hd = toastTr(head); if (hd === head) hd = toastTr(head.replace(/\.$/, "")); tx.appendChild(el("b", "", hd.replace(/\.$/, ""))); if (rest) tx.appendChild(el("span", "", toastTr(rest))); t.appendChild(tx);
   t.hidden = false; t.style.animation = "none"; void t.offsetWidth; t.style.animation = "";
   clearTimeout(toastT); toastT = setTimeout(function(){ t.hidden = true; }, rest ? 4200 : 2600);
 }
@@ -88,6 +88,9 @@ function applyTheme(){
   document.documentElement.classList.toggle("night", night);
 }
 try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme); } catch (e) {}
+/* paper is white: print in day colours, then put the theme back */
+window.addEventListener("beforeprint", function(){ var m = $("#mock"); if (m) m.setAttribute("data-mode", "day"); document.documentElement.classList.remove("night"); });
+window.addEventListener("afterprint", applyTheme);
 
 /* ── router ── */
 var tab = "home", lastTab = "", lastKey = "", PAGE = document.body.getAttribute("data-page") || "dashboard";
