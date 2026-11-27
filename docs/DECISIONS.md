@@ -15,6 +15,8 @@ Decided by the product owner during v2 design. Build to these unless they are ch
 | Bills | Each bill is For resale (stock), Business expense or Equipment, editable while the month is open. A paid bill links to one bank line and is never counted twice. Service companies are not asked. |
 | Auditor | ThuraGirl assigns it; the owner sees name, firm, CPA licence, email and phone and cannot choose. |
 | Plans | Standard ฿1,999 (200 docs, 500 lines, 300 chats, 3 sign-ins, 10 payroll) and Pro ฿3,999 (1,000, 3,000, 1,500, 10, 50). Before VAT. 14-day trial, annual = 2 months free. |
+| Sales by channel | The Finance donut and channel charts in chat show money received in the bank, VAT included, and say so. Revenue in the P&L is accrual and before VAT, so the two totals differ on purpose. |
+| Company income tax | Taxes shows PND.50 as the full-year estimate; the balance sheet holds the part built up so far. |
 | Accounting sync | Sync only to accounting software, **FlowAccount and PEAK** at launch. **No Odoo** and **no custom ERP sync**, because of the complexity. |
 | No accounting software | Users without accounting software pick **"Let ThuraGirl keep your books"** instead of syncing. Behind the scenes ThuraGirl processes their books on its own FlowAccount account. This is hidden: the UI never mentions FlowAccount for this option. |
 | Syncing new users | New users are nudged until they sync, because syncing is what fills the app. A Get started card (bank, books, sales apps) stays on Home, Finance and the Brief until the bank and the books are connected, with a daily reminder from day 2. It is hidden once they have synced. |

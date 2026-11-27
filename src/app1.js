@@ -188,6 +188,9 @@ function renderAuth(){
     head("Let's get you in.", "It takes about a minute. Everything else can wait until you are inside.");
     var nm = field("su-name", "Your name", draft.name, "text", "name"); form.appendChild(nm);
     var em = field("su-email", "Email", draft.email, "email", "email"); form.appendChild(em);
+    var emh = el("div", "su-hint su-emh"); emh.setAttribute("role", "status"); form.appendChild(emh);
+    em.addEventListener("blur", function(){ var v = em.value.trim(), bad = v && !/^\S+@\S+\.\S+$/.test(v); emh.textContent = bad ? L("Check the email, like name@company.com", "ตรวจอีเมลอีกครั้ง เช่น name@company.com") : ""; em.setAttribute("aria-invalid", bad ? "true" : "false"); });
+    em.addEventListener("input", function(){ if (emh.textContent && /^\S+@\S+\.\S+$/.test(em.value.trim())){ emh.textContent = ""; em.setAttribute("aria-invalid", "false"); } });
     var pw = pwField("su-pass", "Create a password", draft.pw, "new-password");
     var rule = el("div", "su-hint ob-rule"); form.appendChild(rule);
     var ok = el("label", "shB-ok ob-ok"), cb = el("input"); cb.type = "checkbox"; cb.checked = draft.agree;

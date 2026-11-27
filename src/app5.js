@@ -391,8 +391,8 @@ function whichMonth(t, asOf){
   var a = iso(new Date(y, m, 1)), b = iso(new Date(y, m + 1, 0)); if (b > asOf) b = asOf;
   return { a: a, b: b, name: MONTH[m], partial: b === asOf && day(asOf).getDate() < new Date(y, m + 1, 0).getDate() };
 }
-var CATWORDS = [[/wage|salar|payroll|staff/, "Wages"], [/rent|landlord/, "Rent"], [/marketing|ads?\b|advert|facebook/, "Marketing"], [/stock|ingredient|supplies|makro|food cost|supplier/, "Stock and supplies"],
-  [/utilit|electric|water|internet|power/, "Utilities"], [/tax|vat|sso|social security/, "Tax and social security"], [/fee|bank charge/, "Bank fees"]];
+var CATWORDS = [[/wage|salar|payroll|staff|ค่าจ้าง|เงินเดือน|พนักงาน/, "Wages"], [/rent|landlord|ค่าเช่า/, "Rent"], [/marketing|ads?\b|advert|facebook|การตลาด|โฆษณา/, "Marketing"], [/stock|ingredient|supplies|makro|food cost|supplier|วัตถุดิบ|สต็อก/, "Stock and supplies"],
+  [/utilit|electric|water|internet|power|ค่าน้ำ|ค่าไฟ|อินเทอร์เน็ต/, "Utilities"], [/tax|vat|sso|social security|ประกันสังคม/, "Tax and social security"], [/fee|bank charge|ค่าธรรมเนียม/, "Bank fees"]];
 function brain(q){
   var u = me(), t = q.toLowerCase(), B = books(u), T = today();
   if (/^(hi|hello|hey|สวัสดี)/.test(t)) return "Hello " + first(u) + ". Ask me about your cash, a month, who owes you, your bills or where the money goes.";
@@ -420,18 +420,23 @@ function brain(q){
   if (/vat|tax|set aside|pp\.?30/.test(t)){
     var x = F.tax; return "For " + mName + " so far I would set aside " + baht(x[0] + x[1] + x[2]) + ": VAT " + baht(x[0]) + (u.setup.vat === "No" ? " (you said you are not VAT registered)" : "") + ", withholding " + baht(x[1]) + ", and " + baht(x[2]) + " towards company tax. These are estimates from your statements, not a filing.";
   }
-  var cw = CATWORDS.filter(function(c){ return c[0].test(t); })[0], wm = whichMonth(t, B.asOf);
+  var wm = whichMonth(t, B.asOf);
+  if (/\bstock\b|inventory|สต็อก|สินค้าคงเหลือ/.test(t)){
+    var r6 = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" }, s6 = span(u, r6.a, r6.b), sc = stockAt(u, r6.b);
+    return "Stock bought in " + r6.name + ": " + baht(s6.buys || 0) + ". Cost of goods sold: " + baht(s6.cogs || 0) + ". " + (sc ? "Last stock count: " + baht(sc.v) + " on " + nice(sc.d) + "." : "No stock count yet.");
+  }
+  var cw = CATWORDS.filter(function(c){ return c[0].test(t); })[0];
   if (cw && /how much|spend|spent|cost|pay|paid|on /.test(t) || cw && !/profit|p&l/.test(t)){
     var r = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" }, s = span(u, r.a, r.b), v = s.cats[cw[1]] || 0;
-    return v ? cw[1] + " in " + r.name + ": " + baht(v) + ", " + (s.exp ? Math.round(v / s.exp * 100) : 0) + "% of everything that went out." : "I don't see any " + cw[1].toLowerCase() + " in " + r.name + ".";
+    return v ? cw[1] + " in " + r.name + ": " + baht(v) + ", " + (s.exp ? Math.round(v / s.exp * 100) : 0) + "% of all costs." : "I don't see any " + cw[1].toLowerCase() + " in " + r.name + ".";
   }
   if (/where.*(go|went)|spend|spent|expens|cost|money out/.test(t)){
     var r2 = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" }, s2 = span(u, r2.a, r2.b), top = Object.keys(s2.cats).filter(function(c){ return !isIncCat(c); }).sort(function(a, b){ return s2.cats[b] - s2.cats[a]; });
-    return baht(s2.exp) + " went out in " + r2.name + ". The biggest: " + top.slice(0, 4).map(function(c){ return c.toLowerCase() + " " + baht(s2.cats[c]) + " (" + Math.round(s2.cats[c] / s2.exp * 100) + "%)"; }).join(", ") + ".";
+    return "Costs in " + r2.name + ": " + baht(s2.exp) + ". The biggest: " + top.slice(0, 4).map(function(c){ return c.toLowerCase() + " " + baht(s2.cats[c]) + " (" + Math.round(s2.cats[c] / s2.exp * 100) + "%)"; }).join(", ") + ".";
   }
   if (/come from|revenue|sales|income|earn|money in|customers?/.test(t)){
     var r3 = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" }, s3 = span(u, r3.a, r3.b), tops = Object.keys(s3.cats).filter(function(c){ return isIncCat(c); }).sort(function(a, b){ return s3.cats[b] - s3.cats[a]; });
-    return baht(s3.inc) + " came in during " + r3.name + ": " + tops.slice(0, 4).map(function(c){ return c.toLowerCase() + " " + baht(s3.cats[c]); }).join(", ") + ".";
+    return baht(s3.inc) + " came in during " + r3.name + ": " + tops.slice(0, 4).map(function(c){ return c.toLowerCase().replace(/\bqr\b/, "QR") + " " + baht(s3.cats[c]); }).join(", ") + ".";
   }
   if (/p&l|profit and loss|income statement|full p/.test(t)){
     var r4 = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" }, s4 = span(u, r4.a, r4.b), lines = ["Profit and loss, " + r4.name + " (accrual basis)", "Revenue " + baht(s4.inc)];
@@ -441,7 +446,7 @@ function brain(q){
   }
   if (wm || /how was|how did|profit|month|quarter|year|doing|perform/.test(t)){
     var r5 = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" };
-    if (/quarter/.test(t)){ var Q = B.fin.qtd; return "This quarter so far: revenue " + baht(Q.rev) + ", costs " + baht(Q.exp) + ", profit " + baht(Q.rev - Q.exp) + (Q.d != null ? ", " + (Q.d >= 0 ? "up " : "down ") + pctTxt(Q.d) + " on the same point last quarter." : "."); }
+    if (/quarter/.test(t)){ var Q = B.fin.qtd; return "This quarter so far: revenue " + baht(Q.rev) + ", costs " + baht(Q.exp) + ", profit " + baht(Q.rev - Q.exp) + (Q.prevKept != null ? ", against " + baht(Q.prevKept) + " at the same point last quarter." : "."); }
     if (/year/.test(t)){ var Y = B.fin.ytd; return "This year so far (since your statements start on " + nice(B.first) + "): revenue " + baht(Y.rev) + ", costs " + baht(Y.exp) + ", profit " + baht(Y.rev - Y.exp) + "."; }
     var s5 = span(u, r5.a, r5.b); if (!s5.n) return "I don't have statements for " + r5.name + ". They start on " + niceY(B.first) + ".";
     var big = Object.keys(s5.cats).filter(function(c){ return !isIncCat(c); }).sort(function(a, b){ return s5.cats[b] - s5.cats[a]; })[0];

@@ -41,17 +41,17 @@ function chCard(u){
   if (!u.tx || !u.tx.length) return;
   var A = asOfOf(u), d = day(A), mS = iso(new Date(d.getFullYear(), d.getMonth(), 1)), yS = iso(new Date(d.getFullYear(), 0, 1));
   var S = chSum(u, chPer === "m" ? mS : yS, A), rows = topRows(S.rows, 6);
-  var c = el("section", "card chanB"); c.id = "m-chan"; c.setAttribute("aria-label", "Sales by channel"); c.setAttribute("data-noi18n", "");
+  var c = el("section", "card chanB"); c.id = "m-chan"; c.setAttribute("aria-label", L("Sales by channel", "ยอดขายตามช่องทาง")); c.setAttribute("data-noi18n", "");
   var h = el("div", "cardh"); h.appendChild(el("h2", "", L("Sales by channel", "ยอดขายตามช่องทาง")));
   var seg = el("div", "chseg"); [["m", L("Month", "เดือน")], ["y", L("Year", "ปี")]].forEach(function(o){ var b = el("button", "", o[1]); b.type = "button"; b.setAttribute("aria-pressed", String(chPer === o[0])); b.addEventListener("click", function(){ chPer = o[0]; chCard(me()); }); seg.appendChild(b); });
   h.appendChild(seg);
   var mT = lang() === "th" ? mth(MONTH[d.getMonth()]) : MONTH[d.getMonth()], yT = lang() === "th" ? String(d.getFullYear() + 543) : String(d.getFullYear());
-  h.appendChild(el("div", "sub", (chPer === "m" ? mT + " " + yT : yT) + L(" so far", " ถึงตอนนี้")));
+  h.appendChild(el("div", "sub", L("Money received, VAT included · ", "เงินที่ได้รับ รวม VAT · ") + (chPer === "m" ? mT + " " + yT : yT) + L(" so far", " ถึงตอนนี้")));
   c.appendChild(h);
   if (!S.tot){ c.appendChild(el("p", "st-p", L("No sales in this period yet.", "ยังไม่มียอดขายในช่วงนี้"))); }
   else {
     var body = el("div", "chbody"), ring = el("div", "chring"); ring.innerHTML = donut(rows, S.tot, 168);
-    var mid = el("div", "chmid"); mid.appendChild(el("b", "num", "฿" + (S.tot >= 1e6 ? (S.tot / 1e6).toFixed(2) + L("M", " ล้าน") : money(Math.round(S.tot))))); mid.appendChild(el("small", "", L("sales", "ยอดขาย"))); ring.appendChild(mid);
+    var mid = el("div", "chmid"); mid.appendChild(el("b", "num", "฿" + (S.tot >= 1e6 ? (S.tot / 1e6).toFixed(2) + L("M", " ล้าน") : money(Math.round(S.tot))))); mid.appendChild(el("small", "", L("received", "ได้รับ"))); ring.appendChild(mid);
     body.appendChild(ring);
     var lg = el("div", "chleg");
     rows.forEach(function(r, i){
@@ -60,7 +60,7 @@ function chCard(u){
       lg.appendChild(row);
     });
     body.appendChild(lg); c.appendChild(body);
-    var top = rows[0]; c.appendChild(el("p", "chnote", L(chName(top[0]) + " brings in the most, " + Math.round(top[1] / S.tot * 100) + "% of sales.", chName(top[0]) + " ทำยอดได้มากที่สุด " + Math.round(top[1] / S.tot * 100) + "% ของยอดขาย")));
+    var top = rows[0]; c.appendChild(el("p", "chnote", L(chName(top[0]) + " brings in the most, " + Math.round(top[1] / S.tot * 100) + "% of money received. Revenue in the profit and loss counts sales when made, before VAT.", chName(top[0]) + " ทำยอดได้มากที่สุด " + Math.round(top[1] / S.tot * 100) + "% ของเงินที่ได้รับ รายได้ในงบกำไรขาดทุนนับเมื่อขาย ก่อน VAT")));
   }
   c.appendChild(btn("alt chask", L("Ask for a custom chart, like \"Compare GrabFood vs LINE MAN for 3 months\"", "ขอกราฟแบบอื่นได้ เช่น \"เทียบ GrabFood กับ LINE MAN 3 เดือน\""), function(){ var i = $("#b-in"); i.value = L("Compare GrabFood vs LINE MAN for 3 months", "เทียบ GrabFood กับ LINE MAN 3 เดือน"); $("#b-send").disabled = false; try { i.focus(); } catch (e) {} }));
   var flow = $("#b-money .flowB"); if (flow && flow.parentNode) flow.parentNode.insertBefore(c, flow.nextSibling);
@@ -104,7 +104,7 @@ function chChart(u, spec){
   var txt;
   if (!sums.length || !sums[0][1]) txt = L("I don't see sales from " + (spec.chs.map(chName).join(" or ") || "those channels") + " in the last " + spec.n + " months.", "ไม่พบยอดขายจาก " + (spec.chs.map(chName).join(" หรือ ") || "ช่องทางนั้น") + " ใน " + spec.n + " เดือนที่ผ่านมา");
   else if (sums.length === 1) txt = L(chName(sums[0][0]) + " brought in " + baht(Math.round(sums[0][1])) + " over the last " + spec.n + " months.", chName(sums[0][0]) + " ทำยอดได้ " + baht(Math.round(sums[0][1])) + " ใน " + spec.n + " เดือนที่ผ่านมา");
-  else txt = L(chName(sums[0][0]) + " leads with " + baht(Math.round(sums[0][1])) + " over the last " + spec.n + " months" + (sums[1][1] ? ", " + (sums[0][1] / sums[1][1]).toFixed(1) + "× " + chName(sums[1][0]) : "") + ".", chName(sums[0][0]) + " นำด้วย " + baht(Math.round(sums[0][1])) + " ใน " + spec.n + " เดือนที่ผ่านมา" + (sums[1][1] ? " เป็น " + (sums[0][1] / sums[1][1]).toFixed(1) + " เท่าของ " + chName(sums[1][0]) : ""));
+  else txt = L(chName(sums[0][0]) + " leads with " + baht(Math.round(sums[0][1])) + " over the last " + spec.n + " months" + (sums[1][1] ? ", against " + baht(Math.round(sums[1][1])) + " from " + chName(sums[1][0]) : "") + ". Money received, VAT included.", chName(sums[0][0]) + " นำด้วย " + baht(Math.round(sums[0][1])) + " ใน " + spec.n + " เดือนที่ผ่านมา" + (sums[1][1] ? " เทียบกับ " + baht(Math.round(sums[1][1])) + " จาก " + chName(sums[1][0]) : "") + " เงินที่ได้รับ รวม VAT");
   return { el: w, txt: txt, title: (D.chs.map(chName).join(L(" vs ", " กับ "))) + L(", last " + spec.n + " months", " · " + spec.n + " เดือนล่าสุด"), chs: D.chs };
 }
 function chAnswer(q, spec){

@@ -822,8 +822,7 @@
   .chanB .cardh .sub,.pinB .cardh .sub{flex-basis:100%}
   .chseg{display:inline-flex;background:var(--m-soft);border-radius:99px;padding:3px}
   .chseg button{border:0;background:none;color:var(--m-mute);font:700 12.5px var(--font-display);height:30px;padding:0 14px;border-radius:99px;cursor:pointer}
-  .chseg button[aria-pressed="true"]{background:var(--m-surface);color:var(--m-ink);box-shadow:0 1px 3px rgba(15,21,20,.12)}
-  html.night .chseg button[aria-pressed="true"]{background:#2A3130}
+  .chseg button[aria-pressed="true"]{background:var(--m-ink);color:var(--m-surface);box-shadow:none}
   .chbody,.drill{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;margin-top:12px}
   .chring{position:relative;display:grid;place-items:center}
   .chring .dn{transform:rotate(0deg);display:block}
@@ -940,7 +939,7 @@
   .tb-ring.ok em .i{width:16px;height:16px;color:var(--m-accent)}
   .tbrief.gone{transition:opacity .45s, transform .45s, max-height .45s, margin .45s, padding .45s;opacity:0;transform:scaleY(.6);max-height:0;margin:0;padding-top:0;padding-bottom:0;overflow:hidden}
   .tbrief{max-height:120px}
-  .mb-done{margin:14px auto 0;display:inline-flex;align-items:center;gap:8px;background:var(--m-accent);color:#fff;border:0;padding:11px 26px;font-weight:700}
+  .mb-done{margin:14px auto 0;display:inline-flex;align-items:center;gap:8px;background:var(--m-accent);color:var(--m-accent-ink);border:0;padding:11px 26px;font-weight:700}
   .mb-done .i{width:16px;height:16px}
   .mb-end{text-align:center}
   .mb-past{margin:8px 0 24px;background:none;padding:0;border-radius:0}
@@ -969,7 +968,8 @@
   .mb-pnum div{display:grid;gap:2px}
   .mb-pnum small{font-size:11.5px;color:var(--m-hint)}
   .mb-pnum b{font:700 14px var(--font-display)}
-  .set-sw{display:flex;align-items:center;justify-content:center;gap:6px;margin:18px auto 8px;border:0;background:none;color:var(--m-accent);font:600 14px var(--font-display);cursor:pointer;padding:10px}
+  .set-sw{display:flex;align-items:center;justify-content:center;gap:6px;margin:18px auto 8px;border:0;background:none;color:var(--m-ink);font:600 14px var(--font-display);cursor:pointer;padding:10px}
+  .set-sw .i{color:var(--m-hint)}
   .set-sw .i{width:14px;height:14px}
 
   /* company menu: fits one phone screen, small phones included */
@@ -985,6 +985,12 @@
     #gs.comenu #gs-sub{display:none}
     #gs.comenu .co-row small,#gs.comenu .co-link small{font-size:12px}
     #gs.comenu .co-add small{display:none}
+  }
+  @media (max-height:600px){
+    #gs.comenu .gs-b{gap:8px}
+    #gs.comenu .co-link{padding:8px 14px}
+    #gs.comenu .co-row{padding:6px 12px}
+    #gs.comenu .co-sec{padding-top:8px}
   }
 
   /* finance review: cash note, balance sheet, taxes with status, bill kind, auditor, chat history */
@@ -1035,3 +1041,5 @@
   .txpaid summary{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 4px;border-top:1px solid var(--m-line);cursor:pointer;font-size:13.5px;font-weight:700;color:var(--m-mute);list-style:none}
   .txpaid summary::-webkit-details-marker{display:none}
   .txpaid summary b{font:600 14px var(--font-num);color:var(--m-mute)}
+  .su-emh:empty{display:none}
+  .su-emh{color:var(--m-bad,#C4203D);margin-top:-6px}

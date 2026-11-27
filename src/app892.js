@@ -91,7 +91,7 @@ function bsCard(u, B){
   var acts = el("div", "pl-acts"); acts.appendChild(btn("pill soft", L("Print or PDF", "พิมพ์หรือ PDF"), function(){ bsPrint(S); }, "i-receipt")); c.appendChild(acts);
   var pl = $("#b-money .plB"); if (pl && pl.parentNode) pl.parentNode.insertBefore(c, pl.nextSibling);
 }
-var BS_TH = { "Cash at bank": "เงินฝากธนาคาร", "Owed to you (receivables)": "ลูกหนี้การค้า", "Stock on hand": "สินค้าคงเหลือ", "Equipment": "อุปกรณ์", "You owe suppliers (payables)": "เจ้าหนี้การค้า", "VAT to pay": "ภาษีมูลค่าเพิ่มค้างจ่าย", "Withholding tax and SSO to pay": "ภาษีหัก ณ ที่จ่ายและประกันสังคมค้างจ่าย", "Company income tax (estimate)": "ภาษีเงินได้นิติบุคคลค้างจ่าย (ประมาณการ)" };
+var BS_TH = { "Cash at bank": "เงินฝากธนาคาร", "Owed to you (receivables)": "ลูกหนี้การค้า", "Stock on hand": "สินค้าคงเหลือ", "Equipment": "อุปกรณ์", "You owe suppliers (payables)": "เจ้าหนี้การค้า", "VAT to pay": "ภาษีมูลค่าเพิ่มค้างจ่าย", "Withholding tax and SSO to pay": "ภาษีหัก ณ ที่จ่ายและประกันสังคมค้างจ่าย", "Company income tax so far (estimate)": "ภาษีเงินได้นิติบุคคลสะสมถึงวันนี้ (ประมาณการ)" };
 function bsPrint(S){
   var u = me(), th = lang() === "th", rows = [];
   function r(k, en, tl, a, i){ rows.push({ k: k, t: th ? tl : en, a: a, i: i || 0 }); }
@@ -104,7 +104,10 @@ function bsPrint(S){
 }
 
 /* taxes: every filing, its status and what is paid */
-var TAX_TH = { "VAT": "ภาษีมูลค่าเพิ่ม", "Withholding tax on rent and services": "ภาษีหัก ณ ที่จ่าย ค่าเช่าและค่าบริการ", "Salary tax withheld": "ภาษีเงินเดือนหัก ณ ที่จ่าย", "Social security, you and your staff": "ประกันสังคม ส่วนของคุณและพนักงาน", "Company income tax for the year": "ภาษีเงินได้นิติบุคคลทั้งปี" };
+var FORM_TH = { "PP.30": "ภ.พ.30", "PND.3 / PND.53": "ภ.ง.ด.3 / ภ.ง.ด.53", "PND.1": "ภ.ง.ด.1", "SPS 1-10": "สปส.1-10", "PND.50": "ภ.ง.ด.50", "PND.51": "ภ.ง.ด.51" };
+function formTx(f){ return L(f.form, FORM_TH[f.form] || f.form); }
+function perTx(f){ return f.k === "pnd50" ? L(f.month, String(+f.month + 543)) : monTx(f.month); }
+var TAX_TH = { "VAT": "ภาษีมูลค่าเพิ่ม", "Withholding tax on rent and services": "ภาษีหัก ณ ที่จ่าย ค่าเช่าและค่าบริการ", "Salary tax withheld": "ภาษีเงินเดือนหัก ณ ที่จ่าย", "Social security, you and your staff": "ประกันสังคม ส่วนของคุณและพนักงาน", "Company income tax, full-year estimate": "ภาษีเงินได้นิติบุคคล ประมาณการทั้งปี" };
 var ST_L = { estimated: ["Estimated", "ประมาณการ"], confirmed: ["Confirmed", "ยืนยันแล้ว"], filed: ["Filed", "ยื่นแล้ว"], paid: ["Paid", "จ่ายแล้ว"] };
 function stChip(st){ return el("span", "txs " + st, L(ST_L[st][0], ST_L[st][1])); }
 function taxCard(u, B){
@@ -116,7 +119,7 @@ function taxCard(u, B){
   var ul = el("ul", "txl"), paid = T.list.filter(function(f){ return f.st === "paid"; });
   function row(f){
     var li = el("li", "tap"); li.tabIndex = 0; li.setAttribute("role", "button");
-    var tx = el("div"); tx.appendChild(el("b", "", f.form + " · " + (f.k === "pnd50" ? f.month : monTx(f.month))));
+    var tx = el("div"); tx.appendChild(el("b", "", formTx(f) + " · " + perTx(f)));
     tx.appendChild(el("small", "", L(f.name, TAX_TH[f.name] || f.name) + " · " + (f.st === "paid" ? L("paid " + nice(f.paidOn), "จ่ายแล้ว " + dmy(f.paidOn)) : L("due " + nice(f.due), "ครบกำหนด " + dmy(f.due)))));
     li.appendChild(tx); var r = el("div", "txr"); r.appendChild(el("span", "num", baht(f.amt))); r.appendChild(stChip(f.st)); li.appendChild(r);
     var openIt = function(){ taxSheet(u, f); };
@@ -133,7 +136,7 @@ function taxCard(u, B){
   }
 }
 function taxSheet(u, f){
-  var b = openGS(f.form, L(f.name, TAX_TH[f.name] || f.name), (f.k === "pnd50" ? f.month : monTx(f.month)) + " · " + baht(f.amt)); NIx(b);
+  var b = openGS(formTx(f), L(f.name, TAX_TH[f.name] || f.name), perTx(f) + " · " + baht(f.amt)); NIx(b);
   var tl = el("div", "tx-tl"), order = ["estimated", "confirmed", "filed", "paid"], at = order.indexOf(f.st);
   var DESC = { estimated: L("Worked out from the books so far. It moves until the month closes.", "คำนวณจากบัญชีถึงตอนนี้ ตัวเลขยังเปลี่ยนได้จนกว่าจะปิดเดือน"), confirmed: L("Month closed. The figure is final and ready for you to approve.", "ปิดเดือนแล้ว ตัวเลขสุดท้ายพร้อมให้คุณอนุมัติ"), filed: L("Sent to the Revenue Department.", "ยื่นต่อกรมสรรพากรแล้ว"), paid: L("The payment is in your bank statement.", "พบรายการจ่ายในรายการเดินบัญชีแล้ว") };
   order.forEach(function(s, i){ var r = el("div", "tx-st" + (i <= at ? " on" : "")); r.appendChild(el("i")); var t = el("div"); t.appendChild(el("b", "", L(ST_L[s][0], ST_L[s][1]))); t.appendChild(el("small", "", DESC[s])); r.appendChild(t); tl.appendChild(r); });
@@ -163,7 +166,7 @@ function payPick(){
   var list = el("div", "co-list");
   open.forEach(function(v){
     var late = v.due < today(), r = el("button", "co-row"); r.type = "button";
-    var tx = el("span", "co-tx"); tx.appendChild(el("strong", "", v.to)); var sm = el("small", "", baht(v.amount) + " · "); var lt = el("span", late ? "bad" : "", L(lateTxt(v.due), T_(lateTxt(v.due)))); sm.appendChild(lt); sm.appendChild(document.createTextNode(" · " + kindName(billKind(v)))); tx.appendChild(sm); r.appendChild(tx);
+    var tx = el("span", "co-tx"); tx.appendChild(el("strong", "", L(v.to, T_(v.to)))); var sm = el("small", "", baht(v.amount) + " · "); var lt = el("span", late ? "bad" : "", L(lateTxt(v.due), T_(lateTxt(v.due)))); sm.appendChild(lt); sm.appendChild(document.createTextNode(" · " + kindName(billKind(v)))); tx.appendChild(sm); r.appendChild(tx);
     r.insertAdjacentHTML("beforeend", '<svg class="i"><use href="#i-chevr"/></svg>');
     r.addEventListener("click", function(){ openBill(v); }); list.appendChild(r);
   });

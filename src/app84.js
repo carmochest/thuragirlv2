@@ -64,7 +64,9 @@ var TH = {
 
   // chat and guided flows
   "How's my cash?": "เงินสดเป็นยังไงบ้าง", "What's overdue?": "มีอะไรเลยกำหนดบ้าง", "Where did the money go?": "เงินไปไหนหมด", "Who owes me money?": "ใครค้างเงินเราบ้าง",
-  "Show the full P&L": "ดูงบกำไรขาดทุนทั้งหมด", "What bills do I have?": "มีบิลอะไรต้องจ่ายบ้าง", "How much VAT should I set aside?": "ควรกัน VAT ไว้เท่าไหร่", "How was this month?": "เดือนนี้เป็นยังไง",
+  "Show the full P&L": "ดูงบกำไรขาดทุนทั้งหมด",
+  "I don't have any numbers yet. Upload a bank statement, or try the sample, and I can answer that.": "หนูยังไม่มีตัวเลขเลย อัปโหลดรายการเดินบัญชี หรือลองข้อมูลตัวอย่าง แล้วหนูจะตอบได้",
+  "I can't find an account with that email in this browser.": "ไม่พบบัญชีที่ใช้อีเมลนี้ในเบราว์เซอร์นี้", "What bills do I have?": "มีบิลอะไรต้องจ่ายบ้าง", "How much VAT should I set aside?": "ควรกัน VAT ไว้เท่าไหร่", "How was this month?": "เดือนนี้เป็นยังไง",
   "Ask ThuraGirl for the full profit and loss": "ขอดูงบกำไรขาดทุนทั้งหมดจาก ThuraGirl",
   "I'm not sure about that one yet. In this test build I answer from your statements, invoices and bills. Try \"How's my cash?\", \"What's overdue?\" or \"Where did the money go?\"": "เรื่องนี้หนูยังตอบไม่ได้ ในเวอร์ชันทดสอบนี้หนูตอบจากรายการเดินบัญชี ใบแจ้งหนี้ และบิลของคุณ ลองถาม \"เงินสดเป็นยังไงบ้าง\" \"มีอะไรเลยกำหนดบ้าง\" หรือ \"เงินไปไหนหมด\"",
   "Let's make an invoice. Who is it for?": "มาออกใบแจ้งหนี้กัน ออกให้ใคร", "What is it for? One line is enough, like \"Catering for 80 guests\".": "ค่าอะไร เขียนบรรทัดเดียวพอ เช่น \"จัดเลี้ยง 80 ท่าน\"",

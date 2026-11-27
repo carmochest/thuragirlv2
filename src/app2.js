@@ -90,7 +90,7 @@ function paintBanks(){
     row.appendChild(el("div", "bal num", bal != null ? baht(bal) : ""));
     var meta = el("div", "meta"), acc = el("span", "num acc", "···· " + b.acct.slice(-4)); meta.appendChild(acc);
     if (b.acct.length > 4){
-      var eye = el("button", "eye"); eye.type = "button"; eye.setAttribute("aria-label", "Show " + b.bank + " account number"); eye.setAttribute("aria-pressed", "false"); eye.innerHTML = '<svg class="i"><use href="#i-eye"/></svg>';
+      var eye = el("button", "eye"); eye.type = "button"; eye.setAttribute("aria-label", L("Show " + b.bank + " account number", "แสดงเลขบัญชี " + b.bank)); eye.setAttribute("aria-pressed", "false"); eye.innerHTML = '<svg class="i"><use href="#i-eye"/></svg>';
       eye.addEventListener("click", function(){ var show = eye.getAttribute("aria-pressed") !== "true"; eye.setAttribute("aria-pressed", String(show)); acc.textContent = show ? fullAcct(b.acct) : "···· " + b.acct.slice(-4); $("use", eye).setAttribute("href", show ? "#i-eyeoff" : "#i-eye"); });
       meta.appendChild(eye);
     }
@@ -122,8 +122,8 @@ function paintSetup(){
   $("#b-wel").hidden = !u.welcome;
   $("#b-wel-t").textContent = "You're in, " + first(u) + ".";
   $("#b-wel-m").textContent = isNew ? (u.reg.submitted ? "Your registration is in. Have a look around." : "Have a look around. Registering the company is five short parts, whenever you are ready.")
-    : n ? "Have a look around. " + things + (n === 1 ? " is" : " are") + " left, whenever you are ready." : "Have a look around. Setup is complete.";
-  var goB = $("#b-wel-go"); goB.textContent = isNew ? "Register" : "Finish setup"; goB.hidden = isNew ? !!u.reg.submitted : n === 0;
+    : n ? L("Have a look around. The steps below fill in your numbers, whenever you are ready.", "ลองดูรอบ ๆ ได้เลย ทำขั้นตอนด้านล่างเมื่อพร้อม ตัวเลขของคุณจะขึ้นเอง") : "Have a look around. Setup is complete.";
+  var goB = $("#b-wel-go"); goB.textContent = isNew ? "Register" : "Finish setup"; goB.hidden = isNew ? !!u.reg.submitted : true;
 }
 function paintHome(){
   var u = me();
@@ -235,9 +235,12 @@ function renderMoney(){
     var tr = el("tr"); [r[0], baht(r[1]), baht(r[2]), baht(r[1] - r[2])].forEach(function(c){ tr.appendChild(el("td", "", c)); }); tbl.appendChild(tr);
   });
   plCard(F);
-  $("#m-vat").previousElementSibling.lastChild.textContent = me().setup.vat === "No" ? "Not VAT registered" : "Monthly VAT, net payable (estimate)";
+  var mv = $("#m-vat");
+  if (mv){
+    mv.previousElementSibling.lastChild.textContent = me().setup.vat === "No" ? "Not VAT registered" : "Monthly VAT, net payable (estimate)";
+    mv.textContent = baht(F.tax[0]); $("#m-wht").textContent = baht(F.tax[1]); $("#m-corp").textContent = baht(F.tax[2]); $("#m-tax").textContent = baht(F.tax[0] + F.tax[1] + F.tax[2]);
+  }
   chCard(me());
-  $("#m-vat").textContent = baht(F.tax[0]); $("#m-wht").textContent = baht(F.tax[1]); $("#m-corp").textContent = baht(F.tax[2]); $("#m-tax").textContent = baht(F.tax[0] + F.tax[1] + F.tax[2]);
 }
 
 /* ── setup that follows signup (registered company) ── */

@@ -188,6 +188,9 @@ function renderAuth(){
     head("Let's get you in.", "It takes about a minute. Everything else can wait until you are inside.");
     var nm = field("su-name", "Your name", draft.name, "text", "name"); form.appendChild(nm);
     var em = field("su-email", "Email", draft.email, "email", "email"); form.appendChild(em);
+    var emh = el("div", "su-hint su-emh"); emh.setAttribute("role", "status"); form.appendChild(emh);
+    em.addEventListener("blur", function(){ var v = em.value.trim(), bad = v && !/^\S+@\S+\.\S+$/.test(v); emh.textContent = bad ? L("Check the email, like name@company.com", "ตรวจอีเมลอีกครั้ง เช่น name@company.com") : ""; em.setAttribute("aria-invalid", bad ? "true" : "false"); });
+    em.addEventListener("input", function(){ if (emh.textContent && /^\S+@\S+\.\S+$/.test(em.value.trim())){ emh.textContent = ""; em.setAttribute("aria-invalid", "false"); } });
     var pw = pwField("su-pass", "Create a password", draft.pw, "new-password");
     var rule = el("div", "su-hint ob-rule"); form.appendChild(rule);
     var ok = el("label", "shB-ok ob-ok"), cb = el("input"); cb.type = "checkbox"; cb.checked = draft.agree;
@@ -369,7 +372,7 @@ function paintBanks(){
     row.appendChild(el("div", "bal num", bal != null ? baht(bal) : ""));
     var meta = el("div", "meta"), acc = el("span", "num acc", "···· " + b.acct.slice(-4)); meta.appendChild(acc);
     if (b.acct.length > 4){
-      var eye = el("button", "eye"); eye.type = "button"; eye.setAttribute("aria-label", "Show " + b.bank + " account number"); eye.setAttribute("aria-pressed", "false"); eye.innerHTML = '<svg class="i"><use href="#i-eye"/></svg>';
+      var eye = el("button", "eye"); eye.type = "button"; eye.setAttribute("aria-label", L("Show " + b.bank + " account number", "แสดงเลขบัญชี " + b.bank)); eye.setAttribute("aria-pressed", "false"); eye.innerHTML = '<svg class="i"><use href="#i-eye"/></svg>';
       eye.addEventListener("click", function(){ var show = eye.getAttribute("aria-pressed") !== "true"; eye.setAttribute("aria-pressed", String(show)); acc.textContent = show ? fullAcct(b.acct) : "···· " + b.acct.slice(-4); $("use", eye).setAttribute("href", show ? "#i-eyeoff" : "#i-eye"); });
       meta.appendChild(eye);
     }
@@ -401,8 +404,8 @@ function paintSetup(){
   $("#b-wel").hidden = !u.welcome;
   $("#b-wel-t").textContent = "You're in, " + first(u) + ".";
   $("#b-wel-m").textContent = isNew ? (u.reg.submitted ? "Your registration is in. Have a look around." : "Have a look around. Registering the company is five short parts, whenever you are ready.")
-    : n ? "Have a look around. " + things + (n === 1 ? " is" : " are") + " left, whenever you are ready." : "Have a look around. Setup is complete.";
-  var goB = $("#b-wel-go"); goB.textContent = isNew ? "Register" : "Finish setup"; goB.hidden = isNew ? !!u.reg.submitted : n === 0;
+    : n ? L("Have a look around. The steps below fill in your numbers, whenever you are ready.", "ลองดูรอบ ๆ ได้เลย ทำขั้นตอนด้านล่างเมื่อพร้อม ตัวเลขของคุณจะขึ้นเอง") : "Have a look around. Setup is complete.";
+  var goB = $("#b-wel-go"); goB.textContent = isNew ? "Register" : "Finish setup"; goB.hidden = isNew ? !!u.reg.submitted : true;
 }
 function paintHome(){
   var u = me();
@@ -514,9 +517,12 @@ function renderMoney(){
     var tr = el("tr"); [r[0], baht(r[1]), baht(r[2]), baht(r[1] - r[2])].forEach(function(c){ tr.appendChild(el("td", "", c)); }); tbl.appendChild(tr);
   });
   plCard(F);
-  $("#m-vat").previousElementSibling.lastChild.textContent = me().setup.vat === "No" ? "Not VAT registered" : "Monthly VAT, net payable (estimate)";
+  var mv = $("#m-vat");
+  if (mv){
+    mv.previousElementSibling.lastChild.textContent = me().setup.vat === "No" ? "Not VAT registered" : "Monthly VAT, net payable (estimate)";
+    mv.textContent = baht(F.tax[0]); $("#m-wht").textContent = baht(F.tax[1]); $("#m-corp").textContent = baht(F.tax[2]); $("#m-tax").textContent = baht(F.tax[0] + F.tax[1] + F.tax[2]);
+  }
   chCard(me());
-  $("#m-vat").textContent = baht(F.tax[0]); $("#m-wht").textContent = baht(F.tax[1]); $("#m-corp").textContent = baht(F.tax[2]); $("#m-tax").textContent = baht(F.tax[0] + F.tax[1] + F.tax[2]);
 }
 
 /* ── setup that follows signup (registered company) ── */
@@ -1243,7 +1249,7 @@ function bsheet(u, B){
   var cit = T.citYear;
   var equip = (u.bills || []).filter(function(v){ return billKind(v) === "asset" && billDate(v) <= d; }).reduce(function(s, v){ return s + (billVat(u, v) ? v.amount / 1.07 : v.amount); }, 0);
   var assets = [["Cash at bank", B.cash], ["Owed to you (receivables)", ar], ["Stock on hand", stock], ["Equipment", equip]].filter(function(r){ return r[1]; });
-  var liabs = [["You owe suppliers (payables)", ap], ["VAT to pay", vatOn ? vat : 0], ["Withholding tax and SSO to pay", wht], ["Company income tax (estimate)", cit]].filter(function(r){ return r[1]; });
+  var liabs = [["You owe suppliers (payables)", ap], ["VAT to pay", vatOn ? vat : 0], ["Withholding tax and SSO to pay", wht], ["Company income tax so far (estimate)", cit]].filter(function(r){ return r[1]; });
   var tA = assets.reduce(function(s, r){ return s + r[1]; }, 0), tL = liabs.reduce(function(s, r){ return s + r[1]; }, 0);
   return { asOf: d, assets: assets, liabs: liabs, tA: tA, tL: tL, eq: tA - tL, stockAt: st ? st.d : "" };
 }
@@ -1272,7 +1278,7 @@ function taxFilings(u, B){
   /* company income tax: half-year PND.51 and year-end PND.50, estimated from this year's profit so far */
   var yS = iso(new Date(A.getFullYear(), 0, 1)), Y = accSum(u, yS, B.asOf, links), mo = A.getMonth() + A.getDate() / 31, annual = Math.max(0, Y.kept / Math.max(1, mo) * 12);
   var cit = annual <= 300000 ? 0 : annual <= 3000000 ? (annual - 300000) * 0.15 : 405000 + (annual - 3000000) * 0.2, citYear = Math.round(cit * Math.min(12, mo) / 12);
-  list.push({ k: "pnd50", form: "PND.50", name: "Company income tax for the year", month: String(A.getFullYear()), key: "y" + A.getFullYear(), amt: Math.round(cit), due: (A.getFullYear() + 1) + "-05-30", st: "estimated", liab: 0 });
+  list.push({ k: "pnd50", form: "PND.50", name: "Company income tax, full-year estimate", month: String(A.getFullYear()), key: "y" + A.getFullYear(), amt: Math.round(cit), due: (A.getFullYear() + 1) + "-05-30", st: "estimated", liab: 0 });
   return { list: list, citYear: citYear, annual: annual };
 }
 
@@ -1681,8 +1687,8 @@ function whichMonth(t, asOf){
   var a = iso(new Date(y, m, 1)), b = iso(new Date(y, m + 1, 0)); if (b > asOf) b = asOf;
   return { a: a, b: b, name: MONTH[m], partial: b === asOf && day(asOf).getDate() < new Date(y, m + 1, 0).getDate() };
 }
-var CATWORDS = [[/wage|salar|payroll|staff/, "Wages"], [/rent|landlord/, "Rent"], [/marketing|ads?\b|advert|facebook/, "Marketing"], [/stock|ingredient|supplies|makro|food cost|supplier/, "Stock and supplies"],
-  [/utilit|electric|water|internet|power/, "Utilities"], [/tax|vat|sso|social security/, "Tax and social security"], [/fee|bank charge/, "Bank fees"]];
+var CATWORDS = [[/wage|salar|payroll|staff|ค่าจ้าง|เงินเดือน|พนักงาน/, "Wages"], [/rent|landlord|ค่าเช่า/, "Rent"], [/marketing|ads?\b|advert|facebook|การตลาด|โฆษณา/, "Marketing"], [/stock|ingredient|supplies|makro|food cost|supplier|วัตถุดิบ|สต็อก/, "Stock and supplies"],
+  [/utilit|electric|water|internet|power|ค่าน้ำ|ค่าไฟ|อินเทอร์เน็ต/, "Utilities"], [/tax|vat|sso|social security|ประกันสังคม/, "Tax and social security"], [/fee|bank charge|ค่าธรรมเนียม/, "Bank fees"]];
 function brain(q){
   var u = me(), t = q.toLowerCase(), B = books(u), T = today();
   if (/^(hi|hello|hey|สวัสดี)/.test(t)) return "Hello " + first(u) + ". Ask me about your cash, a month, who owes you, your bills or where the money goes.";
@@ -1710,18 +1716,23 @@ function brain(q){
   if (/vat|tax|set aside|pp\.?30/.test(t)){
     var x = F.tax; return "For " + mName + " so far I would set aside " + baht(x[0] + x[1] + x[2]) + ": VAT " + baht(x[0]) + (u.setup.vat === "No" ? " (you said you are not VAT registered)" : "") + ", withholding " + baht(x[1]) + ", and " + baht(x[2]) + " towards company tax. These are estimates from your statements, not a filing.";
   }
-  var cw = CATWORDS.filter(function(c){ return c[0].test(t); })[0], wm = whichMonth(t, B.asOf);
+  var wm = whichMonth(t, B.asOf);
+  if (/\bstock\b|inventory|สต็อก|สินค้าคงเหลือ/.test(t)){
+    var r6 = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" }, s6 = span(u, r6.a, r6.b), sc = stockAt(u, r6.b);
+    return "Stock bought in " + r6.name + ": " + baht(s6.buys || 0) + ". Cost of goods sold: " + baht(s6.cogs || 0) + ". " + (sc ? "Last stock count: " + baht(sc.v) + " on " + nice(sc.d) + "." : "No stock count yet.");
+  }
+  var cw = CATWORDS.filter(function(c){ return c[0].test(t); })[0];
   if (cw && /how much|spend|spent|cost|pay|paid|on /.test(t) || cw && !/profit|p&l/.test(t)){
     var r = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" }, s = span(u, r.a, r.b), v = s.cats[cw[1]] || 0;
-    return v ? cw[1] + " in " + r.name + ": " + baht(v) + ", " + (s.exp ? Math.round(v / s.exp * 100) : 0) + "% of everything that went out." : "I don't see any " + cw[1].toLowerCase() + " in " + r.name + ".";
+    return v ? cw[1] + " in " + r.name + ": " + baht(v) + ", " + (s.exp ? Math.round(v / s.exp * 100) : 0) + "% of all costs." : "I don't see any " + cw[1].toLowerCase() + " in " + r.name + ".";
   }
   if (/where.*(go|went)|spend|spent|expens|cost|money out/.test(t)){
     var r2 = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" }, s2 = span(u, r2.a, r2.b), top = Object.keys(s2.cats).filter(function(c){ return !isIncCat(c); }).sort(function(a, b){ return s2.cats[b] - s2.cats[a]; });
-    return baht(s2.exp) + " went out in " + r2.name + ". The biggest: " + top.slice(0, 4).map(function(c){ return c.toLowerCase() + " " + baht(s2.cats[c]) + " (" + Math.round(s2.cats[c] / s2.exp * 100) + "%)"; }).join(", ") + ".";
+    return "Costs in " + r2.name + ": " + baht(s2.exp) + ". The biggest: " + top.slice(0, 4).map(function(c){ return c.toLowerCase() + " " + baht(s2.cats[c]) + " (" + Math.round(s2.cats[c] / s2.exp * 100) + "%)"; }).join(", ") + ".";
   }
   if (/come from|revenue|sales|income|earn|money in|customers?/.test(t)){
     var r3 = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" }, s3 = span(u, r3.a, r3.b), tops = Object.keys(s3.cats).filter(function(c){ return isIncCat(c); }).sort(function(a, b){ return s3.cats[b] - s3.cats[a]; });
-    return baht(s3.inc) + " came in during " + r3.name + ": " + tops.slice(0, 4).map(function(c){ return c.toLowerCase() + " " + baht(s3.cats[c]); }).join(", ") + ".";
+    return baht(s3.inc) + " came in during " + r3.name + ": " + tops.slice(0, 4).map(function(c){ return c.toLowerCase().replace(/\bqr\b/, "QR") + " " + baht(s3.cats[c]); }).join(", ") + ".";
   }
   if (/p&l|profit and loss|income statement|full p/.test(t)){
     var r4 = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" }, s4 = span(u, r4.a, r4.b), lines = ["Profit and loss, " + r4.name + " (accrual basis)", "Revenue " + baht(s4.inc)];
@@ -1731,7 +1742,7 @@ function brain(q){
   }
   if (wm || /how was|how did|profit|month|quarter|year|doing|perform/.test(t)){
     var r5 = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" };
-    if (/quarter/.test(t)){ var Q = B.fin.qtd; return "This quarter so far: revenue " + baht(Q.rev) + ", costs " + baht(Q.exp) + ", profit " + baht(Q.rev - Q.exp) + (Q.d != null ? ", " + (Q.d >= 0 ? "up " : "down ") + pctTxt(Q.d) + " on the same point last quarter." : "."); }
+    if (/quarter/.test(t)){ var Q = B.fin.qtd; return "This quarter so far: revenue " + baht(Q.rev) + ", costs " + baht(Q.exp) + ", profit " + baht(Q.rev - Q.exp) + (Q.prevKept != null ? ", against " + baht(Q.prevKept) + " at the same point last quarter." : "."); }
     if (/year/.test(t)){ var Y = B.fin.ytd; return "This year so far (since your statements start on " + nice(B.first) + "): revenue " + baht(Y.rev) + ", costs " + baht(Y.exp) + ", profit " + baht(Y.rev - Y.exp) + "."; }
     var s5 = span(u, r5.a, r5.b); if (!s5.n) return "I don't have statements for " + r5.name + ". They start on " + niceY(B.first) + ".";
     var big = Object.keys(s5.cats).filter(function(c){ return !isIncCat(c); }).sort(function(a, b){ return s5.cats[b] - s5.cats[a]; })[0];
@@ -2400,7 +2411,7 @@ function renderBrief(){
 
   // ── insights, a swipeable rail
   var ns = noticed(u, B), big = F.expMix[0];
-  if (big && F.exp) ns.unshift("Your biggest cost this month is " + big[0].toLowerCase() + ": " + baht(big[1]) + ", or " + Math.round(big[1] / F.exp * 100) + "% of everything that went out.");
+  if (big && F.exp) ns.unshift("Your biggest cost this month is " + big[0].toLowerCase() + ": " + baht(big[1]) + ", or " + Math.round(big[1] / F.exp * 100) + "% of all costs.");
   if (ns.length){
     var is = sec("Worth knowing", L("Nothing to do, just good to know", "ไม่ต้องทำอะไร แค่น่ารู้ไว้")); NI($(".mb-kick", is));
     var rail = el("div", "mb-rail");
@@ -2928,7 +2939,9 @@ var TH = {
 
   // chat and guided flows
   "How's my cash?": "เงินสดเป็นยังไงบ้าง", "What's overdue?": "มีอะไรเลยกำหนดบ้าง", "Where did the money go?": "เงินไปไหนหมด", "Who owes me money?": "ใครค้างเงินเราบ้าง",
-  "Show the full P&L": "ดูงบกำไรขาดทุนทั้งหมด", "What bills do I have?": "มีบิลอะไรต้องจ่ายบ้าง", "How much VAT should I set aside?": "ควรกัน VAT ไว้เท่าไหร่", "How was this month?": "เดือนนี้เป็นยังไง",
+  "Show the full P&L": "ดูงบกำไรขาดทุนทั้งหมด",
+  "I don't have any numbers yet. Upload a bank statement, or try the sample, and I can answer that.": "หนูยังไม่มีตัวเลขเลย อัปโหลดรายการเดินบัญชี หรือลองข้อมูลตัวอย่าง แล้วหนูจะตอบได้",
+  "I can't find an account with that email in this browser.": "ไม่พบบัญชีที่ใช้อีเมลนี้ในเบราว์เซอร์นี้", "What bills do I have?": "มีบิลอะไรต้องจ่ายบ้าง", "How much VAT should I set aside?": "ควรกัน VAT ไว้เท่าไหร่", "How was this month?": "เดือนนี้เป็นยังไง",
   "Ask ThuraGirl for the full profit and loss": "ขอดูงบกำไรขาดทุนทั้งหมดจาก ThuraGirl",
   "I'm not sure about that one yet. In this test build I answer from your statements, invoices and bills. Try \"How's my cash?\", \"What's overdue?\" or \"Where did the money go?\"": "เรื่องนี้หนูยังตอบไม่ได้ ในเวอร์ชันทดสอบนี้หนูตอบจากรายการเดินบัญชี ใบแจ้งหนี้ และบิลของคุณ ลองถาม \"เงินสดเป็นยังไงบ้าง\" \"มีอะไรเลยกำหนดบ้าง\" หรือ \"เงินไปไหนหมด\"",
   "Let's make an invoice. Who is it for?": "มาออกใบแจ้งหนี้กัน ออกให้ใคร", "What is it for? One line is enough, like \"Catering for 80 guests\".": "ค่าอะไร เขียนบรรทัดเดียวพอ เช่น \"จัดเลี้ยง 80 ท่าน\"",
@@ -3227,7 +3240,7 @@ var MF = { January: "มกราคม", February: "กุมภาพันธ
 var MS = { Jan: "ม.ค.", Feb: "ก.พ.", Mar: "มี.ค.", Apr: "เม.ย.", May: "พ.ค.", Jun: "มิ.ย.", Jul: "ก.ค.", Aug: "ส.ค.", Sep: "ก.ย.", Oct: "ต.ค.", Nov: "พ.ย.", Dec: "ธ.ค." };
 var WD = { Monday: "วันจันทร์", Tuesday: "วันอังคาร", Wednesday: "วันพุธ", Thursday: "วันพฤหัสบดี", Friday: "วันศุกร์", Saturday: "วันเสาร์", Sunday: "วันอาทิตย์" };
 var MO = "(January|February|March|April|May|June|July|August|September|October|November|December)";
-var CATL = { "stock and supplies": "สินค้าและวัตถุดิบ", "rent": "ค่าเช่า", "other costs": "ค่าใช้จ่ายอื่น", "tax and social security": "ภาษีและประกันสังคม", "utilities": "ค่าน้ำค่าไฟ", "marketing": "การตลาด", "wages": "ค่าจ้าง", "payroll": "เงินเดือน" };
+var CATL = { "stock and supplies": "สินค้าและวัตถุดิบ", "rent": "ค่าเช่า", "other costs": "ค่าใช้จ่ายอื่น", "tax and social security": "ภาษีและประกันสังคม", "utilities": "ค่าน้ำค่าไฟ", "marketing": "การตลาด", "wages": "ค่าจ้าง", "payroll": "เงินเดือน", "cost of goods sold": "ต้นทุนขาย" };
 function mth(m){ return MF[m] || m; }
 function dates(s){
   return s.replace(/\b(\d{1,2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4})\b/g, function(x, d, m, y){ return d + " " + MS[m] + " " + (+y + 543); })
@@ -3239,7 +3252,7 @@ function inl(s){
   s = dates(s)
     .replace(/(\d+) days? late/g, "เลยกำหนด $1 วัน").replace(/\b[Dd]ue in (\d+) days?/g, "ครบกำหนดใน $1 วัน").replace(/\b[Dd]ue today\b/g, "ครบกำหนดวันนี้")
     .replace(/\binvoice (#\S+) from ([^(;]+?) \(/g, "ใบแจ้งหนี้ $1 จาก $2 (").replace(/\byour ([^(;]+?) bill \(/g, "บิล $1 ของคุณ (")
-    .replace(/\bstock and supplies|\bother costs|\btax and social security|\brent\b|\butilities\b|\bmarketing\b|\bwages\b/g, function(x){ return CATL[x] || x; });
+    .replace(/\bcost of goods sold|\bstock and supplies|\bother costs|\btax and social security|\brent\b|\butilities\b|\bmarketing\b|\bwages\b/g, function(x){ return CATL[x] || x; });
   Object.keys(TH).forEach(function(k){ if (k.length > 3 && /\(/.test(k) && s.indexOf(k) >= 0) s = s.split(k).join(TH[k]); });
   return s;
 }
@@ -3322,8 +3335,21 @@ var RULES = [
   [/^Your cash covers about ([\d.]+) months? of spending at the pace of the last three months\.$/, "เงินสดของคุณพอใช้จ่ายได้ราว $1 เดือน ตามอัตราการใช้จ่ายสามเดือนที่ผ่านมา"],
   [new RegExp("^" + MO + ": (฿[\\d,]+) in and (฿[\\d,]+) out\\.$"), function(m){ return "เดือน" + mth(m[1]) + ": เงินเข้า " + m[2] + " เงินออก " + m[3]; }],
   [/^You kept (-?฿[\d,-]+), a (-?[\d.]+)% margin\.$/, "คุณเหลือเก็บ $1 อัตรากำไร $2%"],
+  [new RegExp("^" + MO + "( so far)?: revenue (฿[\\d,]+) and costs (฿[\\d,]+)\\.$"), function(m){ return "เดือน" + mth(m[1]) + (m[2] ? " ถึงตอนนี้" : "") + ": รายได้ " + m[3] + " ต้นทุน " + m[4]; }],
+  [/^Profit (฿[\d,]+), a (-?[\d.]+)% margin\.$/, "กำไร $1 อัตรากำไร $2%"],
+  [/^A loss of (฿[\d,]+), a (-?[\d.]+)% margin\.$/, "ขาดทุน $1 อัตรากำไร $2%"],
+  [new RegExp("^Stock bought in " + MO + "( so far)?: (฿[\\d,]+)\\.$"), function(m){ return "ซื้อสินค้าเข้าสต็อกเดือน" + mth(m[1]) + (m[2] ? " ถึงตอนนี้" : "") + " " + m[3]; }],
+  [/^Cost of goods sold: (฿[\d,]+)\.$/, "ต้นทุนขาย $1"],
+  [/^Last stock count: (฿[\d,]+) on (\d+ \w+)\.$/, function(m){ return "นับสต็อกล่าสุด " + m[1] + " เมื่อ " + dates(m[2]); }],
+  [/^No stock count yet\.$/, "ยังไม่มีการนับสต็อก"],
+  [new RegExp("^(฿[\\d,]+) came in during " + MO + "( so far)?: (.+)\\.$"), function(m){ return "รายได้เดือน" + mth(m[2]) + (m[3] ? " ถึงตอนนี้" : "") + " " + m[1] + ": " + m[4].replace(/card sales/, "ยอดขายบัตร").replace(/delivery and marketplaces/, "เดลิเวอรีและมาร์เก็ตเพลส").replace(/QR payments/, "รับชำระผ่าน QR").replace(/invoiced sales/, "ยอดขายตามใบแจ้งหนี้").replace(/transfers from customers/, "เงินโอนจากลูกค้า").replace(/interest/, "ดอกเบี้ยรับ"); }],
+  [new RegExp("^I don't see any ([^.]+?) in " + MO + "( so far)?\\.$"), function(m){ return "ไม่พบ" + (CATL[m[1]] || T(m[1])) + " ในเดือน" + mth(m[2]) + (m[3] ? " ถึงตอนนี้" : ""); }],
+  [/^This quarter so far: revenue (-?฿[\d,]+), costs (-?฿[\d,]+), profit (-?฿[\d,]+)(?:, against (-?฿[\d,]+) at the same point last quarter)?\.$/, function(m){ return "ไตรมาสนี้ถึงตอนนี้: รายได้ " + m[1] + " ต้นทุน " + m[2] + " กำไร " + m[3] + (m[4] ? " เทียบกับ " + m[4] + " ช่วงเดียวกันของไตรมาสก่อน" : ""); }],
+  [/^This year so far \(since your statements start on ([^)]+)\): revenue (-?฿[\d,]+), costs (-?฿[\d,]+), profit (-?฿[\d,]+)\.$/, function(m){ return "ปีนี้ถึงตอนนี้ (นับจากรายการเดินบัญชีแรก " + dates(m[1]) + "): รายได้ " + m[2] + " ต้นทุน " + m[3] + " กำไร " + m[4]; }],
   [/^The biggest cost was ([^.]+) at (฿[\d,]+)\.$/, function(m){ return "ค่าใช้จ่ายก้อนใหญ่สุดคือ" + (CATL[m[1]] || m[1]) + " " + m[2]; }],
-  [new RegExp("^(฿[\\d,]+) went out in " + MO + " so far\\.$"), function(m){ return "เดือน" + mth(m[2]) + " ถึงตอนนี้ เงินออก " + m[1]; }],
+  [new RegExp("^Costs in " + MO + "( so far)?: (฿[\\d,]+)\\.$"), function(m){ return "ต้นทุนเดือน" + mth(m[1]) + (m[2] ? " ถึงตอนนี้" : "") + " " + m[3]; }],
+  [new RegExp("^([A-Z][^:]*) in " + MO + "( so far)?: (฿[\\d,]+), (\\d+)% of all costs\\.$"), function(m){ return (CATL[m[1].toLowerCase()] || T(m[1])) + " เดือน" + mth(m[2]) + (m[3] ? " ถึงตอนนี้" : "") + " " + m[4] + " คิดเป็น " + m[5] + "% ของต้นทุนทั้งหมด"; }],
+  [/^Your biggest cost this month is ([^:]+): (฿[\d,]+), or (\d+)% of all costs\.$/, function(m){ return "ต้นทุนก้อนใหญ่สุดเดือนนี้คือ" + (CATL[m[1]] || T(m[1])) + " " + m[2] + " หรือ " + m[3] + "% ของต้นทุนทั้งหมด"; }],
   [/^The biggest: ([^.]+)\.$/, function(m){ return "ก้อนใหญ่สุด: " + inl(m[1]); }],
   [new RegExp("^For " + MO + " so far I would set aside (฿[\\d,]+): VAT (฿[\\d,]+), withholding (฿[\\d,]+), and (฿[\\d,]+) towards company tax\\.$"), function(m){ return "สำหรับเดือน" + mth(m[1]) + " ถึงตอนนี้ หนูแนะนำให้กันไว้ " + m[2] + ": VAT " + m[3] + " ภาษีหัก ณ ที่จ่าย " + m[4] + " และภาษีนิติบุคคล " + m[5]; }],
   [/^You have (\d+) bills? to pay, (฿[\d,]+) in total\.$/, "คุณมีบิลต้องจ่าย $1 ใบ รวม $2"], [/^Next: ([^.]+)\.$/, function(m){ return "ถัดไป: " + inl(m[1]); }],
@@ -3432,6 +3458,25 @@ document.documentElement.lang = lang();
 var THQ = [[/เงินสด|เงินในบัญชี|เงินเหลือ/, "How's my cash?"], [/เลยกำหนด|ค้างจ่าย|เกินกำหนด/, "What's overdue?"], [/ใครค้าง|ลูกหนี้|ยังไม่จ่าย/, "Who owes me money?"], [/เงินไปไหน|ใช้จ่าย|ค่าใช้จ่าย/, "Where did the money go?"],
   [/กำไรขาดทุน|งบกำไร|p&l/i, "Show the full P&L"], [/บิล|ต้องจ่าย/, "What bills do I have?"], [/vat|ภาษีมูลค่าเพิ่ม|ภาษี/i, "How much VAT should I set aside?"], [/เดือนนี้|เดือนที่แล้ว|เป็นยังไง/, "How was this month?"]];
 brain = (function(orig){ return function(q){ if (/[\u0E00-\u0E7F]/.test(q)){ for (var i = 0; i < THQ.length; i++) if (THQ[i][0].test(q)) return orig(THQ[i][1]); } return orig(q); }; })(brain);
+var TH_MON = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+var THCAT = [[/ค่าจ้าง|เงินเดือน|พนักงาน/, "wages"], [/ค่าเช่า/, "rent"], [/การตลาด|โฆษณา/, "marketing"], [/ค่าน้ำ|ค่าไฟ|อินเทอร์เน็ต/, "utilities"], [/ค่าธรรมเนียม/, "fees"]];
+function thWhen(q){
+  if (/เดือนที่แล้ว|เดือนก่อน/.test(q)) return " last month";
+  for (var i = 0; i < 12; i++) if (q.indexOf(TH_MON[i]) >= 0) return " in " + MONTH[i];
+  return "";
+}
+brain = (function(orig){ return function(q){
+  if (!/[\u0E00-\u0E7F]/.test(q)) return orig(q);
+  var w = thWhen(q), cw = THCAT.filter(function(c){ return c[0].test(q); })[0];
+  if (/ไตรมาส/.test(q)) return orig("How is this quarter?");
+  if (/ปีนี้|ทั้งปี/.test(q) && !/ภาษี/.test(q)) return orig("How is this year?");
+  if (/สต็อก|สินค้าคงเหลือ/.test(q)) return orig("How much stock" + w + "?");
+  if (/รายได้|ยอดขาย/.test(q) && /มาจาก|จากไหน|ช่องทางไหน|อะไรบ้าง/.test(q)) return orig("Where does revenue come from" + w + "?");
+  if (cw && !/กำไร|บิล|ต้องจ่าย/.test(q)) return orig("How much did I spend on " + cw[1] + w + "?");
+  if (/งบกำไร|กำไรขาดทุน/.test(q)) return orig("Show the full P&L" + w);
+  if (w && /กำไร|เป็นยังไง|เป็นไง|สรุป|ผล/.test(q)) return orig("How was" + w + "?");
+  return orig(q);
+}; })(brain);
 if (lang() === "th") i18nAll();
 window.__tgT = T;
 /* ── profit and loss as a proper statement: print, PDF and share ──
@@ -3569,7 +3614,7 @@ function plActions(root, F){
   a.appendChild(btn("pill soft", "Share", function(){ plShare(F); }, "i-up"));
   a.appendChild(btn("pill soft", "Print", function(){ plPrint(F); }, "i-receipt"));
   root.appendChild(a);
-  root.appendChild(el("p", "tnote", "A statement in the standard TFRS for NPAEs layout: revenue, cost of sales, gross profit, expenses, tax and net profit."));
+  root.appendChild(el("p", "tnote", T_("A statement in the standard TFRS for NPAEs layout: revenue, cost of sales, gross profit, expenses, tax and net profit.")));
 }
 /* ── get started: keep nudging new users to sync, because syncing is what fills the app ── */
 var BOOKS_K = ["flow", "peak", "tgbooks"], SALES_K = ["loyverse", "ocha", "foodstory", "wongnai", "grab", "lineman", "shopee", "lazada", "tiktok"];
@@ -3662,17 +3707,17 @@ function chCard(u){
   if (!u.tx || !u.tx.length) return;
   var A = asOfOf(u), d = day(A), mS = iso(new Date(d.getFullYear(), d.getMonth(), 1)), yS = iso(new Date(d.getFullYear(), 0, 1));
   var S = chSum(u, chPer === "m" ? mS : yS, A), rows = topRows(S.rows, 6);
-  var c = el("section", "card chanB"); c.id = "m-chan"; c.setAttribute("aria-label", "Sales by channel"); c.setAttribute("data-noi18n", "");
+  var c = el("section", "card chanB"); c.id = "m-chan"; c.setAttribute("aria-label", L("Sales by channel", "ยอดขายตามช่องทาง")); c.setAttribute("data-noi18n", "");
   var h = el("div", "cardh"); h.appendChild(el("h2", "", L("Sales by channel", "ยอดขายตามช่องทาง")));
   var seg = el("div", "chseg"); [["m", L("Month", "เดือน")], ["y", L("Year", "ปี")]].forEach(function(o){ var b = el("button", "", o[1]); b.type = "button"; b.setAttribute("aria-pressed", String(chPer === o[0])); b.addEventListener("click", function(){ chPer = o[0]; chCard(me()); }); seg.appendChild(b); });
   h.appendChild(seg);
   var mT = lang() === "th" ? mth(MONTH[d.getMonth()]) : MONTH[d.getMonth()], yT = lang() === "th" ? String(d.getFullYear() + 543) : String(d.getFullYear());
-  h.appendChild(el("div", "sub", (chPer === "m" ? mT + " " + yT : yT) + L(" so far", " ถึงตอนนี้")));
+  h.appendChild(el("div", "sub", L("Money received, VAT included · ", "เงินที่ได้รับ รวม VAT · ") + (chPer === "m" ? mT + " " + yT : yT) + L(" so far", " ถึงตอนนี้")));
   c.appendChild(h);
   if (!S.tot){ c.appendChild(el("p", "st-p", L("No sales in this period yet.", "ยังไม่มียอดขายในช่วงนี้"))); }
   else {
     var body = el("div", "chbody"), ring = el("div", "chring"); ring.innerHTML = donut(rows, S.tot, 168);
-    var mid = el("div", "chmid"); mid.appendChild(el("b", "num", "฿" + (S.tot >= 1e6 ? (S.tot / 1e6).toFixed(2) + L("M", " ล้าน") : money(Math.round(S.tot))))); mid.appendChild(el("small", "", L("sales", "ยอดขาย"))); ring.appendChild(mid);
+    var mid = el("div", "chmid"); mid.appendChild(el("b", "num", "฿" + (S.tot >= 1e6 ? (S.tot / 1e6).toFixed(2) + L("M", " ล้าน") : money(Math.round(S.tot))))); mid.appendChild(el("small", "", L("received", "ได้รับ"))); ring.appendChild(mid);
     body.appendChild(ring);
     var lg = el("div", "chleg");
     rows.forEach(function(r, i){
@@ -3681,7 +3726,7 @@ function chCard(u){
       lg.appendChild(row);
     });
     body.appendChild(lg); c.appendChild(body);
-    var top = rows[0]; c.appendChild(el("p", "chnote", L(chName(top[0]) + " brings in the most, " + Math.round(top[1] / S.tot * 100) + "% of sales.", chName(top[0]) + " ทำยอดได้มากที่สุด " + Math.round(top[1] / S.tot * 100) + "% ของยอดขาย")));
+    var top = rows[0]; c.appendChild(el("p", "chnote", L(chName(top[0]) + " brings in the most, " + Math.round(top[1] / S.tot * 100) + "% of money received. Revenue in the profit and loss counts sales when made, before VAT.", chName(top[0]) + " ทำยอดได้มากที่สุด " + Math.round(top[1] / S.tot * 100) + "% ของเงินที่ได้รับ รายได้ในงบกำไรขาดทุนนับเมื่อขาย ก่อน VAT")));
   }
   c.appendChild(btn("alt chask", L("Ask for a custom chart, like \"Compare GrabFood vs LINE MAN for 3 months\"", "ขอกราฟแบบอื่นได้ เช่น \"เทียบ GrabFood กับ LINE MAN 3 เดือน\""), function(){ var i = $("#b-in"); i.value = L("Compare GrabFood vs LINE MAN for 3 months", "เทียบ GrabFood กับ LINE MAN 3 เดือน"); $("#b-send").disabled = false; try { i.focus(); } catch (e) {} }));
   var flow = $("#b-money .flowB"); if (flow && flow.parentNode) flow.parentNode.insertBefore(c, flow.nextSibling);
@@ -3725,7 +3770,7 @@ function chChart(u, spec){
   var txt;
   if (!sums.length || !sums[0][1]) txt = L("I don't see sales from " + (spec.chs.map(chName).join(" or ") || "those channels") + " in the last " + spec.n + " months.", "ไม่พบยอดขายจาก " + (spec.chs.map(chName).join(" หรือ ") || "ช่องทางนั้น") + " ใน " + spec.n + " เดือนที่ผ่านมา");
   else if (sums.length === 1) txt = L(chName(sums[0][0]) + " brought in " + baht(Math.round(sums[0][1])) + " over the last " + spec.n + " months.", chName(sums[0][0]) + " ทำยอดได้ " + baht(Math.round(sums[0][1])) + " ใน " + spec.n + " เดือนที่ผ่านมา");
-  else txt = L(chName(sums[0][0]) + " leads with " + baht(Math.round(sums[0][1])) + " over the last " + spec.n + " months" + (sums[1][1] ? ", " + (sums[0][1] / sums[1][1]).toFixed(1) + "× " + chName(sums[1][0]) : "") + ".", chName(sums[0][0]) + " นำด้วย " + baht(Math.round(sums[0][1])) + " ใน " + spec.n + " เดือนที่ผ่านมา" + (sums[1][1] ? " เป็น " + (sums[0][1] / sums[1][1]).toFixed(1) + " เท่าของ " + chName(sums[1][0]) : ""));
+  else txt = L(chName(sums[0][0]) + " leads with " + baht(Math.round(sums[0][1])) + " over the last " + spec.n + " months" + (sums[1][1] ? ", against " + baht(Math.round(sums[1][1])) + " from " + chName(sums[1][0]) : "") + ". Money received, VAT included.", chName(sums[0][0]) + " นำด้วย " + baht(Math.round(sums[0][1])) + " ใน " + spec.n + " เดือนที่ผ่านมา" + (sums[1][1] ? " เทียบกับ " + baht(Math.round(sums[1][1])) + " จาก " + chName(sums[1][0]) : "") + " เงินที่ได้รับ รวม VAT");
   return { el: w, txt: txt, title: (D.chs.map(chName).join(L(" vs ", " กับ "))) + L(", last " + spec.n + " months", " · " + spec.n + " เดือนล่าสุด"), chs: D.chs };
 }
 function chAnswer(q, spec){
@@ -4069,7 +4114,7 @@ function bsCard(u, B){
   var acts = el("div", "pl-acts"); acts.appendChild(btn("pill soft", L("Print or PDF", "พิมพ์หรือ PDF"), function(){ bsPrint(S); }, "i-receipt")); c.appendChild(acts);
   var pl = $("#b-money .plB"); if (pl && pl.parentNode) pl.parentNode.insertBefore(c, pl.nextSibling);
 }
-var BS_TH = { "Cash at bank": "เงินฝากธนาคาร", "Owed to you (receivables)": "ลูกหนี้การค้า", "Stock on hand": "สินค้าคงเหลือ", "Equipment": "อุปกรณ์", "You owe suppliers (payables)": "เจ้าหนี้การค้า", "VAT to pay": "ภาษีมูลค่าเพิ่มค้างจ่าย", "Withholding tax and SSO to pay": "ภาษีหัก ณ ที่จ่ายและประกันสังคมค้างจ่าย", "Company income tax (estimate)": "ภาษีเงินได้นิติบุคคลค้างจ่าย (ประมาณการ)" };
+var BS_TH = { "Cash at bank": "เงินฝากธนาคาร", "Owed to you (receivables)": "ลูกหนี้การค้า", "Stock on hand": "สินค้าคงเหลือ", "Equipment": "อุปกรณ์", "You owe suppliers (payables)": "เจ้าหนี้การค้า", "VAT to pay": "ภาษีมูลค่าเพิ่มค้างจ่าย", "Withholding tax and SSO to pay": "ภาษีหัก ณ ที่จ่ายและประกันสังคมค้างจ่าย", "Company income tax so far (estimate)": "ภาษีเงินได้นิติบุคคลสะสมถึงวันนี้ (ประมาณการ)" };
 function bsPrint(S){
   var u = me(), th = lang() === "th", rows = [];
   function r(k, en, tl, a, i){ rows.push({ k: k, t: th ? tl : en, a: a, i: i || 0 }); }
@@ -4082,7 +4127,10 @@ function bsPrint(S){
 }
 
 /* taxes: every filing, its status and what is paid */
-var TAX_TH = { "VAT": "ภาษีมูลค่าเพิ่ม", "Withholding tax on rent and services": "ภาษีหัก ณ ที่จ่าย ค่าเช่าและค่าบริการ", "Salary tax withheld": "ภาษีเงินเดือนหัก ณ ที่จ่าย", "Social security, you and your staff": "ประกันสังคม ส่วนของคุณและพนักงาน", "Company income tax for the year": "ภาษีเงินได้นิติบุคคลทั้งปี" };
+var FORM_TH = { "PP.30": "ภ.พ.30", "PND.3 / PND.53": "ภ.ง.ด.3 / ภ.ง.ด.53", "PND.1": "ภ.ง.ด.1", "SPS 1-10": "สปส.1-10", "PND.50": "ภ.ง.ด.50", "PND.51": "ภ.ง.ด.51" };
+function formTx(f){ return L(f.form, FORM_TH[f.form] || f.form); }
+function perTx(f){ return f.k === "pnd50" ? L(f.month, String(+f.month + 543)) : monTx(f.month); }
+var TAX_TH = { "VAT": "ภาษีมูลค่าเพิ่ม", "Withholding tax on rent and services": "ภาษีหัก ณ ที่จ่าย ค่าเช่าและค่าบริการ", "Salary tax withheld": "ภาษีเงินเดือนหัก ณ ที่จ่าย", "Social security, you and your staff": "ประกันสังคม ส่วนของคุณและพนักงาน", "Company income tax, full-year estimate": "ภาษีเงินได้นิติบุคคล ประมาณการทั้งปี" };
 var ST_L = { estimated: ["Estimated", "ประมาณการ"], confirmed: ["Confirmed", "ยืนยันแล้ว"], filed: ["Filed", "ยื่นแล้ว"], paid: ["Paid", "จ่ายแล้ว"] };
 function stChip(st){ return el("span", "txs " + st, L(ST_L[st][0], ST_L[st][1])); }
 function taxCard(u, B){
@@ -4094,7 +4142,7 @@ function taxCard(u, B){
   var ul = el("ul", "txl"), paid = T.list.filter(function(f){ return f.st === "paid"; });
   function row(f){
     var li = el("li", "tap"); li.tabIndex = 0; li.setAttribute("role", "button");
-    var tx = el("div"); tx.appendChild(el("b", "", f.form + " · " + (f.k === "pnd50" ? f.month : monTx(f.month))));
+    var tx = el("div"); tx.appendChild(el("b", "", formTx(f) + " · " + perTx(f)));
     tx.appendChild(el("small", "", L(f.name, TAX_TH[f.name] || f.name) + " · " + (f.st === "paid" ? L("paid " + nice(f.paidOn), "จ่ายแล้ว " + dmy(f.paidOn)) : L("due " + nice(f.due), "ครบกำหนด " + dmy(f.due)))));
     li.appendChild(tx); var r = el("div", "txr"); r.appendChild(el("span", "num", baht(f.amt))); r.appendChild(stChip(f.st)); li.appendChild(r);
     var openIt = function(){ taxSheet(u, f); };
@@ -4111,7 +4159,7 @@ function taxCard(u, B){
   }
 }
 function taxSheet(u, f){
-  var b = openGS(f.form, L(f.name, TAX_TH[f.name] || f.name), (f.k === "pnd50" ? f.month : monTx(f.month)) + " · " + baht(f.amt)); NIx(b);
+  var b = openGS(formTx(f), L(f.name, TAX_TH[f.name] || f.name), perTx(f) + " · " + baht(f.amt)); NIx(b);
   var tl = el("div", "tx-tl"), order = ["estimated", "confirmed", "filed", "paid"], at = order.indexOf(f.st);
   var DESC = { estimated: L("Worked out from the books so far. It moves until the month closes.", "คำนวณจากบัญชีถึงตอนนี้ ตัวเลขยังเปลี่ยนได้จนกว่าจะปิดเดือน"), confirmed: L("Month closed. The figure is final and ready for you to approve.", "ปิดเดือนแล้ว ตัวเลขสุดท้ายพร้อมให้คุณอนุมัติ"), filed: L("Sent to the Revenue Department.", "ยื่นต่อกรมสรรพากรแล้ว"), paid: L("The payment is in your bank statement.", "พบรายการจ่ายในรายการเดินบัญชีแล้ว") };
   order.forEach(function(s, i){ var r = el("div", "tx-st" + (i <= at ? " on" : "")); r.appendChild(el("i")); var t = el("div"); t.appendChild(el("b", "", L(ST_L[s][0], ST_L[s][1]))); t.appendChild(el("small", "", DESC[s])); r.appendChild(t); tl.appendChild(r); });
@@ -4141,7 +4189,7 @@ function payPick(){
   var list = el("div", "co-list");
   open.forEach(function(v){
     var late = v.due < today(), r = el("button", "co-row"); r.type = "button";
-    var tx = el("span", "co-tx"); tx.appendChild(el("strong", "", v.to)); var sm = el("small", "", baht(v.amount) + " · "); var lt = el("span", late ? "bad" : "", L(lateTxt(v.due), T_(lateTxt(v.due)))); sm.appendChild(lt); sm.appendChild(document.createTextNode(" · " + kindName(billKind(v)))); tx.appendChild(sm); r.appendChild(tx);
+    var tx = el("span", "co-tx"); tx.appendChild(el("strong", "", L(v.to, T_(v.to)))); var sm = el("small", "", baht(v.amount) + " · "); var lt = el("span", late ? "bad" : "", L(lateTxt(v.due), T_(lateTxt(v.due)))); sm.appendChild(lt); sm.appendChild(document.createTextNode(" · " + kindName(billKind(v)))); tx.appendChild(sm); r.appendChild(tx);
     r.insertAdjacentHTML("beforeend", '<svg class="i"><use href="#i-chevr"/></svg>');
     r.addEventListener("click", function(){ openBill(v); }); list.appendChild(r);
   });

@@ -112,7 +112,7 @@ var MF = { January: "มกราคม", February: "กุมภาพันธ
 var MS = { Jan: "ม.ค.", Feb: "ก.พ.", Mar: "มี.ค.", Apr: "เม.ย.", May: "พ.ค.", Jun: "มิ.ย.", Jul: "ก.ค.", Aug: "ส.ค.", Sep: "ก.ย.", Oct: "ต.ค.", Nov: "พ.ย.", Dec: "ธ.ค." };
 var WD = { Monday: "วันจันทร์", Tuesday: "วันอังคาร", Wednesday: "วันพุธ", Thursday: "วันพฤหัสบดี", Friday: "วันศุกร์", Saturday: "วันเสาร์", Sunday: "วันอาทิตย์" };
 var MO = "(January|February|March|April|May|June|July|August|September|October|November|December)";
-var CATL = { "stock and supplies": "สินค้าและวัตถุดิบ", "rent": "ค่าเช่า", "other costs": "ค่าใช้จ่ายอื่น", "tax and social security": "ภาษีและประกันสังคม", "utilities": "ค่าน้ำค่าไฟ", "marketing": "การตลาด", "wages": "ค่าจ้าง", "payroll": "เงินเดือน" };
+var CATL = { "stock and supplies": "สินค้าและวัตถุดิบ", "rent": "ค่าเช่า", "other costs": "ค่าใช้จ่ายอื่น", "tax and social security": "ภาษีและประกันสังคม", "utilities": "ค่าน้ำค่าไฟ", "marketing": "การตลาด", "wages": "ค่าจ้าง", "payroll": "เงินเดือน", "cost of goods sold": "ต้นทุนขาย" };
 function mth(m){ return MF[m] || m; }
 function dates(s){
   return s.replace(/\b(\d{1,2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4})\b/g, function(x, d, m, y){ return d + " " + MS[m] + " " + (+y + 543); })
@@ -124,7 +124,7 @@ function inl(s){
   s = dates(s)
     .replace(/(\d+) days? late/g, "เลยกำหนด $1 วัน").replace(/\b[Dd]ue in (\d+) days?/g, "ครบกำหนดใน $1 วัน").replace(/\b[Dd]ue today\b/g, "ครบกำหนดวันนี้")
     .replace(/\binvoice (#\S+) from ([^(;]+?) \(/g, "ใบแจ้งหนี้ $1 จาก $2 (").replace(/\byour ([^(;]+?) bill \(/g, "บิล $1 ของคุณ (")
-    .replace(/\bstock and supplies|\bother costs|\btax and social security|\brent\b|\butilities\b|\bmarketing\b|\bwages\b/g, function(x){ return CATL[x] || x; });
+    .replace(/\bcost of goods sold|\bstock and supplies|\bother costs|\btax and social security|\brent\b|\butilities\b|\bmarketing\b|\bwages\b/g, function(x){ return CATL[x] || x; });
   Object.keys(TH).forEach(function(k){ if (k.length > 3 && /\(/.test(k) && s.indexOf(k) >= 0) s = s.split(k).join(TH[k]); });
   return s;
 }
@@ -207,8 +207,21 @@ var RULES = [
   [/^Your cash covers about ([\d.]+) months? of spending at the pace of the last three months\.$/, "เงินสดของคุณพอใช้จ่ายได้ราว $1 เดือน ตามอัตราการใช้จ่ายสามเดือนที่ผ่านมา"],
   [new RegExp("^" + MO + ": (฿[\\d,]+) in and (฿[\\d,]+) out\\.$"), function(m){ return "เดือน" + mth(m[1]) + ": เงินเข้า " + m[2] + " เงินออก " + m[3]; }],
   [/^You kept (-?฿[\d,-]+), a (-?[\d.]+)% margin\.$/, "คุณเหลือเก็บ $1 อัตรากำไร $2%"],
+  [new RegExp("^" + MO + "( so far)?: revenue (฿[\\d,]+) and costs (฿[\\d,]+)\\.$"), function(m){ return "เดือน" + mth(m[1]) + (m[2] ? " ถึงตอนนี้" : "") + ": รายได้ " + m[3] + " ต้นทุน " + m[4]; }],
+  [/^Profit (฿[\d,]+), a (-?[\d.]+)% margin\.$/, "กำไร $1 อัตรากำไร $2%"],
+  [/^A loss of (฿[\d,]+), a (-?[\d.]+)% margin\.$/, "ขาดทุน $1 อัตรากำไร $2%"],
+  [new RegExp("^Stock bought in " + MO + "( so far)?: (฿[\\d,]+)\\.$"), function(m){ return "ซื้อสินค้าเข้าสต็อกเดือน" + mth(m[1]) + (m[2] ? " ถึงตอนนี้" : "") + " " + m[3]; }],
+  [/^Cost of goods sold: (฿[\d,]+)\.$/, "ต้นทุนขาย $1"],
+  [/^Last stock count: (฿[\d,]+) on (\d+ \w+)\.$/, function(m){ return "นับสต็อกล่าสุด " + m[1] + " เมื่อ " + dates(m[2]); }],
+  [/^No stock count yet\.$/, "ยังไม่มีการนับสต็อก"],
+  [new RegExp("^(฿[\\d,]+) came in during " + MO + "( so far)?: (.+)\\.$"), function(m){ return "รายได้เดือน" + mth(m[2]) + (m[3] ? " ถึงตอนนี้" : "") + " " + m[1] + ": " + m[4].replace(/card sales/, "ยอดขายบัตร").replace(/delivery and marketplaces/, "เดลิเวอรีและมาร์เก็ตเพลส").replace(/QR payments/, "รับชำระผ่าน QR").replace(/invoiced sales/, "ยอดขายตามใบแจ้งหนี้").replace(/transfers from customers/, "เงินโอนจากลูกค้า").replace(/interest/, "ดอกเบี้ยรับ"); }],
+  [new RegExp("^I don't see any ([^.]+?) in " + MO + "( so far)?\\.$"), function(m){ return "ไม่พบ" + (CATL[m[1]] || T(m[1])) + " ในเดือน" + mth(m[2]) + (m[3] ? " ถึงตอนนี้" : ""); }],
+  [/^This quarter so far: revenue (-?฿[\d,]+), costs (-?฿[\d,]+), profit (-?฿[\d,]+)(?:, against (-?฿[\d,]+) at the same point last quarter)?\.$/, function(m){ return "ไตรมาสนี้ถึงตอนนี้: รายได้ " + m[1] + " ต้นทุน " + m[2] + " กำไร " + m[3] + (m[4] ? " เทียบกับ " + m[4] + " ช่วงเดียวกันของไตรมาสก่อน" : ""); }],
+  [/^This year so far \(since your statements start on ([^)]+)\): revenue (-?฿[\d,]+), costs (-?฿[\d,]+), profit (-?฿[\d,]+)\.$/, function(m){ return "ปีนี้ถึงตอนนี้ (นับจากรายการเดินบัญชีแรก " + dates(m[1]) + "): รายได้ " + m[2] + " ต้นทุน " + m[3] + " กำไร " + m[4]; }],
   [/^The biggest cost was ([^.]+) at (฿[\d,]+)\.$/, function(m){ return "ค่าใช้จ่ายก้อนใหญ่สุดคือ" + (CATL[m[1]] || m[1]) + " " + m[2]; }],
-  [new RegExp("^(฿[\\d,]+) went out in " + MO + " so far\\.$"), function(m){ return "เดือน" + mth(m[2]) + " ถึงตอนนี้ เงินออก " + m[1]; }],
+  [new RegExp("^Costs in " + MO + "( so far)?: (฿[\\d,]+)\\.$"), function(m){ return "ต้นทุนเดือน" + mth(m[1]) + (m[2] ? " ถึงตอนนี้" : "") + " " + m[3]; }],
+  [new RegExp("^([A-Z][^:]*) in " + MO + "( so far)?: (฿[\\d,]+), (\\d+)% of all costs\\.$"), function(m){ return (CATL[m[1].toLowerCase()] || T(m[1])) + " เดือน" + mth(m[2]) + (m[3] ? " ถึงตอนนี้" : "") + " " + m[4] + " คิดเป็น " + m[5] + "% ของต้นทุนทั้งหมด"; }],
+  [/^Your biggest cost this month is ([^:]+): (฿[\d,]+), or (\d+)% of all costs\.$/, function(m){ return "ต้นทุนก้อนใหญ่สุดเดือนนี้คือ" + (CATL[m[1]] || T(m[1])) + " " + m[2] + " หรือ " + m[3] + "% ของต้นทุนทั้งหมด"; }],
   [/^The biggest: ([^.]+)\.$/, function(m){ return "ก้อนใหญ่สุด: " + inl(m[1]); }],
   [new RegExp("^For " + MO + " so far I would set aside (฿[\\d,]+): VAT (฿[\\d,]+), withholding (฿[\\d,]+), and (฿[\\d,]+) towards company tax\\.$"), function(m){ return "สำหรับเดือน" + mth(m[1]) + " ถึงตอนนี้ หนูแนะนำให้กันไว้ " + m[2] + ": VAT " + m[3] + " ภาษีหัก ณ ที่จ่าย " + m[4] + " และภาษีนิติบุคคล " + m[5]; }],
   [/^You have (\d+) bills? to pay, (฿[\d,]+) in total\.$/, "คุณมีบิลต้องจ่าย $1 ใบ รวม $2"], [/^Next: ([^.]+)\.$/, function(m){ return "ถัดไป: " + inl(m[1]); }],
@@ -317,5 +330,24 @@ document.documentElement.lang = lang();
 var THQ = [[/เงินสด|เงินในบัญชี|เงินเหลือ/, "How's my cash?"], [/เลยกำหนด|ค้างจ่าย|เกินกำหนด/, "What's overdue?"], [/ใครค้าง|ลูกหนี้|ยังไม่จ่าย/, "Who owes me money?"], [/เงินไปไหน|ใช้จ่าย|ค่าใช้จ่าย/, "Where did the money go?"],
   [/กำไรขาดทุน|งบกำไร|p&l/i, "Show the full P&L"], [/บิล|ต้องจ่าย/, "What bills do I have?"], [/vat|ภาษีมูลค่าเพิ่ม|ภาษี/i, "How much VAT should I set aside?"], [/เดือนนี้|เดือนที่แล้ว|เป็นยังไง/, "How was this month?"]];
 brain = (function(orig){ return function(q){ if (/[\u0E00-\u0E7F]/.test(q)){ for (var i = 0; i < THQ.length; i++) if (THQ[i][0].test(q)) return orig(THQ[i][1]); } return orig(q); }; })(brain);
+var TH_MON = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+var THCAT = [[/ค่าจ้าง|เงินเดือน|พนักงาน/, "wages"], [/ค่าเช่า/, "rent"], [/การตลาด|โฆษณา/, "marketing"], [/ค่าน้ำ|ค่าไฟ|อินเทอร์เน็ต/, "utilities"], [/ค่าธรรมเนียม/, "fees"]];
+function thWhen(q){
+  if (/เดือนที่แล้ว|เดือนก่อน/.test(q)) return " last month";
+  for (var i = 0; i < 12; i++) if (q.indexOf(TH_MON[i]) >= 0) return " in " + MONTH[i];
+  return "";
+}
+brain = (function(orig){ return function(q){
+  if (!/[\u0E00-\u0E7F]/.test(q)) return orig(q);
+  var w = thWhen(q), cw = THCAT.filter(function(c){ return c[0].test(q); })[0];
+  if (/ไตรมาส/.test(q)) return orig("How is this quarter?");
+  if (/ปีนี้|ทั้งปี/.test(q) && !/ภาษี/.test(q)) return orig("How is this year?");
+  if (/สต็อก|สินค้าคงเหลือ/.test(q)) return orig("How much stock" + w + "?");
+  if (/รายได้|ยอดขาย/.test(q) && /มาจาก|จากไหน|ช่องทางไหน|อะไรบ้าง/.test(q)) return orig("Where does revenue come from" + w + "?");
+  if (cw && !/กำไร|บิล|ต้องจ่าย/.test(q)) return orig("How much did I spend on " + cw[1] + w + "?");
+  if (/งบกำไร|กำไรขาดทุน/.test(q)) return orig("Show the full P&L" + w);
+  if (w && /กำไร|เป็นยังไง|เป็นไง|สรุป|ผล/.test(q)) return orig("How was" + w + "?");
+  return orig(q);
+}; })(brain);
 if (lang() === "th") i18nAll();
 window.__tgT = T;

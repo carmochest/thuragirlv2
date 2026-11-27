@@ -82,7 +82,7 @@ function bsheet(u, B){
   var cit = T.citYear;
   var equip = (u.bills || []).filter(function(v){ return billKind(v) === "asset" && billDate(v) <= d; }).reduce(function(s, v){ return s + (billVat(u, v) ? v.amount / 1.07 : v.amount); }, 0);
   var assets = [["Cash at bank", B.cash], ["Owed to you (receivables)", ar], ["Stock on hand", stock], ["Equipment", equip]].filter(function(r){ return r[1]; });
-  var liabs = [["You owe suppliers (payables)", ap], ["VAT to pay", vatOn ? vat : 0], ["Withholding tax and SSO to pay", wht], ["Company income tax (estimate)", cit]].filter(function(r){ return r[1]; });
+  var liabs = [["You owe suppliers (payables)", ap], ["VAT to pay", vatOn ? vat : 0], ["Withholding tax and SSO to pay", wht], ["Company income tax so far (estimate)", cit]].filter(function(r){ return r[1]; });
   var tA = assets.reduce(function(s, r){ return s + r[1]; }, 0), tL = liabs.reduce(function(s, r){ return s + r[1]; }, 0);
   return { asOf: d, assets: assets, liabs: liabs, tA: tA, tL: tL, eq: tA - tL, stockAt: st ? st.d : "" };
 }
@@ -111,7 +111,7 @@ function taxFilings(u, B){
   /* company income tax: half-year PND.51 and year-end PND.50, estimated from this year's profit so far */
   var yS = iso(new Date(A.getFullYear(), 0, 1)), Y = accSum(u, yS, B.asOf, links), mo = A.getMonth() + A.getDate() / 31, annual = Math.max(0, Y.kept / Math.max(1, mo) * 12);
   var cit = annual <= 300000 ? 0 : annual <= 3000000 ? (annual - 300000) * 0.15 : 405000 + (annual - 3000000) * 0.2, citYear = Math.round(cit * Math.min(12, mo) / 12);
-  list.push({ k: "pnd50", form: "PND.50", name: "Company income tax for the year", month: String(A.getFullYear()), key: "y" + A.getFullYear(), amt: Math.round(cit), due: (A.getFullYear() + 1) + "-05-30", st: "estimated", liab: 0 });
+  list.push({ k: "pnd50", form: "PND.50", name: "Company income tax, full-year estimate", month: String(A.getFullYear()), key: "y" + A.getFullYear(), amt: Math.round(cit), due: (A.getFullYear() + 1) + "-05-30", st: "estimated", liab: 0 });
   return { list: list, citYear: citYear, annual: annual };
 }
 

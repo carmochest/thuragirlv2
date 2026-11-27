@@ -133,5 +133,5 @@ function plActions(root, F){
   a.appendChild(btn("pill soft", "Share", function(){ plShare(F); }, "i-up"));
   a.appendChild(btn("pill soft", "Print", function(){ plPrint(F); }, "i-receipt"));
   root.appendChild(a);
-  root.appendChild(el("p", "tnote", "A statement in the standard TFRS for NPAEs layout: revenue, cost of sales, gross profit, expenses, tax and net profit."));
+  root.appendChild(el("p", "tnote", T_("A statement in the standard TFRS for NPAEs layout: revenue, cost of sales, gross profit, expenses, tax and net profit.")));
 }

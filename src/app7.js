@@ -123,7 +123,7 @@ function renderBrief(){
 
   // ── insights, a swipeable rail
   var ns = noticed(u, B), big = F.expMix[0];
-  if (big && F.exp) ns.unshift("Your biggest cost this month is " + big[0].toLowerCase() + ": " + baht(big[1]) + ", or " + Math.round(big[1] / F.exp * 100) + "% of everything that went out.");
+  if (big && F.exp) ns.unshift("Your biggest cost this month is " + big[0].toLowerCase() + ": " + baht(big[1]) + ", or " + Math.round(big[1] / F.exp * 100) + "% of all costs.");
   if (ns.length){
     var is = sec("Worth knowing", L("Nothing to do, just good to know", "ไม่ต้องทำอะไร แค่น่ารู้ไว้")); NI($(".mb-kick", is));
     var rail = el("div", "mb-rail");
