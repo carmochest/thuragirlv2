@@ -82,12 +82,14 @@ function startPayFlow(file){
     { ask: function(){ return file ? "Got the bill. Who is it from? Type their name." : "Who do you need to pay? Type their name."; }, suggest: function(){ return contactNames(u, "out"); },
       take: function(t, d){ if (t.length < 2) return "Type who you're paying, please."; d.to = matchName(contactNames(u, "out"), t); d.isNew = d.to === t && contactNames(u, "out").indexOf(t) < 0; } },
     { ask: function(){ return "How much?"; }, take: function(t, d){ var n = amtOf(t); if (!(n > 0)) return "I need an amount, like 12,500."; d.amt = n; } },
+    { ask: function(){ return "What is it? Stock you sell, a business expense, or equipment?"; }, skip: function(){ return serviceCo(u); }, opts: function(){ return [["For resale (stock)", "stock"], ["Business expense", "expense"], ["Equipment", "asset"]]; },
+      take: function(t, d){ d.kind = /stock|resale|สต็อก|ขาย/i.test(t) ? "stock" : /equip|อุปกรณ์|asset/i.test(t) ? "asset" : "expense"; } },
     { ask: function(){ return "When is it due?"; }, opts: function(){ return [["Today", "0"], ["In 7 days", "7"], ["In 30 days", "30"]]; },
       take: function(t, d){ var n = daysOf(t); if (n == null) return "Tell me when, like today or in 7 days."; d.days = n; } },
     { ask: function(){ return "Do you have their PromptPay ID? A phone number or a 13-digit ID. I turn it into a QR code you can scan."; }, opts: function(){ return [["Skip", "skip"]]; },
       take: function(t, d){ if (/^skip|^no|ไม่มี|ข้าม/i.test(t)){ d.pp = ""; return; } var x = t.replace(/\D/g, ""); if (!(x.length === 10 || x.length === 13)) return "A 10-digit phone number or a 13-digit ID, or tap Skip."; d.pp = x; } },
     { ask: function(){ var d = chat.flow.d; return "Pay " + d.to + " " + baht(d.amt) + ", due " + nice(addDays(today(), d.days)) + (d.pp ? ", by PromptPay." : ".") + " Save it?"; },
-      extra: function(){ return [{ l: "Save bill", acc: 1, fn: function(){ var d = chat.flow.d; var v = { id: "b" + Date.now(), to: d.to, amount: d.amt, due: addDays(today(), d.days), pp: d.pp, note: "", paid: "" }; if (d.file) v.file = d.file; u.bills = u.bills || []; u.bills.push(v); save(); endFlow(); refresh(); openBill(v); toast("Bill saved"); } },
+      extra: function(){ return [{ l: "Save bill", acc: 1, fn: function(){ var d = chat.flow.d; var v = { id: "b" + Date.now(), to: d.to, amount: d.amt, date: today(), kind: d.kind || "", due: addDays(today(), d.days), pp: d.pp, note: "", paid: "" }; if (d.file) v.file = d.file; u.bills = u.bills || []; u.bills.push(v); save(); endFlow(); refresh(); openBill(v); toast("Bill saved"); } },
         { l: "Use the full form", fn: function(){ endFlow(); newBill(); } }]; },
       take: function(t){ if (/^(y|yes|ok|save|ใช่|ตกลง)/i.test(t)){ $("#b-opts .pill.acc").click(); return "Saving it."; } return "Tap Save bill, or Use the full form."; } }
   ] };
@@ -337,8 +339,8 @@ function tfaLogin(acc, done){
 }
 
 /* plan and billing: the page is ready; payments go through Beam once Surf's backend is live */
-var PLANS = [["standard", "Standard", 1999, ["Bookkeeping, up to 150 documents a month", "VAT, withholding and SSO prepared every month", "Chat and LINE, unlimited", "Company registration included"]],
-  ["pro", "Pro", 3999, ["Everything in Standard, unlimited documents", "Filings submitted for you", "Year-end closing with the auditor", "Payroll and more than one company"]]];
+var PLANS = [["standard", "Standard", 1999, ["200 documents a month", "500 bank and platform lines, 300 chat messages", "3 sign-ins, payroll for up to 10 staff", "VAT, withholding and SSO every month"]],
+  ["pro", "Pro", 3999, ["1,000 documents a month", "3,000 bank and platform lines, 1,500 chat messages", "10 sign-ins, payroll for up to 50 staff", "Everything in Standard, with higher limits"]]];
 function billingCard(u, root){
   var c = card("Your plan"), trialEnd = addDays(iso(new Date(u.created || Date.now())), 14), cur = u.plan || "";
   c.appendChild(el("p", "st-p", cur ? "You're on " + PLANS.filter(function(p){ return p[0] === cur; })[0][1] + (u.planPending ? ". Payment is waiting for checkout." : ".") : "Free trial until " + niceY(trialEnd) + ". Pick a plan whenever you're ready; nothing is charged until the trial ends."));
@@ -352,7 +354,7 @@ function billingCard(u, root){
     g.appendChild(b);
   });
   c.appendChild(g);
-  c.appendChild(el("p", "tnote", "Prices are launch prices in baht, VAT included. Early customers keep them."));
+  c.appendChild(el("p", "tnote", "Prices in baht, before VAT. Pay yearly and get 2 months free."));
   root.appendChild(c);
   var pm = card("Payment and receipts");
   pm.appendChild(el("p", "st-p", u.planPending ? "Checkout is ready to open on Beam, our payment partner. Card details are typed on Beam's page, never in ThuraGirl." : "Pay by card or PromptPay through Beam, our payment partner. Card details are typed on Beam's page, never in ThuraGirl."));

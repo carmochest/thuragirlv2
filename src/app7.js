@@ -41,7 +41,7 @@ function renderBrief(){
 
   // what needs a yes, most pressing first
   var urgent = [];
-  if (p && !u.done["rev:" + p.key]) urgent.push({ ic: "i-chart", h: "Your " + p.name + " books are ready to sign off", p: "It is all on one page: " + baht(p.inc) + " in, " + baht(p.exp) + " out, " + baht(p.kept) + " kept.", btn: "Review", fn: openSheet, k: "rev" });
+  if (p && !u.done["rev:" + p.key]) urgent.push({ ic: "i-chart", h: "Your " + p.name + " books are ready to sign off", p: "It is all on one page: revenue " + baht(p.inc) + ", costs " + baht(p.exp) + ", profit " + baht(p.kept) + " kept.", btn: "Review", fn: openSheet, k: "rev" });
   TK.filter(function(x){ return x.k.indexOf("rev") !== 0 && ((x.late && x.late.cls === "bad") || (x.due && diffDays(x.due, today()) <= 1) || x.rank <= 1); }).forEach(function(x){ urgent.push({ ic: x.ic || "i-clock", h: x.story ? x.story.h : x.t, p: x.story ? x.story.p : (x.m || ""), btn: x.btn, fn: x.fn, k: x.k, amt: x.amt, late: x.late }); });
   var top = urgent.slice(0, 3), allN = TK.filter(function(x){ return x.k.indexOf("rev") !== 0; }).length + (p && !u.done["rev:" + p.key] ? 1 : 0), restN = allN - top.length;
 
@@ -80,8 +80,8 @@ function renderBrief(){
   var mgP = F.rev ? K / F.rev * 100 : 0, nb = (u.bills || []).filter(function(v){ return !v.paid && v.due >= today() && diffDays(v.due, today()) <= 7 && !top.some(function(t){ return t.k === "bill:" + v.id; }); }).sort(function(a, z){ return a.due < z.due ? -1 : 1; })[0];
   function bb(v){ return "<b>" + esc(v) + "</b>"; }
   function dTH(s2){ var d2 = day(s2); return d2.getDate() + " " + mth(MONTH[d2.getMonth()]); }
-  var bparts = []; bparts.push(["i-trend", L(esc(mName) + " so far: " + bb(baht(F.rev)) + " in, " + bb(baht(F.exp)) + " out, " + (K >= 0 ? "kept " + bb(baht(K)) + " (" + bb(mgP.toFixed(1) + "%") + " of sales)" : "spent " + bb(baht(-K)) + " more than came in") + (F.d != null && Math.abs(F.d) < 200 && K > 0 ? ", " + bb((F.d >= 0 ? "+" : "−") + pctTxt(F.d)) + " on last month" : "") + ". ",
-    esc(mT) + " ถึงวันนี้ เงินเข้า " + bb(baht(F.rev)) + " เงินออก " + bb(baht(F.exp)) + (K >= 0 ? " เหลือเก็บ " + bb(baht(K)) + " (" + bb(mgP.toFixed(1) + "%") + " ของยอดขาย)" : " ใช้เกินรายรับ " + bb(baht(-K))) + (F.d != null && Math.abs(F.d) < 200 && K > 0 ? " " + bb((F.d >= 0 ? "+" : "−") + pctTxt(F.d)) + " เทียบเดือนก่อน" : "") + "")]);
+  var bparts = []; bparts.push(["i-trend", L(esc(mName) + " so far: revenue " + bb(baht(F.rev)) + ", costs " + bb(baht(F.exp)) + ", " + (K >= 0 ? "profit " + bb(baht(K)) + " (" + bb(mgP.toFixed(1) + "%") + " of revenue)" : "a loss of " + bb(baht(-K))) + (F.d != null && Math.abs(F.d) < 200 && K > 0 ? ", " + bb((F.d >= 0 ? "+" : "−") + pctTxt(F.d)) + " on last month" : "") + ". ",
+    esc(mT) + " ถึงวันนี้ รายได้ " + bb(baht(F.rev)) + " ค่าใช้จ่าย " + bb(baht(F.exp)) + (K >= 0 ? " กำไร " + bb(baht(K)) + " (" + bb(mgP.toFixed(1) + "%") + " ของรายได้)" : " ขาดทุน " + bb(baht(-K))) + (F.d != null && Math.abs(F.d) < 200 && K > 0 ? " " + bb((F.d >= 0 ? "+" : "−") + pctTxt(F.d)) + " เทียบเดือนก่อน" : "") + "")]);
   /* keep names capitalised: only common opening words are lowered after "First up:" */
   var h0 = top.length ? (/^(Your|The|Pay|Add|Check|Send|Finish|Upload|Receipt|Invoice|Approve|Set)\b/.test(top[0].h) ? top[0].h.charAt(0).toLowerCase() + top[0].h.slice(1) : top[0].h) : "";
   if (top.length) bparts.push(["i-check", ph === "evening" ? L("Tomorrow, start with: " + esc(h0), "พรุ่งนี้เริ่มที่: " + esc(T_(top[0].h))) : L("First up: " + esc(h0), "เรื่องแรก: " + esc(T_(top[0].h)))]);
@@ -92,9 +92,9 @@ function renderBrief(){
   hero.appendChild(bl);
   var st = el("div", "mb-stats");
   [[L("Cash", "เงินสด"), baht(B.cash), B.cashD == null ? "" : (B.cashD >= 0 ? "↑ " : "↓ ") + pctTxt(B.cashD)],
-   [L("Money in", "เงินเข้า"), baht(F.rev), F.dIn == null ? mT : (F.dIn >= 0 ? "↑ " : "↓ ") + pctTxt(F.dIn)],
-   [L("Money out", "เงินออก"), baht(F.exp), F.dOut == null ? mT : (F.dOut >= 0 ? "↑ " : "↓ ") + pctTxt(F.dOut)],
-   [L("Kept in ", "เหลือเก็บเดือน") + mT, (K < 0 ? "−" : "") + baht(Math.abs(K)), mgP.toFixed(1) + L("% margin", "% อัตรากำไร")]].forEach(function(x){
+   [L("Revenue", "รายได้"), baht(F.rev), F.dIn == null ? mT : (F.dIn >= 0 ? "↑ " : "↓ ") + pctTxt(F.dIn)],
+   [L("Costs", "ค่าใช้จ่าย"), baht(F.exp), F.dOut == null ? mT : (F.dOut >= 0 ? "↑ " : "↓ ") + pctTxt(F.dOut)],
+   [L("Profit in ", "กำไรเดือน") + mT, (K < 0 ? "−" : "") + baht(Math.abs(K)), mgP.toFixed(1) + L("% margin", "% อัตรากำไร")]].forEach(function(x){
     var t = NI(el("div", "mb-stat")); t.appendChild(el("span", "", x[0])); t.appendChild(el("b", "num", x[1])); if (x[2]) t.appendChild(el("small", "num", x[2])); st.appendChild(t);
   });
   var tiles = $$(".mb-stat", st), mg = F.rev ? Math.max(0, Math.min(100, K / F.rev * 100)) : 0;

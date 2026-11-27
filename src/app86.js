@@ -5,9 +5,9 @@ function plModel(F){
   function g(k){ return cats[k] || 0; }
   function W(en, tl){ return th ? tl : en; }
   var otherInc = g("Interest") + g("Refunds") + g("Other income"), rev = Math.max(0, F.rev - otherInc);
-  var cos = g("Stock and supplies"), sell = g("Marketing"), fin = 0;
+  var cos = g("Cost of goods sold"), sell = g("Marketing"), fin = 0;
   var admin = Math.max(0, F.exp - cos - sell - fin);
-  var adminLines = [["Wages", g("Wages")], ["Rent", g("Rent")], ["Utilities", g("Utilities")], ["Tax and social security", g("Tax and social security")], ["Bank fees", g("Bank fees")], ["Other costs", g("Other costs")]].filter(function(x){ return x[1] > 0; });
+  var adminLines = [["Wages", g("Wages")], ["Rent", g("Rent")], ["Utilities", g("Utilities")], ["Bank fees", g("Bank fees")], ["Other costs", g("Other costs")]].filter(function(x){ return x[1] > 0; });
   var gp = rev - cos, pbit = rev + otherInc - cos - sell - admin, pbt = pbit - fin, tax = pbt > 0 ? Math.max(0, F.tax[2] || 0) : 0, np = pbt - tax;
   var revLines = (F.revMix || []).filter(function(x){ return ["Interest", "Refunds", "Other income"].indexOf(x[0]) < 0; });
   var R = [];
@@ -33,8 +33,8 @@ function plModel(F){
     title: W("Statement of profit or loss", "งบกำไรขาดทุน"),
     period: W("For the period " + dt(F.from) + " to " + dt(F.to), "สำหรับงวดตั้งแต่วันที่ " + dt(F.from) + " ถึงวันที่ " + dt(F.to)),
     unit: W("Amounts in Thai Baht", "หน่วย: บาท"),
-    note: W("Prepared by ThuraGirl from bank statements on a cash basis. Income tax is an estimate. Unaudited management accounts; your accountant finalises the annual financial statements under TFRS for NPAEs.",
-      "จัดทำโดย ThuraGirl จากรายการเดินบัญชีธนาคารตามเกณฑ์เงินสด ภาษีเงินได้เป็นตัวเลขประมาณการ เป็นงบภายในที่ยังไม่ผ่านการตรวจสอบ ผู้สอบบัญชีจะจัดทำงบการเงินประจำปีตามมาตรฐาน TFRS for NPAEs"),
+    note: W("Prepared by ThuraGirl on an accrual basis from bank statements, invoices, bills and stock counts. Income tax is an estimate. Unaudited management accounts; your accountant finalises the annual financial statements under TFRS for NPAEs.",
+      "จัดทำโดย ThuraGirl ตามเกณฑ์คงค้าง จากรายการเดินบัญชี ใบแจ้งหนี้ บิล และการนับสต็อก ภาษีเงินได้เป็นตัวเลขประมาณการ เป็นงบภายในที่ยังไม่ผ่านการตรวจสอบ ผู้สอบบัญชีจะจัดทำงบการเงินประจำปีตามมาตรฐาน TFRS for NPAEs"),
     made: W("Prepared " + dt(today()), "จัดทำวันที่ " + dt(today())),
     file: "PL-" + (coName(u) || "company").replace(/[^\w฀-๿]+/g, "-").replace(/^-|-$/g, "") + "-" + F.from + "-to-" + F.to
   };
@@ -43,7 +43,7 @@ function plAmt(a){ if (!a) return "–"; var s = Math.abs(a).toLocaleString("en-
 
 /* the printable page, with selectable text */
 function plPrint(F){
-  var M = plModel(F), w = window.open("", "_blank");
+  var M = F && F.isModel ? F : plModel(F), w = window.open("", "_blank");
   var rows = M.rows.map(function(r){ return '<tr class="' + r.k + " i" + r.i + '"><td>' + esc(r.t) + '</td><td class="r">' + (r.k === "h" ? "" : plAmt(r.a)) + "</td></tr>"; }).join("");
   var h = '<!doctype html><html lang="' + (M.th ? "th" : "en") + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + esc(M.file) + "</title>" +
     '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Noto+Sans+Thai:wght@400;600;700&display=swap">' +
@@ -116,11 +116,11 @@ function plPdfBlob(M){
   });
 }
 function plDownload(F){
-  var M = plModel(F);
+  var M = F && F.isModel ? F : plModel(F);
   plPdfBlob(M).then(function(b){ var url = URL.createObjectURL(b), a = document.createElement("a"); a.href = url; a.download = M.file + ".pdf"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(url); }, 60000); toast("Saved " + M.file + ".pdf"); });
 }
 function plShare(F){
-  var M = plModel(F);
+  var M = F && F.isModel ? F : plModel(F);
   plPdfBlob(M).then(function(b){
     var file = null; try { file = new File([b], M.file + ".pdf", { type: "application/pdf" }); } catch (e) {}
     if (file && navigator.canShare && navigator.canShare({ files: [file] })) navigator.share({ files: [file], title: M.title, text: M.co + " · " + M.period }).catch(function(){});

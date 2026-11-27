@@ -10,7 +10,7 @@ function diffDays(a, b){ return Math.round((day(a) - day(b)) / 864e5); }
 function nice(s){ var d = day(s); return d.getDate() + " " + MONTH[d.getMonth()]; }
 function niceY(s){ var d = day(s); return d.getDate() + " " + MONTH[d.getMonth()].slice(0, 3) + " " + d.getFullYear(); }
 function pct(a, b){ return b ? (a - b) / Math.abs(b) * 100 : null; }
-function pctTxt(p){ return p == null ? "" : p >= 200 ? ((p + 100) / 100).toFixed(1) + "×" : Math.abs(p).toFixed(1) + "%"; }
+function pctTxt(p){ return p == null ? "" : Math.abs(p) >= 1000 ? Math.round(Math.abs(p)).toLocaleString("en-US") + "%" : Math.abs(p).toFixed(1) + "%"; }
 
 /* reading a statement: CSV text or a spreadsheet, in English or Thai */
 function splitCsv(text){
@@ -141,31 +141,29 @@ function books(u){
   var mStart = iso(new Date(y, mo, 1)), pmStart = iso(new Date(y, mo - 1, 1)), pmEnd = iso(new Date(y, mo - 1, Math.min(dd, new Date(y, mo, 0).getDate())));
   var q0 = Math.floor(mo / 3) * 3, qStart = iso(new Date(y, q0, 1)), off = diffDays(asOf, qStart), pqStart = iso(new Date(y, q0 - 3, 1)), pqEnd = addDays(pqStart, off);
   var yStart = iso(new Date(y, 0, 1)), pyStart = iso(new Date(y - 1, 0, 1)), pyEnd = iso(new Date(y - 1, mo, dd));
-  var first = tx[0].d;
-  function sum(a, b){
-    var o = { inc: 0, exp: 0, cats: {}, n: 0 };
-    tx.forEach(function(x){ if (x.d < a || x.d > b) return; o.n++; if (x.a > 0) o.inc += x.a; else o.exp -= x.a; var c = x.c || cat(x.t, x.a); o.cats[c] = (o.cats[c] || 0) + Math.abs(x.a); });
-    o.kept = o.inc - o.exp; return o;
-  }
+  var first = tx[0].d, links = docLinks(u);
+  /* accrual: income when earned, costs when incurred, VAT and WHT as amounts owed (see app41) */
+  function sum(a, b){ return accSum(u, a, b, links); }
   function mixOf(o, inc){
-    var rows = Object.keys(o.cats).filter(function(c){ return (INC.some(function(r){ return r[1] === c; }) || c === "Other income") === inc; }).map(function(c){ return [c, o.cats[c]]; }).sort(function(p, q){ return q[1] - p[1]; });
+    var rows = Object.keys(o.cats).filter(function(c){ return isIncCat(c) === inc; }).map(function(c){ return [c, o.cats[c]]; }).sort(function(p, q){ return q[1] - p[1]; });
     if (rows.length > 6){ var rest = rows.slice(5).reduce(function(s, r){ return s + r[1]; }, 0); rows = rows.slice(0, 5).concat([[inc ? "Everything else" : "Everything else", rest]]); }
     return rows;
   }
   var vatOn = !(u.setup && u.setup.vat === "No");
   function taxes(o, months, ytdKept){
-    var sales = o.inc - (o.cats["Interest"] || 0) - (o.cats["Refunds"] || 0), buys = (o.cats["Stock and supplies"] || 0) + (o.cats["Utilities"] || 0) + (o.cats["Marketing"] || 0);
-    var vat = vatOn ? Math.max(0, (sales - buys) * 7 / 107) : 0, wht = (o.cats["Rent"] || 0) * 0.05 + (o.cats["Marketing"] || 0) * 0.02;
+    var vat = vatOn ? Math.max(0, o.outVat - o.inVat) : 0, wht = (o.ccats["Rent"] || 0) * 0.05 + (o.ccats["Marketing"] || 0) * 0.02 + (o.ccats["Other costs"] || 0) * 0.01;
     var annual = Math.max(0, ytdKept / Math.max(1, (mo + dd / 31)) * 12), cit = annual <= 300000 ? 0 : annual <= 3000000 ? (annual - 300000) * 0.15 : 405000 + (annual - 3000000) * 0.2;
     return [Math.round(vat), Math.round(wht), Math.round(cit * months / 12)];
   }
-  function weeks(a, b){ var r = [], s = a, n = 1; while (s <= b){ var e = addDays(s, 6); if (e > b) e = b; var o = sum(s, e); r.push(["Wk " + n, o.inc, o.exp]); s = addDays(e, 1); n++; } return r; }
-  function months(a, b){ var r = [], d = day(a); while (iso(d) <= b){ var s = iso(d), e = iso(new Date(d.getFullYear(), d.getMonth() + 1, 0)); if (e > b) e = b; if (e >= first){ var o = sum(s, e); r.push([MONTH[d.getMonth()].slice(0, 3), o.inc, o.exp]); } d = new Date(d.getFullYear(), d.getMonth() + 1, 1); } return r; }
+  /* the bar chart shows cash in and out; profit is shown separately */
+  function weeks(a, b){ var r = [], s = a, n = 1; while (s <= b){ var e = addDays(s, 6); if (e > b) e = b; var o = sum(s, e); r.push(["Wk " + n, o.cin, o.cout]); s = addDays(e, 1); n++; } return r; }
+  function months(a, b){ var r = [], d = day(a); while (iso(d) <= b){ var s = iso(d), e = iso(new Date(d.getFullYear(), d.getMonth() + 1, 0)); if (e > b) e = b; if (e >= first){ var o = sum(s, e); r.push([MONTH[d.getMonth()].slice(0, 3), o.cin, o.cout]); } d = new Date(d.getFullYear(), d.getMonth() + 1, 1); } return r; }
   var ytd = sum(yStart, asOf);
   function per(lab, vs, a, b, pa, pb, flow, mths){
     var o = sum(a, b), p = pa >= first ? sum(pa, pb) : null;
-    return { lab: lab, vs: vs, rev: o.inc, exp: o.exp, d: p ? pct(o.kept, p.kept) : null, dIn: p ? pct(o.inc, p.inc) : null, dOut: p ? pct(o.exp, p.exp) : null, flow: flow,
-      revMix: mixOf(o, true), expMix: mixOf(o, false), tax: taxes(o, mths, ytd.kept), cats: o.cats, from: a < first ? first : a, to: b };
+    return { lab: lab, vs: vs, rev: o.inc, exp: o.exp, d: p ? pct(o.kept, p.kept) : null, dIn: p ? pct(o.inc, p.inc) : null, dOut: p ? pct(o.exp, p.exp) : null, flow: flow, prevKept: p ? p.kept : null,
+      revMix: mixOf(o, true), expMix: mixOf(o, false), tax: taxes(o, mths, ytd.kept), cats: o.cats, from: a < first ? first : a, to: b,
+      cin: o.cin, cout: o.cout, ccats: o.ccats, cogs: o.cogs, buys: o.buys, dStock: o.dStock, outVat: o.outVat, inVat: o.inVat, settled: o.settled };
   }
   var fin = {
     mtd: per("Profit this month", "vs last month", mStart, asOf, pmStart, pmEnd, weeks(mStart, asOf), 1),
@@ -176,7 +174,7 @@ function books(u){
   var lmS = pmStart, lmE = iso(new Date(y, mo, 0)), lm = sum(lmS, lmE), pack = null;
   if (first <= addDays(lmS, 10) && lm.n) pack = { key: lmS.slice(0, 7), name: MONTH[day(lmS).getMonth()], from: lmS, to: lmE, inc: lm.inc, exp: lm.exp, kept: lm.kept, tax: taxes(lm, 1, ytd.kept), F: per("Profit in " + MONTH[day(lmS).getMonth()], "vs the month before", lmS, lmE, iso(new Date(y, mo - 2, 1)), iso(new Date(y, mo - 1, 0)), weeks(lmS, lmE), 1) };
   var mStartBal = series.length ? Object.keys(accts).reduce(function(s, k){ return s + (balAt(k, addDays(mStart, -1)) || 0); }, 0) : 0;
-  var v = { asOf: asOf, first: first, cash: cash, series: series, fin: fin, pack: pack, cashD: mStart > first ? pct(cash, mStartBal) : null, n: tx.length, accts: Object.keys(accts).length };
+  var v = { links: links, asOf: asOf, first: first, cash: cash, series: series, fin: fin, pack: pack, cashD: mStart > first ? pct(cash, mStartBal) : null, n: tx.length, accts: Object.keys(accts).length };
   BK_CACHE = { key: key, v: v }; return v;
 }
 
@@ -193,6 +191,7 @@ function sampleCsv(){
     if (dm === 4) add("MWA WATER BILL PAYMENT", -between(1500, 2100));
     if (dm === 6) add("AIS FIBRE INTERNET", -1290);
     if (dm === 7 || dm === 21) add("FACEBOOK ADS META PLATFORMS", -between(4800, 7600));
+    if (dm === 7){ add("REVENUE DEPT PND1 PAYMENT", -4503); add("REVENUE DEPT PND53 WHT PAYMENT", -between(4200, 5200)); }
     if (dm === 15){ add("REVENUE DEPT VAT PP30 PAYMENT", -between(17000, 26000)); add("SOCIAL SECURITY OFFICE SSO", -5250); }
     if (dm === 10) add("TRANSFER FROM SUKHUMVIT CATERING CO", between(68000, 142000), "INV-" + (n++));
     if (dm === 18 && r() < .7) add("INWARD TRF BANGKOK HOTEL GROUP", between(42000, 88500), "INV-" + (n++));
@@ -231,6 +230,7 @@ function sampleBooks(u){
   if (!u.setup.vat) u.setup.vat = "Yes";
   if (!u.setup.sso) u.setup.sso = "Yes";
   if (!u.team || !u.team.length) u.team = [["Somchai Saetang", "Head chef", 48000], ["Pimchanok Wongsa", "Operations manager", 55000], ["Anucha Phromsiri", "Sous chef", 32000], ["Niran Chaiyaporn", "Bookkeeper", 36000], ["Kanokwan Jaidee", "Front of house lead", 28000], ["Thanapon Rattanakul", "Marketing", 26000], ["Suwannee Tanyaluk", "Server", 18500]].map(function(p){ return { name: p[0], role: p[1], pay: p[2] }; });
+  sampleStock(u);
   var pd = day(addDays(t, -1)); u.done["tax:" + iso(new Date(pd.getFullYear(), pd.getMonth() - 1, 1)).slice(0, 7)] = Date.now() - 6 * 864e5;
 }
 function invTotal(v){ var s = v.items.reduce(function(a, it){ return a + (+it[1] || 0) * (+it[2] || 0); }, 0); return Math.round((v.vat ? s * 1.07 : s) * 100) / 100; }

@@ -11,7 +11,7 @@ function gsInit(){
 }
 function openGS(k, title, sub){
   gsInit(); $("#gs-k").textContent = k; $("#gs-t").textContent = title; $("#gs-sub").textContent = sub || ""; $("#gs-sub").hidden = !sub;
-  var b = $("#gs-b"); b.textContent = ""; var s = $("#gs"); s.hidden = false; s.classList.remove("comenu");
+  var b = $("#gs-b"); b.textContent = ""; b.removeAttribute("data-noi18n"); var s = $("#gs"); s.hidden = false; s.classList.remove("comenu");
   try { $("#gs-x").focus({ preventScroll: true }); $(".shB-card", s).scrollIntoView({ block: "nearest" }); } catch (e) {}
   return b;
 }
@@ -104,7 +104,7 @@ function paintNeeds(u){
   shown.forEach(function(x){ sec.insertBefore(rowFor(x), setup); });
   var p = B && B.pack, showRev = !!(p && !(u.done["rev:" + p.key]));
   rev.hidden = !showRev; rev.classList.remove("gone", "going"); rev.style.height = "";
-  if (p){ $(".rt .t", rev).textContent = p.name + " Review Pack"; $(".rt .m", rev).textContent = "Your month on one page. " + baht(p.kept) + " kept."; }
+  if (p){ $(".rt .t", rev).textContent = p.name + " Review Pack"; $(".rt .m", rev).textContent = "Your month on one page. " + baht(p.kept) + " profit."; }
   var later = lat.length + Math.max(0, T.length - 6);
   var more = $(".needB .more");
   if (!more.getAttribute("role")){ more.setAttribute("role", "button"); more.tabIndex = 0; more.addEventListener("click", function(){ needsAll = !needsAll; paintNeeds(me()); if (!needsAll) $(".needB").scrollIntoView({ block: "start", behavior: "smooth" }); }); more.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.key === " "){ e.preventDefault(); more.click(); } }); }
@@ -134,6 +134,7 @@ function paintHero(u){
     d.appendChild(el("em", "", x[3] == null && x[0] !== ".mini.t3" ? "this month" : x[4])); d.classList.toggle("down", x[3] != null && x[3] < 0);
   });
   $(".snapB .sech span").textContent = MONTH[day(B.asOf).getMonth()] + " so far";
+  profitTileFix();
 }
 
 /* ── money lists ── */
@@ -187,7 +188,7 @@ function packMore(p, s){
   t.setAttribute("aria-expanded", String(packOpen)); w.appendChild(t);
   if (packOpen){
     var body = el("div", "pk-body");
-    [[L("Money in", "เงินเข้า"), F.revMix, F.rev], [L("Money out", "เงินออก"), F.expMix, F.exp]].forEach(function(g){
+    [[L("Revenue", "รายได้"), F.revMix, F.rev], [L("Costs", "ค่าใช้จ่าย"), F.expMix, F.exp]].forEach(function(g){
       var h = el("div", "pk-h"); h.appendChild(el("span", "", g[0])); h.appendChild(el("b", "num", baht(g[2]))); body.appendChild(h);
       g[1].forEach(function(r){ var row = el("div", "pk-r"); row.appendChild(el("span", "", r[0])); row.appendChild(el("em", "num", g[2] ? Math.round(r[1] / g[2] * 100) + "%" : "")); row.appendChild(el("b", "num", baht(r[1]))); body.appendChild(row); });
     });
@@ -379,11 +380,7 @@ function fileReceipt(f){
 }
 
 /* ── ThuraGirl answers from the books ── */
-function span(u, a, b){
-  var o = { inc: 0, exp: 0, cats: {}, n: 0 };
-  (u.tx || []).forEach(function(x){ if (x.d < a || x.d > b) return; o.n++; if (x.a > 0) o.inc += x.a; else o.exp -= x.a; var c = cat(x.t, x.a); o.cats[c] = (o.cats[c] || 0) + Math.abs(x.a); });
-  o.kept = o.inc - o.exp; return o;
-}
+function span(u, a, b){ return accSum(u, a, b, docLinks(u)); }
 function whichMonth(t, asOf){
   var A = day(asOf), y = A.getFullYear(), m = -1;
   if (/last month|previous month|เดือนที่แล้ว|เดือนก่อน/.test(t)) m = A.getMonth() - 1;
@@ -405,7 +402,7 @@ function brain(q){
   var F = B.fin.mtd, mName = MONTH[day(B.asOf).getMonth()];
   var openInv = (u.invoices || []).filter(function(v){ return !v.paid; }), lateInv = openInv.filter(function(v){ return v.due < T; });
   var openBills = (u.bills || []).filter(function(v){ return !v.paid; }), lateBills = openBills.filter(function(v){ return v.due < T; });
-  if (/^(pay|i want to pay|make a payment)/.test(t)){ setTimeout(function(){ startPayFlow(); }, 300); return "Opening a new payment. Add the PromptPay ID and I make a QR code."; }
+  if (/^(pay|i want to pay|make a payment)/.test(t)){ setTimeout(function(){ payPick(); }, 300); return "Here are the bills I have. Pick one, or add a new one."; }
   if (/who owes|owes me|owed to me|receivable|unpaid invoice|outstanding invoice/.test(t)){
     if (!openInv.length) return "Nobody owes you anything right now. Every invoice is paid.";
     return openInv.length + (openInv.length === 1 ? " invoice is" : " invoices are") + " open, " + baht(openInv.reduce(function(s, v){ return s + invTotal(v); }, 0)) + " in total." +
@@ -429,26 +426,26 @@ function brain(q){
     return v ? cw[1] + " in " + r.name + ": " + baht(v) + ", " + (s.exp ? Math.round(v / s.exp * 100) : 0) + "% of everything that went out." : "I don't see any " + cw[1].toLowerCase() + " in " + r.name + ".";
   }
   if (/where.*(go|went)|spend|spent|expens|cost|money out/.test(t)){
-    var r2 = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" }, s2 = span(u, r2.a, r2.b), top = Object.keys(s2.cats).filter(function(c){ return EXP.some(function(e){ return e[1] === c; }) || c === "Other costs"; }).sort(function(a, b){ return s2.cats[b] - s2.cats[a]; });
+    var r2 = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" }, s2 = span(u, r2.a, r2.b), top = Object.keys(s2.cats).filter(function(c){ return !isIncCat(c); }).sort(function(a, b){ return s2.cats[b] - s2.cats[a]; });
     return baht(s2.exp) + " went out in " + r2.name + ". The biggest: " + top.slice(0, 4).map(function(c){ return c.toLowerCase() + " " + baht(s2.cats[c]) + " (" + Math.round(s2.cats[c] / s2.exp * 100) + "%)"; }).join(", ") + ".";
   }
   if (/come from|revenue|sales|income|earn|money in|customers?/.test(t)){
-    var r3 = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" }, s3 = span(u, r3.a, r3.b), tops = Object.keys(s3.cats).filter(function(c){ return INC.some(function(e){ return e[1] === c; }) || c === "Other income"; }).sort(function(a, b){ return s3.cats[b] - s3.cats[a]; });
+    var r3 = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" }, s3 = span(u, r3.a, r3.b), tops = Object.keys(s3.cats).filter(function(c){ return isIncCat(c); }).sort(function(a, b){ return s3.cats[b] - s3.cats[a]; });
     return baht(s3.inc) + " came in during " + r3.name + ": " + tops.slice(0, 4).map(function(c){ return c.toLowerCase() + " " + baht(s3.cats[c]); }).join(", ") + ".";
   }
   if (/p&l|profit and loss|income statement|full p/.test(t)){
-    var r4 = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" }, s4 = span(u, r4.a, r4.b), lines = ["Profit and loss, " + r4.name + " (from your bank lines)", "Money in " + baht(s4.inc)];
-    Object.keys(s4.cats).filter(function(c){ return EXP.some(function(e){ return e[1] === c; }) || c === "Other costs"; }).sort(function(a, b){ return s4.cats[b] - s4.cats[a]; }).forEach(function(c){ lines.push("  " + c + " " + baht(s4.cats[c])); });
-    lines.push("Money out " + baht(s4.exp)); lines.push((s4.kept >= 0 ? "Kept " : "Lost ") + baht(Math.abs(s4.kept)) + (s4.inc ? ", a " + (s4.kept / s4.inc * 100).toFixed(1) + "% margin" : ""));
+    var r4 = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" }, s4 = span(u, r4.a, r4.b), lines = ["Profit and loss, " + r4.name + " (accrual basis)", "Revenue " + baht(s4.inc)];
+    Object.keys(s4.cats).filter(function(c){ return !isIncCat(c); }).sort(function(a, b){ return s4.cats[b] - s4.cats[a]; }).forEach(function(c){ lines.push("  " + c + " " + baht(s4.cats[c])); });
+    lines.push("Costs " + baht(s4.exp)); lines.push((s4.kept >= 0 ? "Profit " : "Loss ") + baht(Math.abs(s4.kept)) + (s4.inc ? ", a " + (s4.kept / s4.inc * 100).toFixed(1) + "% margin" : ""));
     return lines.join("\n");
   }
   if (wm || /how was|how did|profit|month|quarter|year|doing|perform/.test(t)){
     var r5 = wm || { a: B.fin.mtd.from, b: B.asOf, name: mName + " so far" };
-    if (/quarter/.test(t)){ var Q = B.fin.qtd; return "This quarter so far: " + baht(Q.rev) + " in, " + baht(Q.exp) + " out, " + baht(Q.rev - Q.exp) + " kept" + (Q.d != null ? ", " + (Q.d >= 0 ? "up " : "down ") + pctTxt(Q.d) + " on the same point last quarter." : "."); }
-    if (/year/.test(t)){ var Y = B.fin.ytd; return "This year so far (since your statements start on " + nice(B.first) + "): " + baht(Y.rev) + " in, " + baht(Y.exp) + " out, " + baht(Y.rev - Y.exp) + " kept."; }
+    if (/quarter/.test(t)){ var Q = B.fin.qtd; return "This quarter so far: revenue " + baht(Q.rev) + ", costs " + baht(Q.exp) + ", profit " + baht(Q.rev - Q.exp) + (Q.d != null ? ", " + (Q.d >= 0 ? "up " : "down ") + pctTxt(Q.d) + " on the same point last quarter." : "."); }
+    if (/year/.test(t)){ var Y = B.fin.ytd; return "This year so far (since your statements start on " + nice(B.first) + "): revenue " + baht(Y.rev) + ", costs " + baht(Y.exp) + ", profit " + baht(Y.rev - Y.exp) + "."; }
     var s5 = span(u, r5.a, r5.b); if (!s5.n) return "I don't have statements for " + r5.name + ". They start on " + niceY(B.first) + ".";
-    var big = Object.keys(s5.cats).filter(function(c){ return EXP.some(function(e){ return e[1] === c; }) || c === "Other costs"; }).sort(function(a, b){ return s5.cats[b] - s5.cats[a]; })[0];
-    return r5.name + (r5.partial ? "" : "") + ": " + baht(s5.inc) + " in and " + baht(s5.exp) + " out. You " + (s5.kept >= 0 ? "kept " + baht(s5.kept) : "spent " + baht(-s5.kept) + " more than came in") + (s5.inc ? ", a " + (s5.kept / s5.inc * 100).toFixed(1) + "% margin" : "") + "." + (big ? " The biggest cost was " + big.toLowerCase() + " at " + baht(s5.cats[big]) + "." : "");
+    var big = Object.keys(s5.cats).filter(function(c){ return !isIncCat(c); }).sort(function(a, b){ return s5.cats[b] - s5.cats[a]; })[0];
+    return r5.name + ": revenue " + baht(s5.inc) + " and costs " + baht(s5.exp) + ". " + (s5.kept >= 0 ? "Profit " + baht(s5.kept) : "A loss of " + baht(-s5.kept)) + (s5.inc ? ", a " + (s5.kept / s5.inc * 100).toFixed(1) + "% margin" : "") + "." + (big ? " The biggest cost was " + big.toLowerCase() + " at " + baht(s5.cats[big]) + "." : "");
   }
   if (/cash|bank|balance|money|how much do i have/.test(t)){
     var low = B.series.reduce(function(m, s){ return s[1] < m[1] ? s : m; }, B.series[0]);

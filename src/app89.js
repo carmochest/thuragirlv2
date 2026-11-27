@@ -77,7 +77,7 @@ function startDemo(){
     sampleBooks(u); u.sample = true;
   }
   if (u.company && u.company.type === "rest") u.company.type = "Restaurant";
-  demoBriefs(u);
+  sampleStock(u); demoBriefs(u);
   db.session = email; u.justIn = false; save();
 }
 function demoBar(u){

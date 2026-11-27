@@ -248,7 +248,7 @@ $("#b-co").addEventListener("click", function(){ go(tab === "settings" ? "" : "s
 $$('#app [data-go="money"]').forEach(function(b){ b.addEventListener("click", function(){ go("money"); }); });
 $$("#app .js-upload").forEach(function(b){ b.addEventListener("click", function(){ openUpload(); }); });
 $$("#app .js-invoice").forEach(function(b){ b.addEventListener("click", function(){ startInvoiceFlow(); }); });
-$$("#app .js-pay").forEach(function(b){ b.addEventListener("click", function(){ startPayFlow(); }); });
+$$("#app .js-pay").forEach(function(b){ b.addEventListener("click", function(){ payPick(); }); });
 $$("#app .js-sample").forEach(function(b){ b.addEventListener("click", function(){ useSample(); }); });
 $("#b-setup-btn").addEventListener("click", openSetupTask);
 $("#b-wel-go").addEventListener("click", openSetupTask);

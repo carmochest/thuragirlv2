@@ -336,6 +336,8 @@ function openTax(){
 }
 function moreTasks(u, B, out){
   var T = taxPack(u, B), t = today();
+  var SC = stockDue(u); if (SC) out.push({ k: "stock:" + SC.end, ic: "i-doc", t: "Count your stock for " + SC.month, m: "Keeps cost of sales and profit right", late: { txt: SC.end < t ? lateTxt(addDays(SC.end, 3)) : "Count on " + nice(SC.end), cls: SC.end < t && diffDays(t, SC.end) > 3 ? "bad" : "warn" }, btn: "Count", rank: SC.end < t ? 2 : 3, fn: function(){ stockSheet(SC); },
+    story: { h: "Count your stock for " + SC.month, p: "Close the month with what is on the shelves, so cost of goods sold and profit come out right." } });
   if (T && T.forms.length && !u.done["tax:" + T.key]){
     out.push({ k: "tax:" + T.key, ic: "i-doc", t: T.name + " tax forms are ready", m: T.forms.map(function(f){ return f[1]; }).join(", "), amt: T.total, late: { txt: T.due < t ? lateTxt(T.due) : "File by " + nice(T.due), cls: T.due < t ? "bad" : diffDays(T.due, t) <= 3 ? "warn" : "" }, btn: "Approve", rank: T.due < t ? 2 : 3, fn: openTax,
       story: { h: "Your " + T.name + " taxes are ready to file", p: T.forms.map(function(f){ return f[1] + " " + baht(f[2]); }).join(", ") + ". Approve and I file them before " + nice(T.due) + "." } });

@@ -10,6 +10,11 @@ Decided by the product owner during v2 design. Build to these unless they are ch
 | Auditor | **ThuraGirl assigns the auditor.** Owners do not pick one, and the new-company registration form has no auditor fields. The lead auditor assigns companies on the auditor desk. |
 | Existing companies | **Auto-pull company records from DBD** using the tax ID; the owner checks and confirms each line. |
 | New companies | ThuraGirl registers the company with DBD (included in every plan). **No bank statement upload until the company is registered.** |
+| Books basis | Accrual, not cash. Sales count when invoiced, stock when used (month-end count), VAT/WHT/SSO are liabilities. Cash is shown separately and labelled as cash. Comparisons show both numbers, never a bare multiple. |
+| Taxes | Each filing has a status: estimated, confirmed, filed, paid ("paid" only when the payment is in the bank). |
+| Bills | Each bill is For resale (stock), Business expense or Equipment, editable while the month is open. A paid bill links to one bank line and is never counted twice. Service companies are not asked. |
+| Auditor | ThuraGirl assigns it; the owner sees name, firm, CPA licence, email and phone and cannot choose. |
+| Plans | Standard ฿1,999 (200 docs, 500 lines, 300 chats, 3 sign-ins, 10 payroll) and Pro ฿3,999 (1,000, 3,000, 1,500, 10, 50). Before VAT. 14-day trial, annual = 2 months free. |
 | Accounting sync | Sync only to accounting software, **FlowAccount and PEAK** at launch. **No Odoo** and **no custom ERP sync**, because of the complexity. |
 | No accounting software | Users without accounting software pick **"Let ThuraGirl keep your books"** instead of syncing. Behind the scenes ThuraGirl processes their books on its own FlowAccount account. This is hidden: the UI never mentions FlowAccount for this option. |
 | Syncing new users | New users are nudged until they sync, because syncing is what fills the app. A Get started card (bank, books, sales apps) stays on Home, Finance and the Brief until the bank and the books are connected, with a daily reminder from day 2. It is hidden once they have synced. |
