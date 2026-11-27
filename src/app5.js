@@ -18,7 +18,12 @@ function openGS(k, title, sub){
 function closeGS(){ var s = $("#gs"); if (s){ var was = !s.hidden; s.hidden = true; if (was && s.getAttribute("data-dirty")){ s.removeAttribute("data-dirty"); refresh(); } } }
 function btn(cls, label, fn, icon){ var b = el("button", cls); b.type = "button"; b.innerHTML = icon ? '<svg class="i"><use href="#' + icon + '"/></svg>' : ""; b.appendChild(document.createTextNode(label)); if (fn) b.addEventListener("click", fn); return b; }
 function foot(a, b){ var f = el("div", "shB-f" + (b ? "" : " one")); f.appendChild(a); if (b) f.appendChild(b); return f; }
-function refresh(){ BK_CACHE.key = ""; lastKey = ""; showTab(); }
+/* after an action: update the page in place. Same tab, same scroll position, no replayed entrance animation */
+function refresh(){
+  BK_CACHE.key = ""; var y = window.scrollY; showTab();
+  if (tab === "money"){ var B = books(me()); if (B && B.fin[per]) $("#m-val").textContent = money(Math.abs(B.fin[per].rev - B.fin[per].exp)); }
+  window.scrollTo(0, y);
+}
 
 /* ── terms (signup) ── */
 function openTerms(){
@@ -171,8 +176,35 @@ function paintPack(u){
   var li = $$(".shB-l li b", s); li[0].textContent = p.inc ? (p.kept / p.inc * 100).toFixed(1) + "%" : "–"; li[1].textContent = baht(p.tax[0] + p.tax[1]); li[2].textContent = baht(all); li[3].textContent = String(miss);
   $$(".shB-l li span", s)[1].textContent = "Tax to set aside (estimate)";
   $(".shB-ok span", s).textContent = "I've reviewed " + p.name + " and it looks right.";
+  packMore(p, s);
 }
-function openSheet(){ var u = me(); paintPack(u); var s = $("#b-sheet"); $("#b-agree").checked = false; $("#b-approve").disabled = true; s.hidden = false; try { $("#b-shx").focus({ preventScroll: true }); $(".shB-card", s).scrollIntoView({ block: "nearest" }); } catch (e) {} }
+/* the full month behind the one-pager: every money-in and money-out line, week by week, and the statement itself */
+var packOpen = false;
+function packMore(p, s){
+  var old = $(".pk-more", s); if (old) old.remove(); if (!p.F) return;
+  var w = el("div", "pk-more"), F = p.F;
+  var t = btn("pk-tog", packOpen ? L("Hide the full month", "ซ่อนรายละเอียดทั้งเดือน") : L("See the full month", "ดูรายละเอียดทั้งเดือน"), function(){ packOpen = !packOpen; packMore(p, s); }, "i-chev");
+  t.setAttribute("aria-expanded", String(packOpen)); w.appendChild(t);
+  if (packOpen){
+    var body = el("div", "pk-body");
+    [[L("Money in", "เงินเข้า"), F.revMix, F.rev], [L("Money out", "เงินออก"), F.expMix, F.exp]].forEach(function(g){
+      var h = el("div", "pk-h"); h.appendChild(el("span", "", g[0])); h.appendChild(el("b", "num", baht(g[2]))); body.appendChild(h);
+      g[1].forEach(function(r){ var row = el("div", "pk-r"); row.appendChild(el("span", "", r[0])); row.appendChild(el("em", "num", g[2] ? Math.round(r[1] / g[2] * 100) + "%" : "")); row.appendChild(el("b", "num", baht(r[1]))); body.appendChild(row); });
+    });
+    var wk = el("div", "pk-wk"), mx = Math.max.apply(null, F.flow.map(function(x){ return Math.max(x[1], x[2]); }).concat([1]));
+    var wh = el("div", "pk-h"); wh.appendChild(el("span", "", L("Week by week", "รายสัปดาห์"))); body.appendChild(wh);
+    F.flow.forEach(function(x){
+      var r = el("div", "pk-wr"); r.appendChild(el("span", "", x[0]));
+      var bars = el("div", "pk-bars"), bi = el("i", "in"), bo = el("i", "out"); bi.style.width = (x[1] / mx * 100) + "%"; bo.style.width = (x[2] / mx * 100) + "%"; bars.appendChild(bi); bars.appendChild(bo); r.appendChild(bars);
+      r.appendChild(el("b", "num", baht(x[1] - x[2]))); wk.appendChild(r);
+    });
+    body.appendChild(wk);
+    var act = el("div", "pk-act"); plActions(act, F); body.appendChild(act);
+    w.appendChild(body);
+  }
+  var ok = $(".shB-ok", s); ok.parentNode.insertBefore(w, ok);
+}
+function openSheet(){ var u = me(); packOpen = false; paintPack(u); var s = $("#b-sheet"); $("#b-agree").checked = false; $("#b-approve").disabled = true; s.hidden = false; try { $("#b-shx").focus({ preventScroll: true }); $(".shB-card", s).scrollIntoView({ block: "nearest" }); } catch (e) {} }
 function closeSheet(){ $("#b-sheet").hidden = true; }
 function approvePack(){ var u = me(), B = books(u); if (!B || !B.pack) return; u.done["rev:" + B.pack.key] = { at: Date.now() }; save(); closeSheet(); collapse($("#b-rev")); setTimeout(function(){ setCount(); }, 400); if (tab === "brief") renderBrief(); toast(B.pack.name + " is signed off"); }
 
@@ -197,8 +229,9 @@ function newInvoice(pre){
     });
   }
   var g = el("div", "fgrid");
-  g.appendChild(fld("Customer", d.to, { ph: "Company or person", on: function(v){ d.to = v; err.textContent = ""; } }));
-  g.appendChild(fld("Customer email (optional)", d.email, { type: "email", ph: "For sending it", on: function(v){ d.email = v.trim(); } }));
+  var emF, emAuto = true;
+  g.appendChild(fld("Customer", d.to, { ph: "Company or person", on: function(v){ d.to = v; err.textContent = ""; var k = knownEmail(u, v); if (emAuto && emF){ d.email = k; $("input", emF).value = k; } } }));
+  g.appendChild(emF = fld("Customer email (optional)", d.email, { type: "email", ph: "For sending it", on: function(v){ d.email = v.trim(); emAuto = !d.email; } }));
   b.appendChild(g); paintLines(); b.appendChild(lines);
   var addL = btn("alt", "", function(){ d.items.push(["", "1", ""]); paintLines(); paintTot(); }); addL.innerHTML = "<u>Add a line</u>"; b.appendChild(addL);
   var r1 = el("div", "frow"); r1.appendChild(el("b", "", "Charge VAT (7%)")); r1.appendChild(seg(["Yes", "No"], d.vat ? "Yes" : "No", function(v){ d.vat = v === "Yes"; paintTot(); })); b.appendChild(r1);
@@ -208,6 +241,7 @@ function newInvoice(pre){
     var items = d.items.filter(function(it){ return it[0].trim() || num(it[2]); });
     if (!d.to.trim()) return (err.textContent = "Add who the invoice is for.");
     if (!items.length || items.some(function(it){ return !it[0].trim() || !(num(it[1]) > 0) || !(num(it[2]) > 0); })) return (err.textContent = "Each line needs a description, a quantity and a price.");
+    rememberEmail(u, d.to, d.email);
     var v = { id: nextInvNo(u), to: d.to.trim(), email: d.email, issued: today(), due: addDays(today(), +d.days), items: items.map(function(it){ return [it[0].trim(), num(it[1]), num(it[2])]; }), vat: d.vat, paid: "" };
     u.invoices = u.invoices || []; u.invoices.push(v); save(); refresh(); openInvoice(v); toast("Invoice " + v.id + " created");
   })));
@@ -251,12 +285,25 @@ function printInvoice(v){
 }
 
 /* ── reminders: written for the owner to send from their own email or chat ── */
+function knownEmail(u, name){
+  var k = String(name || "").trim().toLowerCase(); if (!k) return "";
+  if (u.cmail && u.cmail[k]) return u.cmail[k];
+  var hit = (u.invoices || []).slice().reverse().filter(function(x){ return x.email && String(x.to).trim().toLowerCase() === k; })[0];
+  return hit ? hit.email : "";
+}
+function rememberEmail(u, name, email){ var k = String(name || "").trim().toLowerCase(); if (!k || !/^\S+@\S+\.\S+$/.test(email || "")) return; u.cmail = u.cmail || {}; u.cmail[k] = email; }
 function openRemind(v, initial){
   var u = me(), tot = invTotal(v), sign = "\n" + (u.name || "") + "\n" + coName(u);
-  var msg = initial ? "Hello " + v.to + ",\n\nPlease find invoice " + v.id + " for " + baht(tot) + ", due on " + niceY(v.due) + ".\n\nThank you," + sign
-    : "Hello " + v.to + ",\n\nA friendly reminder that invoice " + v.id + " for " + baht(tot) + " was due on " + niceY(v.due) + ". If you have already paid, thank you, and please ignore this message.\n\nKind regards," + sign;
+  var dd = day(v.due), thD = dd.getDate() + " " + mth(MONTH[dd.getMonth()]) + " " + (dd.getFullYear() + 543);
+  var msg = initial ? L("Hello " + v.to + ",\n\nPlease find invoice " + v.id + " for " + baht(tot) + ", due on " + niceY(v.due) + ".\n\nThank you," + sign, "เรียน " + v.to + "\n\nขอส่งใบแจ้งหนี้เลขที่ " + v.id + " ยอด " + baht(tot) + " ครบกำหนดชำระวันที่ " + thD + "\n\nขอบคุณ" + sign)
+    : L("Hello " + v.to + ",\n\nA friendly reminder that invoice " + v.id + " for " + baht(tot) + " was due on " + niceY(v.due) + ". If you have already paid, thank you, and please ignore this message.\n\nKind regards," + sign, "เรียน " + v.to + "\n\nขอเรียนแจ้งว่าใบแจ้งหนี้เลขที่ " + v.id + " ยอด " + baht(tot) + " ครบกำหนดชำระเมื่อวันที่ " + thD + " หากชำระแล้ว ขอบคุณ และขออภัยหากข้อความนี้ซ้ำซ้อน\n\nขอแสดงความนับถือ" + sign);
   var b = openGS(initial ? "Send invoice" : "Reminder", v.to, "Invoice " + v.id + " · " + baht(tot) + " · " + lateTxt(v.due));
-  var em = fld("Send to", v.email, { type: "email", ph: "customer@example.com", on: function(x){ v.email = x.trim(); save(); } }); b.appendChild(em);
+  /* suggest the address I already know for this customer, from contacts or an earlier invoice */
+  var known = knownEmail(u, v.to), sug = !v.email && known;
+  if (sug) v.email = known;
+  var em = fld("Send to", v.email, { type: "email", ph: "customer@example.com", on: function(x){ v.email = x.trim(); rememberEmail(u, v.to, v.email); save(); hint.hidden = true; } }); b.appendChild(em);
+  var hint = el("p", "em-hint", sug ? L("Suggested from your contacts. Change it if it should go to someone else.", "แนะนำจากรายชื่อติดต่อของคุณ แก้ได้ถ้าต้องส่งให้คนอื่น") : !v.email ? L("No email for " + v.to + " yet. Add it once and I remember it for next time.", "ยังไม่มีอีเมลของ " + v.to + " ใส่ครั้งเดียว หนูจำไว้ให้ครั้งหน้า") : "");
+  hint.hidden = !hint.textContent; hint.setAttribute("data-noi18n", ""); b.appendChild(hint);
   var ta = fld("Message", msg, { area: 1, wide: 1 }); $("textarea", ta).rows = 8; b.appendChild(ta);
   function done(how){ if (!initial){ v.reminded = today(); } else v.sent = today(); save(); refresh(); closeGS(); toast(how); }
   var mail = btn("pill acc", "Email it", function(){

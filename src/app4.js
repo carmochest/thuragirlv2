@@ -174,7 +174,7 @@ function books(u){
   };
   // the last full month, for the Review Pack
   var lmS = pmStart, lmE = iso(new Date(y, mo, 0)), lm = sum(lmS, lmE), pack = null;
-  if (first <= addDays(lmS, 10) && lm.n) pack = { key: lmS.slice(0, 7), name: MONTH[day(lmS).getMonth()], from: lmS, to: lmE, inc: lm.inc, exp: lm.exp, kept: lm.kept, tax: taxes(lm, 1, ytd.kept) };
+  if (first <= addDays(lmS, 10) && lm.n) pack = { key: lmS.slice(0, 7), name: MONTH[day(lmS).getMonth()], from: lmS, to: lmE, inc: lm.inc, exp: lm.exp, kept: lm.kept, tax: taxes(lm, 1, ytd.kept), F: per("Profit in " + MONTH[day(lmS).getMonth()], "vs the month before", lmS, lmE, iso(new Date(y, mo - 2, 1)), iso(new Date(y, mo - 1, 0)), weeks(lmS, lmE), 1) };
   var mStartBal = series.length ? Object.keys(accts).reduce(function(s, k){ return s + (balAt(k, addDays(mStart, -1)) || 0); }, 0) : 0;
   var v = { asOf: asOf, first: first, cash: cash, series: series, fin: fin, pack: pack, cashD: mStart > first ? pct(cash, mStartBal) : null, n: tx.length, accts: Object.keys(accts).length };
   BK_CACHE = { key: key, v: v }; return v;
@@ -217,6 +217,7 @@ function sampleCsv(){
 }
 function sampleBooks(u){
   var t = today();
+  if (!u.cmail) u.cmail = { "bangkok hotel group": "accounts.bkkhotel@example.com", "lotus wholesale": "ap.lotus@example.com", "sukhumvit catering": "finance.sukhumvit@example.com", "asok tower building": "office.asoktower@example.com" };
   if (!u.invoices || !u.invoices.length) u.invoices = [
     { id: "INV-2026-038", to: "Bangkok Hotel Group", email: "", issued: addDays(t, -75), due: addDays(t, -45), items: [["Catering, staff party", 1, 82710.28]], vat: true, paid: "" },
     { id: "INV-2026-039", to: "Lotus Wholesale", email: "", issued: addDays(t, -39), due: addDays(t, -9), items: [["Prepared meals, bulk order", 1, 60000]], vat: true, paid: "" },

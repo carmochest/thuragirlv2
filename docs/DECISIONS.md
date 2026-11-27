@@ -17,6 +17,8 @@ Decided by the product owner during v2 design. Build to these unless they are ch
 | Accounts | Owners can reset a forgotten password by email (30-minute link) and delete their own account from Settings → Security (PDPA). Filed tax records are kept for 5 years, then deleted. |
 | Demo | The landing page offers "Try the demo": a sample restaurant with full books, no sign-up, with a "Create my account" strip on top. |
 | Auditor demo | `/auditor/` stays behind the auditor sign-in. The sign-in page offers "Try the demo", which opens the desk with sample companies only. |
+| Auditor desk | One list of companies, grouped and filtered by the next action (needs attention, documents missing, documents requested, ready to close). A company opens in a focused view, because auditors work on one company at a time. |
+| Updates in place | Actions refresh the page without jumping to the top or replaying the entrance animation. |
 | Design | Option B: neutral greys plus one teal accent; red only for overdue text; amber only for stale items; pink only in the logo; thin line icons; no emoji. EN and TH, day and night, including the auditor pages and the landing screenshots. |
 | Security | Passkey offered as the recommended sign-in; authenticator-app 2FA with backup codes for owners and auditors. Auditor sessions last 12 hours. |
 | Versions | v1 lives in the `thuragirl` repository and is not touched. v2 is this repository. |

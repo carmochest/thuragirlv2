@@ -72,12 +72,21 @@ function ago(ts, long){
 }
 function isStale(ts){ return Date.now() - ts > 36 * 3600e3; }
 function fullAcct(a){ return a.length > 6 ? a.slice(0, 3) + " " + a.slice(3, 6) + " " + a.slice(6) : a; }
+function bankBal(u, b){ var k = b.bank + "|" + b.acct, t = u.tx || []; for (var i = t.length - 1; i >= 0; i--) if (t[i].k === k && t[i].b != null) return t[i].b; return b.bal != null ? b.bal : null; }
 function paintBanks(){
-  var u = me(), bar = $("#b-bkbar"), panel = $("#b-bkpanel");
-  bar.innerHTML = u.banks.map(function(b){ return "<span><b>" + esc(b.bank) + '</b><em class="' + (isStale(b.at) ? "stale" : "") + '">' + ago(b.at) + "</em></span>"; }).join("") + '<svg class="i"><use href="#i-chev"/></svg>';
+  var u = me(), bar = $("#b-bkbar"), panel = $("#b-bkpanel"), many = u.banks.length > 1;
+  /* several banks: the bar says how many and flags any that are out of date; the panel lists each with its balance, then the total */
+  if (many){
+    var st = u.banks.filter(function(b){ return isStale(b.at); }).length;
+    bar.innerHTML = "<span><b>" + L(u.banks.length + " banks", "บัญชี " + u.banks.length + " ธนาคาร") + '</b><em class="' + (st ? "stale" : "") + '">' + (st ? L(st + " out of date", "ไม่อัปเดต " + st) : esc(u.banks.map(function(b){ return b.bank; }).join(", "))) + '</em></span><svg class="i"><use href="#i-chev"/></svg>';
+  } else bar.innerHTML = u.banks.map(function(b){ return "<span><b>" + esc(b.bank) + '</b><em class="' + (isStale(b.at) ? "stale" : "") + '">' + ago(b.at) + "</em></span>"; }).join("") + '<svg class="i"><use href="#i-chev"/></svg>';
+  bar.setAttribute("data-noi18n", "");
   panel.textContent = "";
+  var tot = 0, anyBal = false;
   u.banks.forEach(function(b){
     var row = el("div", "bkrow"); row.appendChild(el("div", "nm", b.bank));
+    var bal = bankBal(u, b); if (bal != null){ tot += bal; anyBal = true; }
+    row.appendChild(el("div", "bal num", bal != null ? baht(bal) : ""));
     var meta = el("div", "meta"), acc = el("span", "num acc", "···· " + b.acct.slice(-4)); meta.appendChild(acc);
     if (b.acct.length > 4){
       var eye = el("button", "eye"); eye.type = "button"; eye.setAttribute("aria-label", "Show " + b.bank + " account number"); eye.setAttribute("aria-pressed", "false"); eye.innerHTML = '<svg class="i"><use href="#i-eye"/></svg>';
@@ -88,7 +97,8 @@ function paintBanks(){
     var up = el("button", "pill up " + (isStale(b.at) ? "acc" : "soft"), "Upload"); up.type = "button"; up.addEventListener("click", function(){ openUpload(b); });
     row.appendChild(up); panel.appendChild(row);
   });
-  var add = el("button", "alt", ""); add.type = "button"; add.innerHTML = "<u>Add another bank</u>"; add.style.padding = "10px 6px"; add.addEventListener("click", function(){ openUpload(); }); panel.appendChild(add);
+  if (many && anyBal){ var tr = el("div", "bktot"); tr.appendChild(el("span", "", L("All banks", "รวมทุกธนาคาร"))); tr.appendChild(el("b", "num", baht(tot))); panel.appendChild(tr); }
+  var add = btn("pill soft bkadd", L("Add another bank", "เพิ่มธนาคาร"), function(){ openUpload(); }, "i-plus"); panel.appendChild(add);
 }
 
 /* ── home: tasks, setup reminder, welcome ── */
@@ -163,7 +173,7 @@ function renderUpload(){
     if (up.sample){ sampleBooks(u); u.sample = true; }
     save(); BK_CACHE.key = "";
     var msg = r.added + " transactions read" + (r.matched ? ", " + r.matched + " payments matched" : "") + ".";
-    $("#up-sheet").hidden = true; up = { file: null, bank: "", acct: "", err: "" }; lastKey = ""; if (tab !== "home") go(""); else showTab(); toast(msg);
+    $("#up-sheet").hidden = true; up = { file: null, bank: "", acct: "", err: "" }; if (tab !== "home") go(""); else refresh(); toast(msg);
   });
   f.appendChild(samp); f.appendChild(okBtn); body.appendChild(f); sync();
   body.appendChild(el("p", "tnote", "Your bank's app or website can export statements as CSV or Excel. The file is read here, in your browser, and is not sent anywhere."));

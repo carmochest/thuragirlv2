@@ -226,8 +226,9 @@ function paintEmpty(u){
   var lock = gated(u), e = $("#b-home .emptyB"); if (!e) return;
   var h = $("h1", e), p = $("p", e);
   if (lock){
+    var left = regLeft(u);
     h.textContent = "First, your company.";
-    p.textContent = "Bank statements and your dashboard open once the company is registered. Finish the registration and I take it to DBD for you.";
+    p.textContent = (left ? L(left + " of 5 parts left. ", "เหลืออีก " + left + " จาก 5 ส่วน ") : L("All 5 parts are done. ", "ครบทั้ง 5 ส่วนแล้ว ")) + L("Bank statements and your dashboard open once the company is registered, and I take it to DBD for you.", "รายการเดินบัญชีและแดชบอร์ดจะเปิดเมื่อบริษัทจดทะเบียนแล้ว หนูยื่น DBD ให้เอง");
   } else {
     h.textContent = (u.banks || []).length ? "Almost there." : "Welcome, " + first(u) + ".";
     p.textContent = "Connect your bank or upload a statement, and I build your dashboard from it: your cash, money in and out, and what needs you.";
@@ -236,7 +237,10 @@ function paintEmpty(u){
   var bar = $(".upbar", e) || e;
   var reg = $(".js-reg", e); if (!reg){ reg = btn("pill acc js-reg", "Continue registration", function(){ go("register"); }); bar.appendChild(reg); }
   var cn = $(".js-conn", e); if (!cn){ cn = btn("pill soft js-conn", "Connect apps", function(){ openConnect(false); }, "i-link"); bar.appendChild(cn); }
-  reg.hidden = !lock;
+  reg.hidden = !lock; reg.textContent = lock && !regLeft(u) ? L("Review and submit", "ตรวจและยื่น") : L("Continue registration", "จดทะเบียนต่อ");
+  /* one call to action: while the company is not registered, the card above is the only way in, so the welcome strip and Needs you don't repeat it */
+  var nb = $("#b-home .needB"); if (nb) nb.hidden = lock;
+  var wg = $("#b-wel-go"); if (wg && lock) wg.hidden = true;
   $$(".js-upload, .js-sample", e).forEach(function(x){ x.hidden = lock; });
   cn.hidden = lock;
   $$(".emptyP").forEach(function(ep){
@@ -403,7 +407,8 @@ function filesCard(u, root){
 
 /* ── customers and suppliers, from invoices, bills and bank lines ── */
 function paintContacts(u){
-  var host = $("#m-contacts"), anchor = $$("#b-money .listB")[1];
+  /* full width under the Owed to you / You owe pair, not squeezed in as a third half-width card */
+  var host = $("#m-contacts"), anchor = $("#b-money .two") || $$("#b-money .listB")[1];
   if (!host && anchor){ host = el("section", "card listB ctB"); host.id = "m-contacts"; host.setAttribute("aria-label", "Customers and suppliers"); anchor.parentNode.insertBefore(host, anchor.nextSibling); }
   if (!host) return;
   host.textContent = ""; host.classList.add("ctB");
@@ -434,11 +439,12 @@ function paintContacts(u){
   }
   var all = rows.length;
   if (!open) rows = rows.slice(0, cut);
+  var rw = el("div", "ct-rows"); host.appendChild(rw);
   rows.forEach(function(c){
     var r = el("div", "row"), rt = el("button", "rt rtb"); rt.type = "button"; rt.addEventListener("click", function(){ openContact(c); });
     rt.appendChild(el("div", "t", c.name));
     rt.appendChild(el("div", "m", c.n + (tab === "Customer" ? (c.n === 1 ? " invoice" : " invoices") : (c.n === 1 ? " bill" : " bills")) + (c.open ? " · " + baht(c.open) + " open" : " · all settled")));
-    r.appendChild(rt); r.appendChild(el("span", "amt num", baht(c.total))); host.appendChild(r);
+    r.appendChild(rt); r.appendChild(el("span", "amt num", baht(c.total))); rw.appendChild(r);
   });
   if (all > cut && !needle) host.appendChild(foldBtn(open, all, function(){ FOLD[fk] = !open; paintContacts(u); }));
 }

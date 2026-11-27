@@ -4,7 +4,7 @@
   try { lang = localStorage.getItem(KEY) || ((JSON.parse(localStorage.getItem("tg.v2") || "{}").lang === "th") ? "th" : "en"); } catch (e) {}
   var D = {
     "Auditor": "ผู้สอบบัญชี", "Auditors": "ผู้สอบบัญชี", "Monthly close": "ปิดงบรายเดือน", "Yearly close": "ปิดงบรายปี", "Close type": "ประเภทการปิดงบ",
-    "Month": "เดือน", "Month to close": "เดือนที่จะปิด", "Filter the queue": "กรองคิวงาน", "Queue": "คิวงาน", "Company queue": "คิวบริษัท",
+    "Month": "เดือน", "Month to close": "เดือนที่จะปิด", "Filter the queue": "กรองคิวงาน", "Queue": "คิวงาน", "Companies": "บริษัท", "Needs attention": "ต้องดูแล", "Documents requested": "ขอเอกสารแล้ว", "Month not over": "ยังไม่สิ้นเดือน", "A filing is late": "มีแบบที่เลยกำหนดยื่น", "Documents missing": "ขาดเอกสาร", "Request them from the client": "ขอจากลูกค้า", "Waiting on the client": "รอลูกค้าส่ง", "Everything is in": "เอกสารครบแล้ว", "Nothing to do yet": "ยังไม่มีงาน", "Done for this period": "เสร็จสำหรับงวดนี้", "Company queue": "คิวบริษัท",
     "Find a company": "ค้นหาบริษัท", "Whose companies": "บริษัทของใคร", "Mine": "ของฉัน", "Unassigned": "ยังไม่มีผู้รับผิดชอบ", "Everyone's": "ทั้งหมด", "All companies": "ทุกบริษัท",
     "Show sample companies": "แสดงบริษัทตัวอย่าง", "Signed up": "สมัครแล้ว", "Pick a company from the queue.": "เลือกบริษัทจากคิวงาน",
     "No companies are assigned to you yet.": "ยังไม่มีบริษัทที่มอบหมายให้คุณ", "No companies match.": "ไม่มีบริษัทที่ตรงกัน",
@@ -73,6 +73,7 @@
   }
   function form(s){ return /^(ภ\.|บอจ|สปส|DBD|Books)/.test(s) ? (s === "Books" ? "บัญชี" : s) : (D[s] || s); }
   var R = [
+    [/^(\d+) · (A filing is late|Request them from the client|Waiting on the client|Everything is in|Nothing to do yet|Done for this period)$/, function(m){ return m[1] + " · " + D[m[2]]; }],
     [/^Not needed: (.+)$/, function(m){ return "ไม่ต้องยื่น: " + (D[m[1]] || m[1]); }],
     [/^(January|February|March|April|May|June|July|August|September|October|November|December) (\d{4})$/, function(m){ return TF[MO.indexOf(m[1])] + " " + be(m[2]); }],
     [/^Year ending (\d{1,2}) (\w+) (\d{4})$/, function(m){ return "ปีบัญชีสิ้นสุด " + m[1] + " " + TF[MO.indexOf(m[2])] + " " + be(m[3]); }],

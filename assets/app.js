@@ -351,12 +351,21 @@ function ago(ts, long){
 }
 function isStale(ts){ return Date.now() - ts > 36 * 3600e3; }
 function fullAcct(a){ return a.length > 6 ? a.slice(0, 3) + " " + a.slice(3, 6) + " " + a.slice(6) : a; }
+function bankBal(u, b){ var k = b.bank + "|" + b.acct, t = u.tx || []; for (var i = t.length - 1; i >= 0; i--) if (t[i].k === k && t[i].b != null) return t[i].b; return b.bal != null ? b.bal : null; }
 function paintBanks(){
-  var u = me(), bar = $("#b-bkbar"), panel = $("#b-bkpanel");
-  bar.innerHTML = u.banks.map(function(b){ return "<span><b>" + esc(b.bank) + '</b><em class="' + (isStale(b.at) ? "stale" : "") + '">' + ago(b.at) + "</em></span>"; }).join("") + '<svg class="i"><use href="#i-chev"/></svg>';
+  var u = me(), bar = $("#b-bkbar"), panel = $("#b-bkpanel"), many = u.banks.length > 1;
+  /* several banks: the bar says how many and flags any that are out of date; the panel lists each with its balance, then the total */
+  if (many){
+    var st = u.banks.filter(function(b){ return isStale(b.at); }).length;
+    bar.innerHTML = "<span><b>" + L(u.banks.length + " banks", "บัญชี " + u.banks.length + " ธนาคาร") + '</b><em class="' + (st ? "stale" : "") + '">' + (st ? L(st + " out of date", "ไม่อัปเดต " + st) : esc(u.banks.map(function(b){ return b.bank; }).join(", "))) + '</em></span><svg class="i"><use href="#i-chev"/></svg>';
+  } else bar.innerHTML = u.banks.map(function(b){ return "<span><b>" + esc(b.bank) + '</b><em class="' + (isStale(b.at) ? "stale" : "") + '">' + ago(b.at) + "</em></span>"; }).join("") + '<svg class="i"><use href="#i-chev"/></svg>';
+  bar.setAttribute("data-noi18n", "");
   panel.textContent = "";
+  var tot = 0, anyBal = false;
   u.banks.forEach(function(b){
     var row = el("div", "bkrow"); row.appendChild(el("div", "nm", b.bank));
+    var bal = bankBal(u, b); if (bal != null){ tot += bal; anyBal = true; }
+    row.appendChild(el("div", "bal num", bal != null ? baht(bal) : ""));
     var meta = el("div", "meta"), acc = el("span", "num acc", "···· " + b.acct.slice(-4)); meta.appendChild(acc);
     if (b.acct.length > 4){
       var eye = el("button", "eye"); eye.type = "button"; eye.setAttribute("aria-label", "Show " + b.bank + " account number"); eye.setAttribute("aria-pressed", "false"); eye.innerHTML = '<svg class="i"><use href="#i-eye"/></svg>';
@@ -367,7 +376,8 @@ function paintBanks(){
     var up = el("button", "pill up " + (isStale(b.at) ? "acc" : "soft"), "Upload"); up.type = "button"; up.addEventListener("click", function(){ openUpload(b); });
     row.appendChild(up); panel.appendChild(row);
   });
-  var add = el("button", "alt", ""); add.type = "button"; add.innerHTML = "<u>Add another bank</u>"; add.style.padding = "10px 6px"; add.addEventListener("click", function(){ openUpload(); }); panel.appendChild(add);
+  if (many && anyBal){ var tr = el("div", "bktot"); tr.appendChild(el("span", "", L("All banks", "รวมทุกธนาคาร"))); tr.appendChild(el("b", "num", baht(tot))); panel.appendChild(tr); }
+  var add = btn("pill soft bkadd", L("Add another bank", "เพิ่มธนาคาร"), function(){ openUpload(); }, "i-plus"); panel.appendChild(add);
 }
 
 /* ── home: tasks, setup reminder, welcome ── */
@@ -442,7 +452,7 @@ function renderUpload(){
     if (up.sample){ sampleBooks(u); u.sample = true; }
     save(); BK_CACHE.key = "";
     var msg = r.added + " transactions read" + (r.matched ? ", " + r.matched + " payments matched" : "") + ".";
-    $("#up-sheet").hidden = true; up = { file: null, bank: "", acct: "", err: "" }; lastKey = ""; if (tab !== "home") go(""); else showTab(); toast(msg);
+    $("#up-sheet").hidden = true; up = { file: null, bank: "", acct: "", err: "" }; if (tab !== "home") go(""); else refresh(); toast(msg);
   });
   f.appendChild(samp); f.appendChild(okBtn); body.appendChild(f); sync();
   body.appendChild(el("p", "tnote", "Your bank's app or website can export statements as CSV or Excel. The file is read here, in your browser, and is not sent anywhere."));
@@ -1035,7 +1045,7 @@ function books(u){
   };
   // the last full month, for the Review Pack
   var lmS = pmStart, lmE = iso(new Date(y, mo, 0)), lm = sum(lmS, lmE), pack = null;
-  if (first <= addDays(lmS, 10) && lm.n) pack = { key: lmS.slice(0, 7), name: MONTH[day(lmS).getMonth()], from: lmS, to: lmE, inc: lm.inc, exp: lm.exp, kept: lm.kept, tax: taxes(lm, 1, ytd.kept) };
+  if (first <= addDays(lmS, 10) && lm.n) pack = { key: lmS.slice(0, 7), name: MONTH[day(lmS).getMonth()], from: lmS, to: lmE, inc: lm.inc, exp: lm.exp, kept: lm.kept, tax: taxes(lm, 1, ytd.kept), F: per("Profit in " + MONTH[day(lmS).getMonth()], "vs the month before", lmS, lmE, iso(new Date(y, mo - 2, 1)), iso(new Date(y, mo - 1, 0)), weeks(lmS, lmE), 1) };
   var mStartBal = series.length ? Object.keys(accts).reduce(function(s, k){ return s + (balAt(k, addDays(mStart, -1)) || 0); }, 0) : 0;
   var v = { asOf: asOf, first: first, cash: cash, series: series, fin: fin, pack: pack, cashD: mStart > first ? pct(cash, mStartBal) : null, n: tx.length, accts: Object.keys(accts).length };
   BK_CACHE = { key: key, v: v }; return v;
@@ -1078,6 +1088,7 @@ function sampleCsv(){
 }
 function sampleBooks(u){
   var t = today();
+  if (!u.cmail) u.cmail = { "bangkok hotel group": "accounts.bkkhotel@example.com", "lotus wholesale": "ap.lotus@example.com", "sukhumvit catering": "finance.sukhumvit@example.com", "asok tower building": "office.asoktower@example.com" };
   if (!u.invoices || !u.invoices.length) u.invoices = [
     { id: "INV-2026-038", to: "Bangkok Hotel Group", email: "", issued: addDays(t, -75), due: addDays(t, -45), items: [["Catering, staff party", 1, 82710.28]], vat: true, paid: "" },
     { id: "INV-2026-039", to: "Lotus Wholesale", email: "", issued: addDays(t, -39), due: addDays(t, -9), items: [["Prepared meals, bulk order", 1, 60000]], vat: true, paid: "" },
@@ -1166,7 +1177,12 @@ function openGS(k, title, sub){
 function closeGS(){ var s = $("#gs"); if (s){ var was = !s.hidden; s.hidden = true; if (was && s.getAttribute("data-dirty")){ s.removeAttribute("data-dirty"); refresh(); } } }
 function btn(cls, label, fn, icon){ var b = el("button", cls); b.type = "button"; b.innerHTML = icon ? '<svg class="i"><use href="#' + icon + '"/></svg>' : ""; b.appendChild(document.createTextNode(label)); if (fn) b.addEventListener("click", fn); return b; }
 function foot(a, b){ var f = el("div", "shB-f" + (b ? "" : " one")); f.appendChild(a); if (b) f.appendChild(b); return f; }
-function refresh(){ BK_CACHE.key = ""; lastKey = ""; showTab(); }
+/* after an action: update the page in place. Same tab, same scroll position, no replayed entrance animation */
+function refresh(){
+  BK_CACHE.key = ""; var y = window.scrollY; showTab();
+  if (tab === "money"){ var B = books(me()); if (B && B.fin[per]) $("#m-val").textContent = money(Math.abs(B.fin[per].rev - B.fin[per].exp)); }
+  window.scrollTo(0, y);
+}
 
 /* ── terms (signup) ── */
 function openTerms(){
@@ -1319,8 +1335,35 @@ function paintPack(u){
   var li = $$(".shB-l li b", s); li[0].textContent = p.inc ? (p.kept / p.inc * 100).toFixed(1) + "%" : "–"; li[1].textContent = baht(p.tax[0] + p.tax[1]); li[2].textContent = baht(all); li[3].textContent = String(miss);
   $$(".shB-l li span", s)[1].textContent = "Tax to set aside (estimate)";
   $(".shB-ok span", s).textContent = "I've reviewed " + p.name + " and it looks right.";
+  packMore(p, s);
 }
-function openSheet(){ var u = me(); paintPack(u); var s = $("#b-sheet"); $("#b-agree").checked = false; $("#b-approve").disabled = true; s.hidden = false; try { $("#b-shx").focus({ preventScroll: true }); $(".shB-card", s).scrollIntoView({ block: "nearest" }); } catch (e) {} }
+/* the full month behind the one-pager: every money-in and money-out line, week by week, and the statement itself */
+var packOpen = false;
+function packMore(p, s){
+  var old = $(".pk-more", s); if (old) old.remove(); if (!p.F) return;
+  var w = el("div", "pk-more"), F = p.F;
+  var t = btn("pk-tog", packOpen ? L("Hide the full month", "ซ่อนรายละเอียดทั้งเดือน") : L("See the full month", "ดูรายละเอียดทั้งเดือน"), function(){ packOpen = !packOpen; packMore(p, s); }, "i-chev");
+  t.setAttribute("aria-expanded", String(packOpen)); w.appendChild(t);
+  if (packOpen){
+    var body = el("div", "pk-body");
+    [[L("Money in", "เงินเข้า"), F.revMix, F.rev], [L("Money out", "เงินออก"), F.expMix, F.exp]].forEach(function(g){
+      var h = el("div", "pk-h"); h.appendChild(el("span", "", g[0])); h.appendChild(el("b", "num", baht(g[2]))); body.appendChild(h);
+      g[1].forEach(function(r){ var row = el("div", "pk-r"); row.appendChild(el("span", "", r[0])); row.appendChild(el("em", "num", g[2] ? Math.round(r[1] / g[2] * 100) + "%" : "")); row.appendChild(el("b", "num", baht(r[1]))); body.appendChild(row); });
+    });
+    var wk = el("div", "pk-wk"), mx = Math.max.apply(null, F.flow.map(function(x){ return Math.max(x[1], x[2]); }).concat([1]));
+    var wh = el("div", "pk-h"); wh.appendChild(el("span", "", L("Week by week", "รายสัปดาห์"))); body.appendChild(wh);
+    F.flow.forEach(function(x){
+      var r = el("div", "pk-wr"); r.appendChild(el("span", "", x[0]));
+      var bars = el("div", "pk-bars"), bi = el("i", "in"), bo = el("i", "out"); bi.style.width = (x[1] / mx * 100) + "%"; bo.style.width = (x[2] / mx * 100) + "%"; bars.appendChild(bi); bars.appendChild(bo); r.appendChild(bars);
+      r.appendChild(el("b", "num", baht(x[1] - x[2]))); wk.appendChild(r);
+    });
+    body.appendChild(wk);
+    var act = el("div", "pk-act"); plActions(act, F); body.appendChild(act);
+    w.appendChild(body);
+  }
+  var ok = $(".shB-ok", s); ok.parentNode.insertBefore(w, ok);
+}
+function openSheet(){ var u = me(); packOpen = false; paintPack(u); var s = $("#b-sheet"); $("#b-agree").checked = false; $("#b-approve").disabled = true; s.hidden = false; try { $("#b-shx").focus({ preventScroll: true }); $(".shB-card", s).scrollIntoView({ block: "nearest" }); } catch (e) {} }
 function closeSheet(){ $("#b-sheet").hidden = true; }
 function approvePack(){ var u = me(), B = books(u); if (!B || !B.pack) return; u.done["rev:" + B.pack.key] = { at: Date.now() }; save(); closeSheet(); collapse($("#b-rev")); setTimeout(function(){ setCount(); }, 400); if (tab === "brief") renderBrief(); toast(B.pack.name + " is signed off"); }
 
@@ -1345,8 +1388,9 @@ function newInvoice(pre){
     });
   }
   var g = el("div", "fgrid");
-  g.appendChild(fld("Customer", d.to, { ph: "Company or person", on: function(v){ d.to = v; err.textContent = ""; } }));
-  g.appendChild(fld("Customer email (optional)", d.email, { type: "email", ph: "For sending it", on: function(v){ d.email = v.trim(); } }));
+  var emF, emAuto = true;
+  g.appendChild(fld("Customer", d.to, { ph: "Company or person", on: function(v){ d.to = v; err.textContent = ""; var k = knownEmail(u, v); if (emAuto && emF){ d.email = k; $("input", emF).value = k; } } }));
+  g.appendChild(emF = fld("Customer email (optional)", d.email, { type: "email", ph: "For sending it", on: function(v){ d.email = v.trim(); emAuto = !d.email; } }));
   b.appendChild(g); paintLines(); b.appendChild(lines);
   var addL = btn("alt", "", function(){ d.items.push(["", "1", ""]); paintLines(); paintTot(); }); addL.innerHTML = "<u>Add a line</u>"; b.appendChild(addL);
   var r1 = el("div", "frow"); r1.appendChild(el("b", "", "Charge VAT (7%)")); r1.appendChild(seg(["Yes", "No"], d.vat ? "Yes" : "No", function(v){ d.vat = v === "Yes"; paintTot(); })); b.appendChild(r1);
@@ -1356,6 +1400,7 @@ function newInvoice(pre){
     var items = d.items.filter(function(it){ return it[0].trim() || num(it[2]); });
     if (!d.to.trim()) return (err.textContent = "Add who the invoice is for.");
     if (!items.length || items.some(function(it){ return !it[0].trim() || !(num(it[1]) > 0) || !(num(it[2]) > 0); })) return (err.textContent = "Each line needs a description, a quantity and a price.");
+    rememberEmail(u, d.to, d.email);
     var v = { id: nextInvNo(u), to: d.to.trim(), email: d.email, issued: today(), due: addDays(today(), +d.days), items: items.map(function(it){ return [it[0].trim(), num(it[1]), num(it[2])]; }), vat: d.vat, paid: "" };
     u.invoices = u.invoices || []; u.invoices.push(v); save(); refresh(); openInvoice(v); toast("Invoice " + v.id + " created");
   })));
@@ -1399,12 +1444,25 @@ function printInvoice(v){
 }
 
 /* ── reminders: written for the owner to send from their own email or chat ── */
+function knownEmail(u, name){
+  var k = String(name || "").trim().toLowerCase(); if (!k) return "";
+  if (u.cmail && u.cmail[k]) return u.cmail[k];
+  var hit = (u.invoices || []).slice().reverse().filter(function(x){ return x.email && String(x.to).trim().toLowerCase() === k; })[0];
+  return hit ? hit.email : "";
+}
+function rememberEmail(u, name, email){ var k = String(name || "").trim().toLowerCase(); if (!k || !/^\S+@\S+\.\S+$/.test(email || "")) return; u.cmail = u.cmail || {}; u.cmail[k] = email; }
 function openRemind(v, initial){
   var u = me(), tot = invTotal(v), sign = "\n" + (u.name || "") + "\n" + coName(u);
-  var msg = initial ? "Hello " + v.to + ",\n\nPlease find invoice " + v.id + " for " + baht(tot) + ", due on " + niceY(v.due) + ".\n\nThank you," + sign
-    : "Hello " + v.to + ",\n\nA friendly reminder that invoice " + v.id + " for " + baht(tot) + " was due on " + niceY(v.due) + ". If you have already paid, thank you, and please ignore this message.\n\nKind regards," + sign;
+  var dd = day(v.due), thD = dd.getDate() + " " + mth(MONTH[dd.getMonth()]) + " " + (dd.getFullYear() + 543);
+  var msg = initial ? L("Hello " + v.to + ",\n\nPlease find invoice " + v.id + " for " + baht(tot) + ", due on " + niceY(v.due) + ".\n\nThank you," + sign, "เรียน " + v.to + "\n\nขอส่งใบแจ้งหนี้เลขที่ " + v.id + " ยอด " + baht(tot) + " ครบกำหนดชำระวันที่ " + thD + "\n\nขอบคุณ" + sign)
+    : L("Hello " + v.to + ",\n\nA friendly reminder that invoice " + v.id + " for " + baht(tot) + " was due on " + niceY(v.due) + ". If you have already paid, thank you, and please ignore this message.\n\nKind regards," + sign, "เรียน " + v.to + "\n\nขอเรียนแจ้งว่าใบแจ้งหนี้เลขที่ " + v.id + " ยอด " + baht(tot) + " ครบกำหนดชำระเมื่อวันที่ " + thD + " หากชำระแล้ว ขอบคุณ และขออภัยหากข้อความนี้ซ้ำซ้อน\n\nขอแสดงความนับถือ" + sign);
   var b = openGS(initial ? "Send invoice" : "Reminder", v.to, "Invoice " + v.id + " · " + baht(tot) + " · " + lateTxt(v.due));
-  var em = fld("Send to", v.email, { type: "email", ph: "customer@example.com", on: function(x){ v.email = x.trim(); save(); } }); b.appendChild(em);
+  /* suggest the address I already know for this customer, from contacts or an earlier invoice */
+  var known = knownEmail(u, v.to), sug = !v.email && known;
+  if (sug) v.email = known;
+  var em = fld("Send to", v.email, { type: "email", ph: "customer@example.com", on: function(x){ v.email = x.trim(); rememberEmail(u, v.to, v.email); save(); hint.hidden = true; } }); b.appendChild(em);
+  var hint = el("p", "em-hint", sug ? L("Suggested from your contacts. Change it if it should go to someone else.", "แนะนำจากรายชื่อติดต่อของคุณ แก้ได้ถ้าต้องส่งให้คนอื่น") : !v.email ? L("No email for " + v.to + " yet. Add it once and I remember it for next time.", "ยังไม่มีอีเมลของ " + v.to + " ใส่ครั้งเดียว หนูจำไว้ให้ครั้งหน้า") : "");
+  hint.hidden = !hint.textContent; hint.setAttribute("data-noi18n", ""); b.appendChild(hint);
   var ta = fld("Message", msg, { area: 1, wide: 1 }); $("textarea", ta).rows = 8; b.appendChild(ta);
   function done(how){ if (!initial){ v.reminded = today(); } else v.sent = today(); save(); refresh(); closeGS(); toast(how); }
   var mail = btn("pill acc", "Email it", function(){
@@ -1849,8 +1907,9 @@ function paintEmpty(u){
   var lock = gated(u), e = $("#b-home .emptyB"); if (!e) return;
   var h = $("h1", e), p = $("p", e);
   if (lock){
+    var left = regLeft(u);
     h.textContent = "First, your company.";
-    p.textContent = "Bank statements and your dashboard open once the company is registered. Finish the registration and I take it to DBD for you.";
+    p.textContent = (left ? L(left + " of 5 parts left. ", "เหลืออีก " + left + " จาก 5 ส่วน ") : L("All 5 parts are done. ", "ครบทั้ง 5 ส่วนแล้ว ")) + L("Bank statements and your dashboard open once the company is registered, and I take it to DBD for you.", "รายการเดินบัญชีและแดชบอร์ดจะเปิดเมื่อบริษัทจดทะเบียนแล้ว หนูยื่น DBD ให้เอง");
   } else {
     h.textContent = (u.banks || []).length ? "Almost there." : "Welcome, " + first(u) + ".";
     p.textContent = "Connect your bank or upload a statement, and I build your dashboard from it: your cash, money in and out, and what needs you.";
@@ -1859,7 +1918,10 @@ function paintEmpty(u){
   var bar = $(".upbar", e) || e;
   var reg = $(".js-reg", e); if (!reg){ reg = btn("pill acc js-reg", "Continue registration", function(){ go("register"); }); bar.appendChild(reg); }
   var cn = $(".js-conn", e); if (!cn){ cn = btn("pill soft js-conn", "Connect apps", function(){ openConnect(false); }, "i-link"); bar.appendChild(cn); }
-  reg.hidden = !lock;
+  reg.hidden = !lock; reg.textContent = lock && !regLeft(u) ? L("Review and submit", "ตรวจและยื่น") : L("Continue registration", "จดทะเบียนต่อ");
+  /* one call to action: while the company is not registered, the card above is the only way in, so the welcome strip and Needs you don't repeat it */
+  var nb = $("#b-home .needB"); if (nb) nb.hidden = lock;
+  var wg = $("#b-wel-go"); if (wg && lock) wg.hidden = true;
   $$(".js-upload, .js-sample", e).forEach(function(x){ x.hidden = lock; });
   cn.hidden = lock;
   $$(".emptyP").forEach(function(ep){
@@ -2026,7 +2088,8 @@ function filesCard(u, root){
 
 /* ── customers and suppliers, from invoices, bills and bank lines ── */
 function paintContacts(u){
-  var host = $("#m-contacts"), anchor = $$("#b-money .listB")[1];
+  /* full width under the Owed to you / You owe pair, not squeezed in as a third half-width card */
+  var host = $("#m-contacts"), anchor = $("#b-money .two") || $$("#b-money .listB")[1];
   if (!host && anchor){ host = el("section", "card listB ctB"); host.id = "m-contacts"; host.setAttribute("aria-label", "Customers and suppliers"); anchor.parentNode.insertBefore(host, anchor.nextSibling); }
   if (!host) return;
   host.textContent = ""; host.classList.add("ctB");
@@ -2057,11 +2120,12 @@ function paintContacts(u){
   }
   var all = rows.length;
   if (!open) rows = rows.slice(0, cut);
+  var rw = el("div", "ct-rows"); host.appendChild(rw);
   rows.forEach(function(c){
     var r = el("div", "row"), rt = el("button", "rt rtb"); rt.type = "button"; rt.addEventListener("click", function(){ openContact(c); });
     rt.appendChild(el("div", "t", c.name));
     rt.appendChild(el("div", "m", c.n + (tab === "Customer" ? (c.n === 1 ? " invoice" : " invoices") : (c.n === 1 ? " bill" : " bills")) + (c.open ? " · " + baht(c.open) + " open" : " · all settled")));
-    r.appendChild(rt); r.appendChild(el("span", "amt num", baht(c.total))); host.appendChild(r);
+    r.appendChild(rt); r.appendChild(el("span", "amt num", baht(c.total))); rw.appendChild(r);
   });
   if (all > cut && !needle) host.appendChild(foldBtn(open, all, function(){ FOLD[fk] = !open; paintContacts(u); }));
 }
@@ -2673,7 +2737,7 @@ var TH = {
   "Ask ThuraGirl": "ถาม ThuraGirl", "Speak": "พูด", "Send": "ส่ง", "Upload": "อัปโหลด", "Invoice": "ใบแจ้งหนี้", "Pay": "จ่าย", "Close": "ปิด", "Close reply": "ปิดคำตอบ",
   "Dismiss": "ปิด", "Cancel": "ยกเลิก", "Continue": "ต่อไป", "Done": "เสร็จแล้ว", "Edit": "แก้ไข", "Remove": "ลบ", "Add": "เพิ่ม", "Open": "เปิด", "View": "ดู", "Review": "ตรวจดู",
   "Approve": "อนุมัติ", "Yes": "ใช่", "No": "ไม่", "Both": "ทั้งสองแบบ", "On": "เปิด", "Off": "ปิด", "Not now": "ไว้ทีหลัง", "Got it": "เข้าใจแล้ว", "Optional": "ไม่บังคับ",
-  "Update": "อัปเดต", "Connect": "เชื่อมต่อ", "Invite": "เชิญ", "Remind": "ทวง", "Register": "จดทะเบียน", "Set up": "ตั้งค่า", "Set it up": "ตั้งค่าเลย", "Turn on": "เปิดใช้", "Verify now": "ยืนยันตอนนี้",
+  "Update": "อัปเดต", "Interest": "ดอกเบี้ยรับ", "Connect": "เชื่อมต่อ", "Invite": "เชิญ", "Remind": "ทวง", "Register": "จดทะเบียน", "Set up": "ตั้งค่า", "Set it up": "ตั้งค่าเลย", "Turn on": "เปิดใช้", "Verify now": "ยืนยันตอนนี้",
   "Today": "วันนี้", "just now": "เมื่อสักครู่", "Saved": "บันทึกแล้ว", "Copied": "คัดลอกแล้ว", "Cleared": "ล้างแล้ว", "Not set": "ยังไม่ได้ตั้ง", "Not yet": "ยังไม่", "Not yet.": "ยังไม่มี",
   "Month": "เดือน", "Quarter": "ไตรมาส", "Year": "ปี", "This month": "เดือนนี้", "Period": "ช่วงเวลา", "Status": "สถานะ", "Total": "รวม", "Subtotal": "รวมก่อน VAT", "Amount": "จำนวนเงิน", "Due": "ครบกำหนด",
   "In": "เข้า", "Out": "ออก", "Kept": "เหลือ", "Profit": "กำไร", "Revenue": "รายได้", "Expenses": "ค่าใช้จ่าย", "Wages": "ค่าจ้าง", "Rent": "ค่าเช่า", "Utilities": "ค่าน้ำค่าไฟ", "Marketing": "การตลาด",
@@ -2943,11 +3007,22 @@ function openCoMenu(){
   add.addEventListener("click", addCo); list.appendChild(add);
   b.appendChild(list);
   b.appendChild(el("p", "tnote", L("Each company keeps its own books, bank statements, team and tasks. Same sign-in, same plan price per company.", "แต่ละบริษัทแยกบัญชี รายการเดินบัญชี ทีม และงานของตัวเอง ใช้บัญชีเข้าสู่ระบบเดียวกัน ราคาแพ็กเกจต่อบริษัทเท่าเดิม")));
+  /* two clearly scoped groups, so nobody reads one settings button as "settings for every company" */
+  var cn = coLabel(u);
+  var cs = el("div", "co-sec"); cs.appendChild(el("h3", "", L("This company", "บริษัทนี้"))); cs.appendChild(el("p", "", cn));
+  cs.appendChild(coLink(L("Company settings", "ตั้งค่าบริษัท"), L("Records, team, apps, files and plan", "ข้อมูลบริษัท ทีม แอป ไฟล์ และแพ็กเกจ"), "company")); b.appendChild(cs);
+  var ys = el("div", "co-sec"); ys.appendChild(el("h3", "", L("You, on every company", "ตัวคุณ ใช้กับทุกบริษัท")));
   var prefs = el("div", "co-prefs");
   prefs.appendChild(prefRow(L("Language", "ภาษา"), langSeg()));
   prefs.appendChild(prefRow(L("Theme", "ธีม"), themeSeg()));
-  b.appendChild(prefs);
-  var ft = el("div", "shB-f one"); ft.appendChild(btn("pill soft", L("All settings", "ตั้งค่าทั้งหมด"), function(){ closeGS(); go("settings"); }, "i-set")); b.appendChild(ft);
+  ys.appendChild(prefs);
+  ys.appendChild(coLink(L("My account", "บัญชีของฉัน"), L("Name, sign-in, notifications and security", "ชื่อ การเข้าสู่ระบบ การแจ้งเตือน และความปลอดภัย"), "account")); b.appendChild(ys);
+}
+function coLink(t, sub, tabKey){
+  var r = el("button", "co-link"); r.type = "button"; r.setAttribute("data-noi18n", "");
+  var tx = el("span", "co-tx"); tx.appendChild(el("strong", "", t)); tx.appendChild(el("small", "", sub)); r.appendChild(tx);
+  r.insertAdjacentHTML("beforeend", '<svg class="i"><use href="#i-chevr"/></svg>');
+  r.addEventListener("click", function(){ setTab = tabKey; closeGS(); go("settings"); }); return r;
 }
 function prefRow(label, ctl){ var r = el("div", "frow"); r.appendChild(el("b", "", label)); r.appendChild(ctl); return r; }
 function themeSeg(){
@@ -3603,11 +3678,16 @@ function startDemo(){
   var email = "demo@thuragirl.test", u = db.users[email];
   if (!u){
     u = db.users[email] = { name: "Demo Owner", nick: "Nok", email: email, salt: "", hash: "x", created: Date.now() - 3 * 864e5, onboarded: true, path: "have", demo: true,
-      company: { taxid: "0105561023456", name: "Bangkok Bites Co., Ltd.", addr: "88/12 Sukhumvit Soi 31, Watthana, Bangkok 10110", type: "rest" }, four: {},
+      company: { taxid: "0105561023456", name: "Bangkok Bites Co., Ltd.", addr: "88/12 Sukhumvit Soi 31, Watthana, Bangkok 10110", type: "Restaurant" }, four: {},
       setup: { vat: "Yes", sso: "Yes", conn: { tgbooks: Date.now(), grab: Date.now(), lineman: Date.now() }, verify: null }, banks: [], hasData: false, done: {}, welcome: false, briefSeen: false, theme: db.theme || "auto", lang: db.lang, noConnAsk: true, reg: blankReg() };
     db.session = email;
-    var p = readTable(splitCsv(sampleCsv())); addStatement(u, "K-Bank", "0483511234", p); sampleBooks(u); u.sample = true;
+    var p = readTable(splitCsv(sampleCsv())); addStatement(u, "K-Bank", "0483511234", p);
+    /* a second bank, so the demo shows how several accounts look: a savings account that only earns interest */
+    var sv = [], bal = 250000, end = addDays(today(), -1); for (var m = 5; m >= 0; m--){ var d = addDays(end, -30 * m - 2), i = Math.round(bal * 0.0045 / 12 * 100) / 100; bal = Math.round((bal + i) * 100) / 100; sv.push({ d: d, t: "INTEREST CREDIT SAVINGS", a: i, b: bal }); }
+    addStatement(u, "SCB", "4072219908", { tx: sv });
+    sampleBooks(u); u.sample = true;
   }
+  if (u.company && u.company.type === "rest") u.company.type = "Restaurant";
   db.session = email; u.justIn = false; save();
 }
 function demoBar(u){

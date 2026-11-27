@@ -1598,5 +1598,49 @@
   .demo-bar a{background:var(--m-accent,#14B8A6);color:#05201C;border-radius:99px;padding:5px 12px;text-decoration:none;white-space:nowrap;font-weight:800;font-size:12.5px}
   html.night .demo-bar{background:#E6ECEB;color:#0B0E0E}
   @media (max-width:460px){ .demo-bar{font-size:12px;gap:8px;padding:6px 10px} }
+  /* several banks: balance per bank, a total, and a clear add button */
+  .bkrow{grid-template-columns:minmax(0,1fr) auto auto}
+  .bkrow .nm{grid-column:1;grid-row:1}
+  .bkrow .bal{grid-column:2;grid-row:1;justify-self:end;font-size:14px;font-weight:700;color:var(--m-ink)}
+  .bkrow .meta{grid-column:1 / span 2;grid-row:2}
+  .bkrow .pill{grid-column:3;grid-row:1 / span 2}
+  .bktot{display:flex;justify-content:space-between;align-items:center;padding:12px 6px;border-top:1px solid var(--m-line);font:700 13.5px var(--font-display);color:var(--m-mute)}
+  .bktot b{color:var(--m-ink);font-size:15px}
+  .bkadd{justify-self:start;margin:6px 0 10px;font-size:13px}
+  /* review pack: the full month behind the one-pager */
+  .pk-more{display:grid;gap:4px}
+  .pk-tog{display:flex;align-items:center;justify-content:space-between;flex-direction:row-reverse;gap:8px;width:100%;border:0;background:var(--m-soft);border-radius:16px;padding:12px 14px;font:700 13.5px var(--font-display);color:var(--m-ink);cursor:pointer}
+  .pk-tog .i{width:16px;height:16px;transition:transform .2s}
+  .pk-tog[aria-expanded="true"] .i{transform:rotate(180deg)}
+  .pk-body{display:grid;padding:4px 4px 0;animation:rise .25s both}
+  .pk-h{display:flex;justify-content:space-between;align-items:baseline;padding:14px 0 6px;font:700 13px var(--font-display);color:var(--m-mute);border-bottom:1px solid var(--m-line)}
+  .pk-h b{color:var(--m-ink);font-size:14px}
+  .pk-r{display:grid;grid-template-columns:minmax(0,1fr) 40px auto;gap:10px;align-items:baseline;padding:8px 0;font-size:13.5px;border-bottom:1px solid var(--m-line)}
+  .pk-r em{font-style:normal;color:var(--m-mute);font-size:12px;text-align:right}
+  .pk-r b{font-weight:700}
+  .pk-wk{display:grid;gap:2px}
+  .pk-wr{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 0;font-size:12.5px;color:var(--m-mute)}
+  .pk-wr b{color:var(--m-ink);font-size:13px;min-width:84px;text-align:right}
+  .pk-bars{display:grid;gap:3px}
+  .pk-bars i{display:block;height:6px;border-radius:4px;background:var(--m-accent);min-width:2px}
+  .pk-bars i.out{background:var(--m-mute);opacity:.5}
+  .pk-act{padding-top:12px}
+  .em-hint{margin:-4px 2px 4px;font-size:12.5px;color:var(--m-mute);line-height:1.45}
+  .card[hidden],.needB[hidden]{display:none}
+  /* company menu: what belongs to this company, and what belongs to you everywhere */
+  .co-sec{display:grid;gap:6px;border-top:1px solid var(--m-line);padding-top:14px;margin-top:4px}
+  .co-sec h3{margin:0;font:700 11.5px var(--font-display);letter-spacing:.08em;text-transform:uppercase;color:var(--m-hint)}
+  .co-sec > p{margin:0 0 2px;font-size:13px;color:var(--m-mute)}
+  .co-link{display:flex;align-items:center;gap:12px;width:100%;border:0;background:var(--m-soft);border-radius:16px;padding:12px 14px;text-align:left;cursor:pointer;color:var(--m-ink)}
+  .co-link .co-tx{flex:1;display:grid;gap:2px}
+  .co-link strong{font:700 14px var(--font-display)}
+  .co-link small{font-size:12.5px;color:var(--m-mute)}
+  .co-link .i{width:16px;height:16px;color:var(--m-mute)}
+  .co-sec .co-prefs{margin:2px 0 6px}
+
+  /* Finance lists: contacts full width under the pair, two columns on wide screens */
+  #m-contacts{margin-top:12px}
+  .ct-rows{display:grid}
+  @media (min-width:760px){ .ct-rows{grid-template-columns:1fr 1fr;column-gap:28px} }
 
   .dockB[hidden],.toast[hidden],.alt[hidden]{display:none}

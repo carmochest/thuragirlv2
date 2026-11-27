@@ -49,11 +49,22 @@ function openCoMenu(){
   add.addEventListener("click", addCo); list.appendChild(add);
   b.appendChild(list);
   b.appendChild(el("p", "tnote", L("Each company keeps its own books, bank statements, team and tasks. Same sign-in, same plan price per company.", "แต่ละบริษัทแยกบัญชี รายการเดินบัญชี ทีม และงานของตัวเอง ใช้บัญชีเข้าสู่ระบบเดียวกัน ราคาแพ็กเกจต่อบริษัทเท่าเดิม")));
+  /* two clearly scoped groups, so nobody reads one settings button as "settings for every company" */
+  var cn = coLabel(u);
+  var cs = el("div", "co-sec"); cs.appendChild(el("h3", "", L("This company", "บริษัทนี้"))); cs.appendChild(el("p", "", cn));
+  cs.appendChild(coLink(L("Company settings", "ตั้งค่าบริษัท"), L("Records, team, apps, files and plan", "ข้อมูลบริษัท ทีม แอป ไฟล์ และแพ็กเกจ"), "company")); b.appendChild(cs);
+  var ys = el("div", "co-sec"); ys.appendChild(el("h3", "", L("You, on every company", "ตัวคุณ ใช้กับทุกบริษัท")));
   var prefs = el("div", "co-prefs");
   prefs.appendChild(prefRow(L("Language", "ภาษา"), langSeg()));
   prefs.appendChild(prefRow(L("Theme", "ธีม"), themeSeg()));
-  b.appendChild(prefs);
-  var ft = el("div", "shB-f one"); ft.appendChild(btn("pill soft", L("All settings", "ตั้งค่าทั้งหมด"), function(){ closeGS(); go("settings"); }, "i-set")); b.appendChild(ft);
+  ys.appendChild(prefs);
+  ys.appendChild(coLink(L("My account", "บัญชีของฉัน"), L("Name, sign-in, notifications and security", "ชื่อ การเข้าสู่ระบบ การแจ้งเตือน และความปลอดภัย"), "account")); b.appendChild(ys);
+}
+function coLink(t, sub, tabKey){
+  var r = el("button", "co-link"); r.type = "button"; r.setAttribute("data-noi18n", "");
+  var tx = el("span", "co-tx"); tx.appendChild(el("strong", "", t)); tx.appendChild(el("small", "", sub)); r.appendChild(tx);
+  r.insertAdjacentHTML("beforeend", '<svg class="i"><use href="#i-chevr"/></svg>');
+  r.addEventListener("click", function(){ setTab = tabKey; closeGS(); go("settings"); }); return r;
 }
 function prefRow(label, ctl){ var r = el("div", "frow"); r.appendChild(el("b", "", label)); r.appendChild(ctl); return r; }
 function themeSeg(){

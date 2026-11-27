@@ -67,11 +67,16 @@ function startDemo(){
   var email = "demo@thuragirl.test", u = db.users[email];
   if (!u){
     u = db.users[email] = { name: "Demo Owner", nick: "Nok", email: email, salt: "", hash: "x", created: Date.now() - 3 * 864e5, onboarded: true, path: "have", demo: true,
-      company: { taxid: "0105561023456", name: "Bangkok Bites Co., Ltd.", addr: "88/12 Sukhumvit Soi 31, Watthana, Bangkok 10110", type: "rest" }, four: {},
+      company: { taxid: "0105561023456", name: "Bangkok Bites Co., Ltd.", addr: "88/12 Sukhumvit Soi 31, Watthana, Bangkok 10110", type: "Restaurant" }, four: {},
       setup: { vat: "Yes", sso: "Yes", conn: { tgbooks: Date.now(), grab: Date.now(), lineman: Date.now() }, verify: null }, banks: [], hasData: false, done: {}, welcome: false, briefSeen: false, theme: db.theme || "auto", lang: db.lang, noConnAsk: true, reg: blankReg() };
     db.session = email;
-    var p = readTable(splitCsv(sampleCsv())); addStatement(u, "K-Bank", "0483511234", p); sampleBooks(u); u.sample = true;
+    var p = readTable(splitCsv(sampleCsv())); addStatement(u, "K-Bank", "0483511234", p);
+    /* a second bank, so the demo shows how several accounts look: a savings account that only earns interest */
+    var sv = [], bal = 250000, end = addDays(today(), -1); for (var m = 5; m >= 0; m--){ var d = addDays(end, -30 * m - 2), i = Math.round(bal * 0.0045 / 12 * 100) / 100; bal = Math.round((bal + i) * 100) / 100; sv.push({ d: d, t: "INTEREST CREDIT SAVINGS", a: i, b: bal }); }
+    addStatement(u, "SCB", "4072219908", { tx: sv });
+    sampleBooks(u); u.sample = true;
   }
+  if (u.company && u.company.type === "rest") u.company.type = "Restaurant";
   db.session = email; u.justIn = false; save();
 }
 function demoBar(u){

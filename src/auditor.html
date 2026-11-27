@@ -37,13 +37,30 @@
   .me{display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:99px;padding:5px 14px 5px 5px;font-size:13px;font-weight:700}
   .me b{width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:10.5px}
 
-  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  .stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
   .stat{background:var(--surface);border:0;border-radius:20px;padding:14px 16px;text-align:left;cursor:pointer;display:grid;gap:4px}
   .stat[aria-pressed="true"]{box-shadow:inset 0 0 0 1.5px var(--ink)}
   .stat span{font-size:12.5px;font-weight:700;color:var(--mute)}
   .stat b{font:600 26px var(--num);letter-spacing:-.03em}
 
-  .desk{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:16px;align-items:start}
+  /* one list of companies; a company opens in a focused view on top of it */
+  .desk{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+  .desk:not(.detail) .right{display:none}
+  .scrim{display:none}
+  .gh{display:flex;align-items:baseline;gap:10px;padding:16px 12px 6px;border-top:1px solid var(--line);margin-top:6px}
+  .gh:first-child{border-top:0;margin-top:0;padding-top:6px}
+  .gh b{font-size:13px;font-weight:800;letter-spacing:-.01em}
+  .gh span{font-size:12.5px;color:var(--mute)}
+  .gh.attention b{color:var(--bad)}
+  @media (min-width:901px){
+    .q{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:12px}
+    .q .gh,.q .none{grid-column:1 / -1}
+    .desk.detail .scrim{display:block;position:fixed;inset:0;background:rgba(10,14,14,.42);z-index:70;animation:fade .2s both}
+    .desk.detail .right{position:fixed;top:24px;bottom:24px;left:50%;transform:translateX(-50%);width:min(900px,calc(100vw - 48px));overflow:auto;z-index:71;box-shadow:0 30px 80px rgba(0,0,0,.28);outline:0;animation:pop .22s both}
+    body.focus{overflow:hidden}
+  }
+  @keyframes fade{from{opacity:0}}
+  @keyframes pop{from{opacity:0;transform:translate(-50%,10px)}}
   .pane{background:var(--surface);border-radius:26px;padding:16px}
   .ph{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 6px 12px}
   .ph h2{font-size:17px;font-weight:800;letter-spacing:-.02em}
@@ -82,7 +99,7 @@
   .btn.pri{background:var(--accent);color:var(--accent-ink)}
   .btn[disabled]{opacity:.4;cursor:default}
   .btn .i{width:16px;height:16px}
-  .back{display:none}
+  .back{display:inline-flex}
 
   .sec{border-top:1px solid var(--line)}
   .sh{width:100%;border:0;background:none;display:flex;align-items:center;gap:10px;padding:14px 6px;cursor:pointer;text-align:left}
@@ -119,9 +136,12 @@
   .foot{font-size:12.5px;line-height:1.55;color:var(--mute);max-width:80ch;padding:0 6px}
 
   @media (max-width:900px){
-    .desk{grid-template-columns:minmax(0,1fr)}
     .desk.detail .left{display:none}
-    .desk:not(.detail) .right{display:none}
+    body.focus .stats{display:none}
+    .stats{display:flex;overflow-x:auto;gap:8px;scrollbar-width:none;margin:0 -2px;padding:0 2px}
+    .stats::-webkit-scrollbar{display:none}
+    .stat{flex:none;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:99px}
+    .stat b{font-size:16px}
     .back{display:inline-flex}
     .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
     .url{display:none}
@@ -229,13 +249,14 @@
 
   <div class="desk" id="desk">
     <section class="pane left" aria-label="Company queue">
-      <div class="ph"><h2>Queue</h2><small id="qn"></small></div>
+      <div class="ph"><h2>Companies</h2><small id="qn"></small></div>
       <div class="seg scope" id="scope" role="group" aria-label="Whose companies"></div>
       <input class="search" id="search" type="search" placeholder="Find a company" aria-label="Find a company">
       <div class="q" id="queue"></div>
       <label class="samp"><input type="checkbox" id="samples"> Show sample companies</label>
     </section>
-    <section class="pane right" id="detail" aria-label="Company documents"></section>
+    <div class="scrim" id="scrim" aria-hidden="true"></div>
+    <section class="pane right" id="detail" aria-label="Company documents" tabindex="-1"></section>
   </div>
   <p class="foot">Test build. Companies that sign up in this browser join the queue and get their requests on their own dashboard. The sample companies are made up. Accounts, assignments and documents stay in this browser until the live backend is connected. Due dates assume e-filing (paper dates shown too), move weekend dates to Monday, and do not yet skip public holidays.</p>
 </div>
@@ -639,6 +660,10 @@
   function toast(m){ var t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(function(){ t.hidden = true; }, 2800); }
   function inScope(co){ var o = owner(co); return scope === "all" ? true : scope === "none" ? !o : o === ME.email; }
   function visible(){ return cosShown().filter(inScope); }
+  var listY = 0;
+  function narrow(){ return window.matchMedia("(max-width:900px)").matches; }
+  function closeDetail(){ $("#desk").classList.remove("detail"); document.body.classList.remove("focus"); render(); window.scrollTo(0, listY); }
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape" && $("#desk").classList.contains("detail") && !document.querySelector(".dlg:not([hidden]), dialog[open]")) closeDetail(); });
   function selCo(){ var v = visible(); return v.filter(function(c){ return c.id === selId; })[0] || v[0] || null; }
 
   function renderScope(){
@@ -649,11 +674,15 @@
       var b = btn("", x[1] + " " + x[2], function(){ scope = x[0]; render(); }); b.setAttribute("aria-pressed", String(scope === x[0])); root.appendChild(b);
     });
   }
+  /* what the auditor does next decides the group: chase, wait, close, or nothing */
+  var GROUPS = [["attention", "Needs attention", "A filing is late"], ["missing", "Documents missing", "Request them from the client"], ["requested", "Documents requested", "Waiting on the client"], ["ready", "Ready to close", "Everything is in"], ["open", "Month not over", "Nothing to do yet"], ["filed", "Closed", "Done for this period"]];
+  function grpOf(s){ if (s.stage === "filed") return "filed"; if (dueText(s)[1] === "hot") return "attention"; if (s.stage === "ready") return "ready"; if (s.miss) return "missing"; if (s.ask) return "requested"; return "open"; }
   function renderStats(){
-    var c = { all: 0, collect: 0, ready: 0, filed: 0 };
-    visible().forEach(function(co){ var s = coStat(co); c.all++; c[s.stage]++; });
+    var c = { all: 0, attention: 0, missing: 0, requested: 0, ready: 0, open: 0, filed: 0 };
+    visible().forEach(function(co){ c.all++; c[grpOf(coStat(co))]++; });
+    if (filter !== "all" && !has(c, filter)) filter = "all";
     var root = $("#stats"); root.textContent = "";
-    [["all", "All companies"], ["collect", "Waiting on documents"], ["ready", "Ready to close"], ["filed", "Closed"]].forEach(function(x){
+    [["all", "All companies"], ["attention", "Needs attention"], ["missing", "Documents missing"], ["requested", "Documents requested"], ["ready", "Ready to close"]].forEach(function(x){
       var b = el("button", "stat"); b.type = "button"; b.setAttribute("aria-pressed", String(filter === x[0]));
       b.appendChild(el("span", "", x[1])); b.appendChild(el("b", "num", c[x[0]]));
       b.addEventListener("click", function(){ filter = x[0]; render(); }); root.appendChild(b);
@@ -662,11 +691,14 @@
   function renderQueue(){
     var root = $("#queue"), cur = selCo(); root.textContent = "";
     var rows = visible().map(function(co){ return { co: co, s: coStat(co) }; })
-      .filter(function(r){ return (filter === "all" || r.s.stage === filter) && r.co.n.toLowerCase().indexOf(term) >= 0; })
+      .filter(function(r){ r.g = grpOf(r.s); return (filter === "all" || r.g === filter) && r.co.n.toLowerCase().indexOf(term) >= 0; })
       .sort(function(a, b){ var o = { collect: 0, ready: 1, filed: 2 }; return (o[a.s.stage] - o[b.s.stage]) || ((a.s.due ? +a.s.due.e : 9e15) - (b.s.due ? +b.s.due.e : 9e15)) || (b.s.miss + b.s.ask - a.s.miss - a.s.ask); });
     $("#qn").textContent = rows.length + (rows.length === 1 ? " company" : " companies") + " · most urgent first";
     if (!rows.length) root.appendChild(el("div", "none", scope === "mine" && !visible().length ? "No companies are assigned to you yet." : "No companies match."));
+    var lastG = "";
+    rows.sort(function(a, b){ var o = { attention: 0, missing: 1, requested: 2, ready: 3, open: 4, filed: 5 }; return o[a.g] - o[b.g]; });
     rows.forEach(function(r){
+      if (filter === "all" && r.g !== lastG){ lastG = r.g; var G = GROUPS.filter(function(g){ return g[0] === r.g; })[0], n = rows.filter(function(x){ return x.g === r.g; }).length; var gh = el("div", "gh " + r.g); gh.appendChild(el("b", "", G[1])); gh.appendChild(el("span", "", n + " · " + G[2])); root.appendChild(gh); }
       var b = el("button", "co"); b.type = "button"; if (cur && r.co.id === cur.id) b.setAttribute("aria-current", "true");
       var l = el("div"), nm = el("div", "nm", r.co.n); if (r.co.real) nm.appendChild(el("span", "new", "Signed up")); l.appendChild(nm);
       var o = owner(r.co); l.appendChild(el("div", "ty", r.co.t + (scope !== "mine" ? " · " + (o ? (AU[o] ? AU[o].name : o) : "Unassigned") : ""))); b.appendChild(l);
@@ -678,7 +710,7 @@
         var p = el("span", "fs " + cls, f.short); p.title = f.short + ": " + word; p.setAttribute("aria-label", f.short + ", " + word); strip.appendChild(p);
       });
       b.appendChild(strip);
-      b.addEventListener("click", function(){ selId = r.co.id; open = {}; $("#desk").classList.add("detail"); render(); window.scrollTo(0, 0); });
+      b.addEventListener("click", function(){ selId = r.co.id; open = {}; listY = window.scrollY; $("#desk").classList.add("detail"); document.body.classList.add("focus"); render(); if (narrow()) window.scrollTo(0, 0); else { var d = $("#detail"); d.scrollTop = 0; d.focus({ preventScroll: true }); } });
       root.appendChild(b);
     });
   }
@@ -706,7 +738,7 @@
     if (!co){ root.appendChild(el("div", "none", "Pick a company from the queue.")); return; }
     selId = co.id; var per = perOf(co), s = coStat(co), S = SETS[mode];
     var h = el("div", "dh");
-    var back = btn("btn back", null, function(){ $("#desk").classList.remove("detail"); }); back.innerHTML = ico("i-chevl") + "Queue"; back.style.justifySelf = "start"; h.appendChild(back);
+    var back = btn("btn back", null, closeDetail); back.innerHTML = ico("i-chevl") + "All companies"; back.style.justifySelf = "start"; h.appendChild(back);
     h.appendChild(el("h2", "", co.n));
     var tags = el("div", "tags"), E = fyEnd(co);
     [mode === "month" ? mlabel(per) : "Year ending " + E.getDate() + " " + MN[E.getMonth()] + " " + E.getFullYear(), co.vat ? "VAT registered" : "Not VAT registered", co.sso ? "SSO enrolled" : "No SSO", co.staff ? co.staff + " employees" : "No employees"].forEach(function(t){ tags.appendChild(el("span", "tag", t)); });
@@ -817,6 +849,7 @@
     [].forEach.call(document.querySelectorAll("#mode button"), function(x){ x.setAttribute("aria-pressed", String(x.getAttribute("data-m") === mode)); });
     $("#perw").hidden = mode !== "month"; $("#per").value = mper;
   }
+  $("#scrim").addEventListener("click", function(){ closeDetail(); });
   function render(){ persist(); refreshCos(); syncReal(); renderMe(); renderScope(); renderStats(); renderQueue(); renderDetail(); }
 
   // month picker: the last 12 months that have ended

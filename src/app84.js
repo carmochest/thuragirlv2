@@ -30,7 +30,7 @@ var TH = {
   "Ask ThuraGirl": "ถาม ThuraGirl", "Speak": "พูด", "Send": "ส่ง", "Upload": "อัปโหลด", "Invoice": "ใบแจ้งหนี้", "Pay": "จ่าย", "Close": "ปิด", "Close reply": "ปิดคำตอบ",
   "Dismiss": "ปิด", "Cancel": "ยกเลิก", "Continue": "ต่อไป", "Done": "เสร็จแล้ว", "Edit": "แก้ไข", "Remove": "ลบ", "Add": "เพิ่ม", "Open": "เปิด", "View": "ดู", "Review": "ตรวจดู",
   "Approve": "อนุมัติ", "Yes": "ใช่", "No": "ไม่", "Both": "ทั้งสองแบบ", "On": "เปิด", "Off": "ปิด", "Not now": "ไว้ทีหลัง", "Got it": "เข้าใจแล้ว", "Optional": "ไม่บังคับ",
-  "Update": "อัปเดต", "Connect": "เชื่อมต่อ", "Invite": "เชิญ", "Remind": "ทวง", "Register": "จดทะเบียน", "Set up": "ตั้งค่า", "Set it up": "ตั้งค่าเลย", "Turn on": "เปิดใช้", "Verify now": "ยืนยันตอนนี้",
+  "Update": "อัปเดต", "Interest": "ดอกเบี้ยรับ", "Connect": "เชื่อมต่อ", "Invite": "เชิญ", "Remind": "ทวง", "Register": "จดทะเบียน", "Set up": "ตั้งค่า", "Set it up": "ตั้งค่าเลย", "Turn on": "เปิดใช้", "Verify now": "ยืนยันตอนนี้",
   "Today": "วันนี้", "just now": "เมื่อสักครู่", "Saved": "บันทึกแล้ว", "Copied": "คัดลอกแล้ว", "Cleared": "ล้างแล้ว", "Not set": "ยังไม่ได้ตั้ง", "Not yet": "ยังไม่", "Not yet.": "ยังไม่มี",
   "Month": "เดือน", "Quarter": "ไตรมาส", "Year": "ปี", "This month": "เดือนนี้", "Period": "ช่วงเวลา", "Status": "สถานะ", "Total": "รวม", "Subtotal": "รวมก่อน VAT", "Amount": "จำนวนเงิน", "Due": "ครบกำหนด",
   "In": "เข้า", "Out": "ออก", "Kept": "เหลือ", "Profit": "กำไร", "Revenue": "รายได้", "Expenses": "ค่าใช้จ่าย", "Wages": "ค่าจ้าง", "Rent": "ค่าเช่า", "Utilities": "ค่าน้ำค่าไฟ", "Marketing": "การตลาด",
