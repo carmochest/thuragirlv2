@@ -174,6 +174,7 @@ var RULES = [
   [new RegExp("^Signed off\\. " + MO + " is locked and filed\\.$"), function(m){ return "รับรองแล้ว ปิดบัญชีเดือน" + mth(m[1]) + " และยื่นเรียบร้อย"; }],
   [new RegExp("^I've reviewed " + MO + " and it looks right\\.$"), function(m){ return "ฉันตรวจบัญชีเดือน" + mth(m[1]) + " แล้ว ถูกต้อง"; }],
   [new RegExp("^How was " + MO + "\\?$"), function(m){ return "เดือน" + mth(m[1]) + " เป็นยังไงบ้าง"; }],
+  [new RegExp("^" + MO + " books signed off$"), function(m){ return "ปิดบัญชีเดือน" + mth(m[1]) + " แล้ว"; }],
   [new RegExp("^" + MO + " tax forms approved$"), function(m){ return "อนุมัติแบบภาษีเดือน" + mth(m[1]) + " แล้ว"; }],
   [new RegExp("^Closed your " + MO + " books, every baht accounted for$"), function(m){ return "ปิดบัญชีเดือน" + mth(m[1]) + " แล้ว ครบทุกบาท"; }],
   [new RegExp("^" + MO + " payroll$"), function(m){ return "เงินเดือนเดือน" + mth(m[1]); }],

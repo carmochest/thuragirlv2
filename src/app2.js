@@ -12,14 +12,15 @@ function showTab(){
   $("#b-brief-btn").setAttribute("aria-pressed", String(tab === "brief"));
   $(".dockB").hidden = tab === "settings" || tab === "register";
   $("#b-co-n").textContent = coName(u); $("#b-co-i").textContent = initials(coName(u));
-  if (tab === "brief" && u.hasData && !u.briefSeen){ u.briefSeen = true; save(); }
-  $("#b-brief-dot").hidden = !!u.briefSeen || !u.hasData;
+  var wasBrief = lastTab === "brief"; lastTab = tab;
+  $("#b-brief-dot").hidden = !u.hasData || (tab === "brief" || briefSeenToday(u));
   paintHome();
   if (tab === "money"){ renderMoney(); paintLists(u); paintContacts(u); }
   if (tab === "brief") renderBrief();
   if (tab === "settings") renderSettings();
   if (tab === "register") renderRegister();
   paintSync(u);
+  briefStrip(u); if (tab === "home" && wasBrief) briefTuck();
   var cs = chips(); $$("#b-sug button").forEach(function(b, i){ b.textContent = cs[i]; });
   var key = db.session + ":" + tab + ":" + (u.hasData ? 1 : 0);
   if (key !== lastKey){ closeAll(); play(); window.scrollTo(0, 0); }

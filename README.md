@@ -27,6 +27,7 @@ Live test build: https://carmochest.github.io/thuragirlv2/ (GitHub Pages, `main`
 - **Sample data.** "Try it with sample data" (or "Use the sample" in the upload sheet) loads a sample restaurant statement, so every screen fills in.
 - **Morning Brief.** A short summary in icon rows, up to three urgent items with details behind a tap, things worth knowing, what was handled, and time saved (with "How I work this out"). The greeting and sign-off rotate daily.
 - **Charts.** Finance has a "Sales by channel" donut with a Month/Year toggle. Tap any P&L line (for example Stock and supplies or Wages) to open a breakdown with a donut and the top payees. In chat, ask "Compare GrabFood vs LINE MAN for 3 months" or "sales by channel this year" to get a bar chart, and "Pin to Finance" keeps it on the Finance page (pins are stored in `u.pins`, up to 4).
+- **The brief through the day.** The Brief stays its own mode, not the landing page. Each morning a fresh brief is waiting: a "Your Morning Brief is ready" strip at the top of Home and a dot on the Brief button. Once read, it tucks into a slim strip on Home with the day's progress (done of this morning's list, as a ring) and cash; one tap reopens it. From noon it reads "Today so far" (progress against the morning list), from 5 pm it is a "Day wrap" (what got done, what waits for tomorrow). Overnight it resets and yesterday moves to "Past briefs" at the bottom of the Brief (last 14 days). Test any time of day with `?hour=8`, `?hour=14` or `?hour=19`, for example `/dashboard/?hour=19#/brief`.
 - **Several banks.** The bank strip under the cash line says how many banks there are and flags any that are out of date. Open it to see each account with its balance, the total for all banks, and "Add another bank". The demo has two (K-Bank and an SCB savings account).
 - **Review Pack, full month.** In the October Review Pack, "See the full month" opens every money-in and money-out line with its share, week by week in and out, and the PDF, Share and Print statement for that month.
 - **Reminders know the email.** An overdue reminder fills in the customer's email from contacts or an earlier invoice and says where it came from. A new email typed on an invoice or reminder is remembered (`u.cmail`).
@@ -74,6 +75,7 @@ src/                 Source. Edit only here.
                        app87 "Get started" sync card (bank, books, sales apps) and daily reminder
                        app88 Sales by channel donut (Finance), chat charts with "Pin to Finance", P&L drill-down
                        app89 Forgot password, delete my account, demo mode (#/demo)
+                       app891 The brief through the day: Home strip, Today so far, Day wrap, Past briefs
                        app9  boot
   auditor.html       Auditor desk and auditor sign-in (one standalone page).
   aud-th.js          Thai for the auditor pages (dictionary plus rules, EN/ไทย switch). build.py appends it to auditor.html.

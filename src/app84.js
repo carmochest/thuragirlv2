@@ -243,7 +243,7 @@ var TH = {
   "Today's list": "เรื่องที่ต้องทำวันนี้", "Nothing on today's list": "วันนี้ไม่มีเรื่องต้องทำ", "Start here": "เริ่มตรงนี้", "Worth knowing": "เรื่องน่ารู้",
   "Time saved, about": "ช่วยประหยัดเวลาไปราว",
   "This month at a glance": "ภาพรวมเดือนนี้", "Where the money went": "เงินไปไหนบ้าง",
-  "Needs you today": "วันนี้ต้องทำ", "Nothing urgent today": "วันนี้ไม่มีเรื่องด่วน", "Nothing is late and nothing is due today.": "ไม่มีอะไรเลยกำหนดหรือครบกำหนดวันนี้",
+  "Needs you today": "วันนี้ต้องทำ", "Waits for tomorrow": "ไว้พรุ่งนี้", "Nothing urgent today": "วันนี้ไม่มีเรื่องด่วน", "Nothing is late and nothing is due today.": "ไม่มีอะไรเลยกำหนดหรือครบกำหนดวันนี้",
   "How I work this out": "หนูคำนวณอย่างไร", "Typical times for a small business doing this by hand. An estimate, not a measurement.": "เวลาโดยประมาณที่ธุรกิจเล็ก ๆ ใช้ทำเองด้วยมือ เป็นค่าประมาณ ไม่ใช่การวัดจริง",
   "Details": "รายละเอียด",
   "No accounting software?": "ไม่มีโปรแกรมบัญชี?", "Let ThuraGirl keep your books instead": "ให้ ThuraGirl ทำบัญชีให้แทน",

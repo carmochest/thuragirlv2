@@ -90,7 +90,7 @@ function applyTheme(){
 try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme); } catch (e) {}
 
 /* ── router ── */
-var tab = "home", lastKey = "", PAGE = document.body.getAttribute("data-page") || "dashboard";
+var tab = "home", lastTab = "", lastKey = "", PAGE = document.body.getAttribute("data-page") || "dashboard";
 function toAuth(h){ if (PAGE === "signup") go(h); else location.href = "../signup/" + (h ? "#/" + h : ""); }
 function go(path){ var h = "#/" + path; if (location.hash === h) route(); else location.hash = h; }
 function route(){
