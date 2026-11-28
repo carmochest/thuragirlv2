@@ -5,16 +5,26 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ThuraGirl · The AI bookkeeper for Thai small businesses</title>
 <meta name="description" content="ThuraGirl reads your bank statements, keeps your books and prepares VAT, withholding tax and social security. Each morning she tells you what needs your yes.">
+<link rel="canonical" href="https://thuragirl.com/">
+<meta property="og:site_name" content="ThuraGirl">
 <meta property="og:title" content="ThuraGirl · Your books, done. You just say yes.">
-<meta property="og:description" content="The AI bookkeeper for Thai small businesses: a five-minute Morning Brief, invoices by chat, and month-end on one page.">
+<meta property="og:description" content="The AI bookkeeper for Thai small businesses: a two-minute Morning Brief, invoices by chat, and month-end on one page.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="img/home-desk-day.webp">
+<meta property="og:url" content="https://thuragirl.com/">
+<meta property="og:image" content="https://thuragirl.com/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ThuraGirl: the AI bookkeeper for Thai small businesses">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="th_TH">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#F4F5F5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0B0E0E" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="../assets/favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700&family=Instrument+Serif:ital@0;1&family=Manrope:wght@500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" href="fonts/manrope-latin-f2edea8e.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="fonts/fonts.css">
 <script>
   /* set the theme before paint so there is no flash */
   (function(){ try { var t = localStorage.getItem("tg.web.theme"); if (t === "day" || t === "night") document.documentElement.setAttribute("data-theme", t); } catch (e) {} })();
@@ -271,6 +281,33 @@
   html[lang="th"] .card h3,html[lang="th"] .how h3,html[lang="th"] .plan h3{letter-spacing:-.01em;line-height:1.3}
   html[lang="th"] body{line-height:1.7}
   html[lang="th"] .eyebrow{letter-spacing:.02em;font-size:14px}
+  /* ── early access ── */
+  .early{margin:auto;border:0;padding:44px 28px 26px;width:min(100% - 32px,440px);max-height:calc(100dvh - 32px);overflow:auto;border-radius:32px;background:var(--surface);color:var(--ink);box-shadow:var(--shadow),inset 0 0 0 1px var(--line);text-align:center}
+  .early::backdrop{background:rgba(8,12,12,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+  .early[open]{animation:pop .25s cubic-bezier(.2,.7,.2,1)}
+  @keyframes pop{from{opacity:0;transform:translateY(12px) scale(.98)}}
+  @media (prefers-reduced-motion:reduce){.early[open]{animation:none}}
+  .early .tg{display:block;margin:0 auto 14px}
+  .early h2{font-size:34px;font-weight:800;letter-spacing:-.04em;line-height:1.05}
+  .early p{color:var(--mute);margin-top:12px;font-size:16px}
+  .early form{margin-top:22px;display:grid;gap:10px}
+  .early input[type=email]{width:100%;height:54px;border-radius:999px;border:0;background:var(--soft);color:var(--ink);font:600 16px var(--font);padding:0 22px;box-shadow:inset 0 0 0 1px var(--line);text-align:center}
+  .early input[type=email]::placeholder{color:var(--faint)}
+  .early input[type=email]:focus{outline:none;box-shadow:inset 0 0 0 2px var(--accent)}
+  .early input[aria-invalid=true],.early input[aria-invalid=true]:focus{box-shadow:inset 0 0 0 2px #E5484D}
+  .early .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+  .early .btn{width:100%}
+  .early .btn[disabled]{opacity:.6;pointer-events:none}
+  .early .early-err{color:#E5484D;font-size:14px;font-weight:600;margin:0}
+  .early .early-s{font-size:13.5px;margin-top:14px}
+  .early .early-s a{color:var(--hint);font-weight:700}
+  .early-ok{width:60px;height:60px;border-radius:999px;background:var(--tint);color:var(--hint);display:grid;place-items:center;margin:0 auto 16px}
+  .early-ok .i{width:30px;height:30px;stroke-width:2}
+  #early-done .btn{margin-top:24px}
+  .early-x{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:999px;border:0;background:var(--soft);display:grid;place-items:center}
+  .early-x .i{transform:rotate(45deg)}
+  html[lang="th"] .early h2{line-height:1.2;letter-spacing:-.02em}
+  html[lang="th"] .early h2 em{font-style:normal;font-weight:600;font-size:1em}
 </style>
 </head>
 <body class="no-js">
@@ -340,8 +377,7 @@
       <button type="button" class="icbtn" id="theme" aria-label="Switch day or night mode" title="Day or night">
         <svg class="i sun" aria-hidden="true"><use href="#i-sun"/></svg><svg class="i moon" aria-hidden="true"><use href="#i-moon"/></svg>
       </button>
-      <a class="signin" href="../signup/#/login" data-i18n="n.in">Sign in</a>
-      <a class="btn btn-ink btn-sm" href="../signup/" data-i18n="n.cta">Get started</a>
+      <a class="btn btn-ink btn-sm" href="#early" data-early data-i18n="n.cta">Get early access</a>
       <button type="button" class="icbtn menu-btn" id="menu" aria-label="Menu" aria-expanded="false" aria-controls="drawer"><svg class="i" aria-hidden="true"><use href="#i-menu"/></svg></button>
     </div>
   </div>
@@ -349,8 +385,7 @@
     <a href="#features" data-i18n="n.h">How it works</a>
     <a href="#pricing" data-i18n="n.p">Pricing</a>
     <a href="#faq" data-i18n="n.q">FAQ</a>
-    <a href="../signup/#/login" data-i18n="n.in">Sign in</a>
-    <a href="../signup/" data-i18n="n.cta">Get started</a>
+    <a href="#early" data-early data-i18n="n.cta">Get early access</a>
   </div>
 </header>
 
@@ -361,10 +396,10 @@
       <h1 class="rv" data-i18n="h.t">Your books, done. <em>You just say yes.</em></h1>
       <p class="lede rv" data-i18n="h.sub">ThuraGirl reads your bank statements, keeps your books and prepares your taxes. You step in only when something needs your yes.</p>
       <div class="ctas rv">
-        <a class="btn btn-acc" href="../signup/"><span data-i18n="h.cta1">Get started</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-        <a class="btn btn-soft" href="../dashboard/#/demo" data-i18n="h.cta2">Try the demo</a>
+        <a class="btn btn-acc" href="#early" data-early><span data-i18n="h.cta1">Get early access</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn-soft" href="#features" data-i18n="h.cta2">See how it works</a>
       </div>
-      <p class="fine rv"><span data-i18n="h.f1">Sign up in a minute</span><span data-i18n="h.f2">Thai or English</span><span data-i18n="h.f3">Phone or computer</span></p>
+      <p class="fine rv"><span data-i18n="h.f1">Early access open</span><span data-i18n="h.f2">Thai or English</span><span data-i18n="h.f3">Phone or computer</span></p>
 
       <div class="stage rv">
         <div class="browser">
@@ -529,7 +564,7 @@
             <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="p1.3">3 sign-ins, payroll for up to 10 staff</span></li>
             <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="p1.4">VAT, withholding and SSO every month</span></li>
           </ul>
-          <a class="btn btn-soft" href="../signup/" data-i18n="p1.cta">Start with Standard</a>
+          <a class="btn btn-soft" href="#early" data-early="Standard" data-i18n="p1.cta">Choose Standard</a>
         </div>
         <div class="plan pro rv">
           <div class="plan-h"><h3 data-i18n="p2.h">Pro</h3><span class="badge" data-i18n="p2.tag">Most popular</span></div>
@@ -541,7 +576,7 @@
             <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="p2.3">10 sign-ins, payroll for up to 50 staff</span></li>
             <li><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="p2.4">Everything in Standard, with higher limits</span></li>
           </ul>
-          <a class="btn btn-ink" href="../signup/" data-i18n="p2.cta">Go Pro</a>
+          <a class="btn btn-ink" href="#early" data-early="Pro" data-i18n="p2.cta">Choose Pro</a>
         </div>
       </div>
       <p class="pnote rv" data-i18n="p.note">Prices are before VAT. Try it free for 14 days, and pay yearly to get 2 months free. Payments are handled securely by <b>Beam</b>.</p>
@@ -569,15 +604,37 @@
       <div class="final-in rv">
         <svg class="tg" width="76" height="79" aria-hidden="true"><use href="#tg"/></svg>
         <h2 data-i18n="c.h">Hand the books <em>to ThuraGirl.</em></h2>
-        <p class="sub" style="margin-inline:auto" data-i18n="c.p">Sign up in a minute and see your money the same day.</p>
+        <p class="sub" style="margin-inline:auto" data-i18n="c.p">We're opening to our first businesses. Leave your email and we'll send you the app link as soon as it's ready.</p>
         <div class="ctas">
-          <a class="btn btn-acc" href="../signup/"><span data-i18n="c.cta">Get started</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-          <a class="btn btn-soft" href="../signup/#/login" data-i18n="c.in">Sign in</a>
+          <a class="btn btn-acc" href="#early" data-early><span data-i18n="c.cta">Get early access</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
         </div>
       </div>
     </div>
   </section>
 </main>
+
+<dialog class="early" id="early" aria-labelledby="early-h">
+  <button type="button" class="early-x" id="early-x" aria-label="Close"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+  <div id="early-form-w">
+    <svg class="tg" width="52" height="54" aria-hidden="true"><use href="#tg"/></svg>
+    <h2 id="early-h" data-i18n="e.h">Get <em>early access.</em></h2>
+    <p data-i18n="e.p">ThuraGirl is opening to its first businesses. Leave your email and we'll send you the app link as soon as it's ready.</p>
+    <form id="early-form" novalidate>
+      <label class="sr" for="early-email" data-i18n="e.lab">Your email</label>
+      <input id="early-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" maxlength="254" required placeholder="you@business.com">
+      <input class="hp" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <p class="early-err" id="early-err" role="alert" hidden></p>
+      <button class="btn btn-acc" type="submit" id="early-go"><span data-i18n="e.btn">Keep me posted</span><svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+    </form>
+    <p class="early-s" data-i18n="e.s">We only use your email to tell you about ThuraGirl. No spam. <a href="privacy/">Privacy</a></p>
+  </div>
+  <div id="early-done" hidden>
+    <div class="early-ok"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></div>
+    <h2 data-i18n="e.dh">You're <em>on the list.</em></h2>
+    <p data-i18n="e.dp">We'll email you the app link as soon as it opens. Questions? Write to hello@thuragirl.com.</p>
+    <button type="button" class="btn btn-soft" id="early-close" data-i18n="e.close">Done</button>
+  </div>
+</dialog>
 
 <footer>
   <div class="wrap">
@@ -591,8 +648,8 @@
         <ul><li><a href="#features" data-i18n="n.h">How it works</a></li><li><a href="#how" data-i18n="n.s">Getting started</a></li><li><a href="#pricing" data-i18n="n.p">Pricing</a></li><li><a href="#faq" data-i18n="n.q">FAQ</a></li></ul>
       </div>
       <div>
-        <h4 data-i18n="ft.a">Account</h4>
-        <ul><li><a href="../signup/" data-i18n="ft.su">Sign up</a></li><li><a href="../signup/#/login" data-i18n="n.in">Sign in</a></li><li><a href="../dashboard/" data-i18n="ft.app">Open the app</a></li><li><a href="../dashboard/#/demo" data-i18n="ft.demo">Try the demo</a></li></ul>
+        <h4 data-i18n="ft.a">Contact</h4>
+        <ul><li><a href="#early" data-early data-i18n="n.cta">Get early access</a></li><li><a href="mailto:hello@thuragirl.com">hello@thuragirl.com</a></li><li><a href="privacy/" data-i18n="ft.pv">Privacy</a></li></ul>
       </div>
     </div>
     <div class="fb"><span>© 2026 ThuraGirl</span><span data-i18n="ft.note">Product screens show sample data.</span><span data-i18n="ft.made">Made in Bangkok</span></div>
@@ -626,14 +683,51 @@
   } else $$(".rv").forEach(function(el){ el.classList.add("in"); });
 
 
+  /* early access: no accounts yet, so sign-up buttons collect an email for the launch list */
+  var dlg = $("#early"), plan = "", form = $("#early-form"), em = $("#early-email"), err = $("#early-err"), go = $("#early-go");
+  var MSG = {
+    bad: ["Please check your email address.", "กรุณาตรวจสอบอีเมลอีกครั้ง"],
+    net: ["Couldn't save just now. Please try again, or email hello@thuragirl.com.", "บันทึกไม่สำเร็จ ลองอีกครั้ง หรืออีเมลมาที่ hello@thuragirl.com"]
+  };
+  function t(m){ return MSG[m][root.lang === "th" ? 1 : 0]; }
+  function showErr(m){ err.textContent = t(m); err.hidden = false; em.setAttribute("aria-invalid", "true"); }
+  function openEarly(p){
+    plan = p || ""; setMenu(false);
+    if (!dlg || typeof dlg.showModal !== "function"){ location.href = "mailto:hello@thuragirl.com"; return; }
+    if (!dlg.open) dlg.showModal();
+    if (!$("#early-done").hidden) return;
+    err.hidden = true; em.removeAttribute("aria-invalid");
+    setTimeout(function(){ em.focus(); }, 30);
+  }
+  $$("[data-early]").forEach(function(a){ a.addEventListener("click", function(e){ e.preventDefault(); openEarly(a.getAttribute("data-early")); }); });
+  if (dlg){
+    dlg.addEventListener("click", function(e){ if (e.target === dlg) dlg.close(); });
+    $("#early-x").addEventListener("click", function(){ dlg.close(); });
+    $("#early-close").addEventListener("click", function(){ dlg.close(); });
+    em.addEventListener("input", function(){ err.hidden = true; em.removeAttribute("aria-invalid"); });
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+      var v = em.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) || v.length > 254){ showErr("bad"); em.focus(); return; }
+      go.disabled = true;
+      fetch("/api/early", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: v, plan: plan, lang: root.lang, company: form.company.value }) })
+        .then(function(r){ if (!r.ok) throw r; return r.json(); })
+        .then(function(){ $("#early-form-w").hidden = true; $("#early-done").hidden = false; $("#early-close").focus(); })
+        .catch(function(r){ showErr(r && r.status === 400 ? "bad" : "net"); })
+        .then(function(){ go.disabled = false; });
+    });
+  }
+  if (location.hash === "#early") setTimeout(function(){ openEarly(); }, 0);
+
   /* language */
   var TH = {
     "skip":"ข้ามไปยังเนื้อหา",
-    "n.h":"วิธีทำงาน","n.s":"เริ่มต้นใช้งาน","n.p":"ราคา","n.q":"คำถาม","n.in":"เข้าสู่ระบบ","n.cta":"เริ่มใช้เลย",
+    "n.h":"วิธีทำงาน","n.s":"เริ่มต้นใช้งาน","n.p":"ราคา","n.q":"คำถาม","n.in":"เข้าสู่ระบบ","n.cta":"รับสิทธิ์ใช้ก่อน",
     "h.new":"ใหม่","h.kicker":"นักบัญชี AI สำหรับธุรกิจขนาดเล็กในไทย",
     "h.t":"บัญชีเสร็จเรียบร้อย <em>คุณแค่กดยืนยัน</em>",
     "h.sub":"ThuraGirl อ่านรายการเดินบัญชีธนาคาร ทำบัญชี และเตรียมภาษีให้ คุณเข้ามาเฉพาะตอนที่มีเรื่องรอคุณอนุมัติ",
-    "h.cta1":"เริ่มใช้เลย","ft.demo":"ลองเดโม","h.cta2":"ลองเดโม","h.f1":"สมัครได้ในหนึ่งนาที","h.f2":"ไทยหรืออังกฤษ","h.f3":"มือถือหรือคอมพิวเตอร์",
+    "h.cta1":"รับสิทธิ์ใช้ก่อน","ft.demo":"ลองเดโม","h.cta2":"ดูวิธีทำงาน","h.f1":"เปิดรับผู้ใช้กลุ่มแรกแล้ว","h.f2":"ไทยหรืออังกฤษ","h.f3":"มือถือหรือคอมพิวเตอร์",
     "c1.b":"จัดหมวด 686 รายการแล้ว","c1.s":"ทำเสร็จระหว่างที่คุณยุ่ง","c2.b":"บัญชีเดือนตุลาคมพร้อมแล้ว","c2.s":"รอคุณกดอนุมัติ",
     "t.h":"สร้างมาเพื่อธุรกิจที่ขับเคลื่อนเมืองไทย",
     "t.1":"ร้านอาหาร","t.2":"คาเฟ่และเบเกอรี่","t.3":"ร้านค้า","t.4":"ร้านค้าออนไลน์","t.5":"ซาลอน","t.6":"เอเจนซี่และงานบริการ","t.7":"ผู้ผลิต",
@@ -659,9 +753,9 @@
     "p.k":"ราคา","p.h":"สองแพ็กเกจ <em>ไม่มีเซอร์ไพรส์</em>","p.sub":"ราคาเดียวต่อเดือนต่อบริษัท ถูกกว่าจ้างสำนักงานบัญชี และไม่ต้องรอสามวันกว่าจะได้คำตอบ",
     "p.mo":"/ เดือน","p.mo2":"/ เดือน",
     "p1.h":"Standard","p1.for":"สำหรับธุรกิจที่เจ้าของดูแลเอง",
-    "p1.1":"เอกสาร 200 รายการต่อเดือน","p1.2":"รายการธนาคารและแพลตฟอร์ม 500 รายการ แชท 300 ข้อความ","p1.3":"ผู้ใช้ 3 คน เงินเดือนพนักงานสูงสุด 10 คน","p1.4":"VAT ภาษีหัก ณ ที่จ่าย และประกันสังคมทุกเดือน","p1.cta":"เริ่มใช้ Standard",
+    "p1.1":"เอกสาร 200 รายการต่อเดือน","p1.2":"รายการธนาคารและแพลตฟอร์ม 500 รายการ แชท 300 ข้อความ","p1.3":"ผู้ใช้ 3 คน เงินเดือนพนักงานสูงสุด 10 คน","p1.4":"VAT ภาษีหัก ณ ที่จ่าย และประกันสังคมทุกเดือน","p1.cta":"เลือก Standard",
     "p2.h":"Pro","p2.tag":"ยอดนิยม","p2.for":"สำหรับทีมที่กำลังเติบโต",
-    "p2.1":"เอกสาร 1,000 รายการต่อเดือน","p2.2":"รายการธนาคารและแพลตฟอร์ม 3,000 รายการ แชท 1,500 ข้อความ","p2.3":"ผู้ใช้ 10 คน เงินเดือนพนักงานสูงสุด 50 คน","p2.4":"ทุกอย่างใน Standard พร้อมโควตาที่สูงกว่า","p2.cta":"เริ่มใช้ Pro",
+    "p2.1":"เอกสาร 1,000 รายการต่อเดือน","p2.2":"รายการธนาคารและแพลตฟอร์ม 3,000 รายการ แชท 1,500 ข้อความ","p2.3":"ผู้ใช้ 10 คน เงินเดือนพนักงานสูงสุด 50 คน","p2.4":"ทุกอย่างใน Standard พร้อมโควตาที่สูงกว่า","p2.cta":"เลือก Pro",
     "p.note":"ราคายังไม่รวม VAT ทดลองใช้ฟรี 14 วัน และจ่ายรายปีรับฟรี 2 เดือน การชำระเงินดำเนินการอย่างปลอดภัยผ่าน <b>Beam</b>",
     "q.k":"คำถามที่พบบ่อย","q.h":"มีคำถาม? <em>เรามีคำตอบ</em>",
     "q1.q":"ต่างจากจ้างสำนักงานบัญชีอย่างไร?","q1.a":"งานรายเดือนแบบเดียวกัน แต่คุณเห็นตัวเลขทุกวันแทนที่จะรอหลายสัปดาห์ และได้คำตอบในไม่กี่วินาทีแทนที่จะรอหลายวัน งานที่กฎหมายกำหนดให้ใช้ผู้สอบบัญชีรับอนุญาต จะมีผู้สอบบัญชีที่ ThuraGirl จัดไว้ให้เป็นผู้ทำ",
@@ -669,9 +763,10 @@
     "q3.q":"ใช้กับธนาคารไหนได้บ้าง?","q3.a":"ทุกธนาคารไทยที่ดาวน์โหลดรายการเดินบัญชีเป็นไฟล์ CSV หรือ Excel ได้ ดาวน์โหลดจากแอปหรือเว็บไซต์ของธนาคาร แล้วอัปโหลดเข้า ThuraGirl",
     "q4.q":"มีอะไรถูกยื่นโดยที่ฉันไม่รู้ไหม?","q4.a":"ไม่มี ThuraGirl เตรียมการยื่นแบบและการปิดเดือนทุกครั้ง แล้วรอให้คุณอนุมัติก่อน",
     "q5.q":"มีแอปมือถือไหม?","q5.a":"ThuraGirl ใช้งานผ่านเบราว์เซอร์ได้บนทุกมือถือและคอมพิวเตอร์ ไม่ต้องติดตั้งอะไร แอป iPhone และ Android อยู่ในแผน",
-    "c.h":"ยกงานบัญชี <em>ให้ ThuraGirl ดูแล</em>","c.p":"สมัครได้ในหนึ่งนาที แล้วเห็นภาพการเงินของคุณได้ในวันเดียวกัน","c.cta":"เริ่มใช้เลย","c.in":"เข้าสู่ระบบ",
+    "c.h":"ยกงานบัญชี <em>ให้ ThuraGirl ดูแล</em>","c.p":"เรากำลังเปิดให้ธุรกิจกลุ่มแรกใช้งาน ฝากอีเมลไว้ แล้วเราจะส่งลิงก์แอปให้ทันทีที่พร้อม","c.cta":"รับสิทธิ์ใช้ก่อน","c.in":"เข้าสู่ระบบ",
+    "e.h":"รับสิทธิ์<em>ใช้ก่อน</em>","e.p":"ThuraGirl กำลังเปิดให้ธุรกิจกลุ่มแรกใช้งาน ฝากอีเมลไว้ แล้วเราจะส่งลิงก์แอปให้ทันทีที่พร้อม","e.lab":"อีเมลของคุณ","e.btn":"แจ้งฉันเมื่อพร้อม","e.s":"เราใช้อีเมลของคุณเพื่อแจ้งข่าว ThuraGirl เท่านั้น ไม่มีสแปม <a href=\"privacy/\">ความเป็นส่วนตัว</a>","e.dh":"ลงชื่อ<em>เรียบร้อยแล้ว</em>","e.dp":"เราจะส่งลิงก์แอปให้ทางอีเมลทันทีที่เปิดใช้ มีคำถามเขียนมาที่ hello@thuragirl.com","e.close":"เสร็จ","ft.pv":"ความเป็นส่วนตัว",
     "ft.about":"นักบัญชี AI สำหรับธุรกิจขนาดเล็กในประเทศไทย ทำบัญชี VAT ภาษีหัก ณ ที่จ่าย ประกันสังคม และจดทะเบียนบริษัทกับ DBD ครบในที่เดียว",
-    "ft.p":"ผลิตภัณฑ์","ft.a":"บัญชีผู้ใช้","ft.su":"สมัครใช้งาน","ft.app":"เปิดแอป","ft.note":"หน้าจอในหน้านี้ใช้ข้อมูลตัวอย่าง","ft.made":"ทำที่กรุงเทพฯ"
+    "ft.p":"ผลิตภัณฑ์","ft.a":"ติดต่อเรา","ft.su":"สมัครใช้งาน","ft.app":"เปิดแอป","ft.note":"หน้าจอในหน้านี้ใช้ข้อมูลตัวอย่าง","ft.made":"ทำที่กรุงเทพฯ"
   };
   var EN = {};
   $$("[data-i18n]").forEach(function(el){ EN[el.getAttribute("data-i18n")] = el.innerHTML; });
@@ -680,6 +775,7 @@
     root.lang = l; $("#l-en").setAttribute("aria-pressed", String(l === "en")); $("#l-th").setAttribute("aria-pressed", String(l === "th"));
     document.title = l === "th" ? "ThuraGirl · นักบัญชี AI สำหรับธุรกิจขนาดเล็กในไทย" : "ThuraGirl · The AI bookkeeper for Thai small businesses";
     $$("img[src^='img/']").forEach(function(im){ var s = im.getAttribute("src").replace(/-th-(day|night)\.webp$/, "-$1.webp"); im.setAttribute("src", l === "th" ? s.replace(/-(day|night)\.webp$/, "-th-$1.webp") : s); });
+    var x = $("#early-x"); if (x) x.setAttribute("aria-label", l === "th" ? "ปิด" : "Close");
     store("tg.web.lang", l);
   }
   $("#l-en").addEventListener("click", function(){ setLang("en"); });
